@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Scattered Identities (OSINT writeup) | Theodore Garcia</title>
+<meta name="description" content="Every identity here is linked, not named. The sheet&#x27;s metadata gives the email, the email gives GitHub, the username gives Instagram and X, and the rules on one platform (odd/even, 2-7) decode the list on another. The final step isn&#x27;t a search at all: the hints and bios tell you to contact the owner.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261021d">
+<script src="../../prefs.js?v=20261021d" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>6 steps · 3 min read</span></p>
+    <h1>Scattered Identities</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Every identity here is linked, not named. The sheet's metadata gives the email, the email gives GitHub, the username gives Instagram and X, and the rules on one platform (odd/even, 2-7) decode the list on another. The final step isn't a search at all: the hints and bios tell you to contact the owner.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> the shared Google Sheet ("Nothing important").</h2>
+      <ul><li><b>What I found:</b> a few turtle-themed cells (Turtles, Tortoise, Shells, "Find the turtle", "You need to look st me", "Thisisadistraction").</li><li class="think"><b>Thinking:</b> the brief says "think outside of the cell", so the cell contents are mostly distraction. What a spreadsheet carries outside its cells is its file metadata, above all who owns it.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/01_spreadsheet.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/01_spreadsheet.webp" alt="The spreadsheet" width="1600" height="1033" loading="lazy"></a><figcaption>The spreadsheet</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the sheet's owner.</h2>
+      <ul><li><b>What I did:</b> queried the Drive API for the file's owners (the public edit page exposes an API key), then searched GitHub commits by the owner's email.</li><li class="result"><b>Result:</b> owner = cloveeen@gmail.com, which leads to the GitHub user Clovendadoor.</li><li class="think"><b>Thinking:</b> "see the identities linked to it without being named" is exactly this: an email that's never written in the sheet but is attached to it.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/02_sheet_owner.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/02_sheet_owner.webp" alt="Owner lookup and GitHub pivot" width="1080" height="176" loading="lazy"></a><figcaption>Owner lookup and GitHub pivot</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the GitHub repo Clovendadoor/Find-me-turts.</h2>
+      <ul><li class="result"><b>Result:</b> README "Red is a bit odd and blue is a bit even", and a file named Turts containing "2-7".</li><li class="think"><b>Thinking:</b> both are instructions for something not on GitHub. They read like a selection rule (a colour, odd or even, positions 2 and 7), so the next step is to find a list with red and blue parts.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/03_github_repo.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/03_github_repo.webp" alt="The Find-me-turts repo" width="1584" height="1311" loading="lazy"></a><figcaption>The Find-me-turts repo</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> the username Clovendadoor on other sites (Instagram).</h2>
+      <ul><li class="result"><b>Result:</b> instagram.com/clovendadoor, bio "t000rtol}", and one post whose caption lists turtle names in two groups, one marked with a blue circle and one with a red circle.</li><li class="think"><b>Thinking:</b> this is the list the repo's rule applies to. Blue is "even" and red is "odd", and "2-7" gives the positions: blue #2 = Namoor, red #7 = Krommer.</li><li class="dead"><b>Dead ends:</b> the bio "t000rtol}" looks like a flag ending but is not part of the final flag.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/04_instagram_profile.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/04_instagram_profile.webp" alt="Instagram profile" width="1600" height="1033" loading="lazy"></a><figcaption>Instagram profile</figcaption></figure>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/04b_instagram_turtle_post.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/04b_instagram_turtle_post.webp" alt="The #tutles post with blue and red lists" width="1600" height="1033" loading="lazy"></a><figcaption>The #tutles post with blue and red lists</figcaption></figure>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/04c_two_turtles.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/04c_two_turtles.webp" alt="Applying the rule" width="940" height="228" loading="lazy"></a><figcaption>Applying the rule</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Pivot:</b> the turtle names as an X handle.</h2>
+      <ul><li><b>What I did:</b> followed the released hint ("some random guy on X decided to use the names of my two turtles as their handle") and looked up @NamoorKrommer.</li><li class="result"><b>Result:</b> account "IGotYourTurtles", bio: "Do you know me? Did you find all of my 2 turtles? Their names are Namoor and Krommer".</li><li class="think"><b>Thinking:</b> the second hint says "look at my bio and his", so this bio has to be paired with the owner's bio.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/05_x_namoorkrommer.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/05_x_namoorkrommer.webp" alt="@NamoorKrommer" width="1600" height="1033" loading="lazy"></a><figcaption>@NamoorKrommer</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-6">
+      <h2><span class="wu-n">06</span><b>Pivot:</b> the owner's X account and contact email.</h2>
+      <ul><li><b>What I found:</b> @Clovendadoor ("cloveeen") has the bio "You can FIND ME in other websites... Contact my email: cloveeen@gmail.com" and a tweet: "Someone took all of my turtles and had the nerve to use the name of my two eldest turtles as their @ in this site".</li><li class="think"><b>Thinking:</b> the third hint says "no one would tell me where my turtles are... please contact me". Putting the two bios together, the last step is to contact the owner's email with the answer to the question in @NamoorKrommer's bio (the two turtles, Namoor and Krommer). Doing that returned the flag.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/scattered-identities/06_x_clovendadoor.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/06_x_clovendadoor.webp" alt="@Clovendadoor with the contact email" width="1600" height="1033" loading="lazy"></a><figcaption>@Clovendadoor with the contact email</figcaption></figure>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="last-breadcrumb.html"><small>Previous</small>Last Breadcrumb</a><a class="next" href="silent-observer.html"><small>Next</small>Silent Observer</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
+      <dt>Category</dt><dd>OSINT</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Google Drive API</li><li>GitHub commit search</li><li>username OSINT</li><li>Instagram</li><li>X/Twitter</li><li>email</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{p3rf3ctly_P13c3D}</span><small>Tap, hover or Tab to reveal</small></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Shared Google Sheet</span></a></li><li><a href="#step-2"><b>2</b><span>Sheet&#x27;s owner</span></a></li><li><a href="#step-3"><b>3</b><span>GitHub repo Clovendadoor/Find-me-turts</span></a></li><li><a href="#step-4"><b>4</b><span>Username Clovendadoor on other sites</span></a></li><li><a href="#step-5"><b>5</b><span>Turtle names as an X handle</span></a></li><li><a href="#step-6"><b>6</b><span>Owner&#x27;s X account and contact email</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261021d" defer></script>
+</body>
+</html>

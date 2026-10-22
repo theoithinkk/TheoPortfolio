@@ -1,0 +1,130 @@
+{
+  "packet-capture-act-1": {
+    "title": "Packet Capture CTF · Act I: The Signal",
+    "items": [
+      {
+        "slug": "digital-footprint",
+        "title": "Digital Footprint",
+        "category": "OSINT",
+        "note": "",
+        "tools": [
+          "curl",
+          "Arctic Shift Reddit archive",
+          "Python",
+          "grep"
+        ],
+        "insight": "Bans and deletions remove content from the live site, not from the internet. Archives keep it, and following the people instead of the place shows where a community moved.",
+        "minutes": 2,
+        "steps": 4
+      },
+      {
+        "slug": "forgotten-repository",
+        "title": "Forgotten Repository",
+        "category": "OSINT",
+        "note": "",
+        "tools": [
+          "GitHub CLI",
+          "grep"
+        ],
+        "insight": "Deleting a secret in a new commit doesn't remove it from git history. Always read the diffs, not just the latest files, and expect decoys when several flag-shaped strings appear.",
+        "minutes": 1,
+        "steps": 4
+      },
+      {
+        "slug": "hidden-profile",
+        "title": "Hidden Profile",
+        "category": "OSINT",
+        "note": "",
+        "tools": [
+          "Wayback Machine CDX API",
+          "Wayback raw snapshot viewer",
+          "curl",
+          "Python"
+        ],
+        "insight": "Deleted or hidden posts can still exist in web archives. For X/Twitter, search both x.com and twitter.com, use the CDX API with matchType=prefix to list every captured URL under a profile (including individual tweets), and add id_ to read the raw capture.",
+        "minutes": 2,
+        "steps": 5
+      },
+      {
+        "slug": "last-breadcrumb",
+        "title": "Last Breadcrumb",
+        "category": "OSINT",
+        "note": "",
+        "tools": [
+          "curl",
+          "yt-dlp",
+          "Mastodon public API",
+          "Ubuntu PGP keyserver",
+          "gpg",
+          "steghide/stegseek",
+          "Python"
+        ],
+        "insight": "Each pivot reuses the latest clue on a site already visited (hash > YouTube > Mastodon > paste > PGP keyserver > Mastodon > YouTube). The decoys (thisIsNotTheFlag, 0ld_k3ys) are labelled as wrong keys by the story itself, and the flag is split, so both halves must be joined before submitting.",
+        "minutes": 4,
+        "steps": 9
+      },
+      {
+        "slug": "scattered-identities",
+        "title": "Scattered Identities",
+        "category": "OSINT",
+        "note": "",
+        "tools": [
+          "Google Drive API",
+          "GitHub commit search",
+          "username OSINT",
+          "Instagram",
+          "X/Twitter",
+          "email"
+        ],
+        "insight": "Every identity here is linked, not named. The sheet's metadata gives the email, the email gives GitHub, the username gives Instagram and X, and the rules on one platform (odd/even, 2-7) decode the list on another. The final step isn't a search at all: the hints and bios tell you to contact the owner.",
+        "minutes": 3,
+        "steps": 6
+      },
+      {
+        "slug": "silent-observer",
+        "title": "Silent Observer",
+        "category": "OSINT",
+        "note": "Medium",
+        "tools": [
+          "PNG metadata inspection",
+          "Python",
+          "X/Twitter",
+          "tomydearest.xyz",
+          "what3words",
+          "Google Maps"
+        ],
+        "insight": "Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account's food posts) were decoys. The account's own \"throwaway\" tweets explained how to use each clue.",
+        "minutes": 3,
+        "steps": 6
+      },
+      {
+        "slug": "treasure-hunt-time",
+        "title": "Treasure Hunt Time",
+        "category": "OSINT",
+        "note": "",
+        "tools": [
+          "Python for image metadata",
+          "what3words",
+          "DMS coordinate conversion"
+        ],
+        "insight": "When the file says \"wrong hole\", go back to the brief. Here the coordinates came from the file name (what3words), and the hard part was formatting: DMS degrees.minutes, no signs, no space.",
+        "minutes": 2,
+        "steps": 5
+      },
+      {
+        "slug": "under-construction",
+        "title": "Under Construction",
+        "category": "OSINT",
+        "note": "internet history",
+        "tools": [
+          "Web search",
+          "Wikipedia",
+          "Internet Archive / Archive Team pages"
+        ],
+        "insight": "The description itself is the search query. Turn era-specific details (blinking text, guestbooks, visitor counters, \"Under Construction\") into a candidate, then pin the exact date with a primary source, watching for near-miss dates (the announcement date, or a regional spin-off that closed later).",
+        "minutes": 2,
+        "steps": 4
+      }
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Under Construction (OSINT writeup) | Theodore Garcia</title>
+<meta name="description" content="The description itself is the search query. Turn era-specific details (blinking text, guestbooks, visitor counters, &quot;Under Construction&quot;) into a candidate, then pin the exact date with a primary source, watching for near-miss dates (the announcement date, or a regional spin-off that closed later).">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261021d">
+<script src="../../prefs.js?v=20261021d" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">internet history</span><span>4 steps · 2 min read</span></p>
+    <h1>Under Construction</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The description itself is the search query. Turn era-specific details (blinking text, guestbooks, visitor counters, "Under Construction") into a candidate, then pin the exact date with a primary source, watching for near-miss dates (the announcement date, or a regional spin-off that closed later).</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> the brief.</h2>
+      <ul><li><b>What I found:</b> "millions of pages, each one someone's first attempt at building something online", "blinking text, guestbooks, visitor counters", then "deleted. On purpose. All at once." The answer format is <span class="flag" tabindex="0">PacketCapture{NAME_DDMONYEAR}</span>.</li><li class="think"><b>Thinking:</b> every detail describes a free 1990s web-hosting service. Blinking text, guestbooks, hit counters and "Under Construction" GIFs (the challenge title) are the signature look of personal homepages from that era. The phrase "on purpose, all at once" rules out services that faded away slowly; it points to a company deliberately shutting the whole service down on a single date.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> which hosting service fits "millions of pages" and a deliberate mass deletion.</h2>
+      <ul><li><b>What I did:</b> compared the big free hosts of the era (GeoCities, Angelfire, Tripod).</li><li class="result"><b>Result:</b> GeoCities is the one that matches. Angelfire and Tripod still exist. GeoCities hosted tens of millions of pages, and Yahoo, which bought it in 1999, closed it and deleted every user page at once.</li><li class="think"><b>Thinking:</b> the challenge title, "Under Construction", is itself the most famous GeoCities-era GIF, which confirms the name.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the exact date it disappeared "for good".</h2>
+      <ul><li><b>What I did:</b> checked the shutdown history (Wikipedia, and the Archive Team rescue project that mirrored the site before deletion).</li><li class="result"><b>Result:</b> Yahoo announced the closure in April 2009, stopped new sign-ups, and deleted GeoCities on 26 October 2009.</li><li>Screenshot (the infobox says "Inactive since October 26, 2009", and the article notes the Japan version lasted until 2019):</li></ul>
+      <figure><a href="../img/packet-capture-act-1/under-construction/01_geocities_wikipedia.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/under-construction/01_geocities_wikipedia.webp" alt="GeoCities Wikipedia article" width="1600" height="1033" loading="lazy"></a><figcaption>GeoCities Wikipedia article</figcaption></figure>
+      <ul><li class="dead"><b>Dead ends / care point:</b> GeoCities Japan was a separate service that ran until 31 March 2019. The brief describes the main service whose millions of pages vanished all at once, so the 2009 US shutdown date is the one asked for. The announcement date (April 2009) is also not the deletion date.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span>Formatting the flag.</h2>
+      <ul><li class="think"><b>Thinking:</b> the template is NAME_DDMONYEAR, so the name is uppercase with no spaces, the day is two digits, the month is a three-letter abbreviation, and the year has four digits: GEOCITIES_26OCT2009.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">PacketCapture{GEOCITIES_26OCT2009}</span> was accepted.</li></ul>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="treasure-hunt-time.html"><small>Previous</small>Treasure Hunt Time</a><span></span></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
+      <dt>Category</dt><dd>OSINT · internet history</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Web search</li><li>Wikipedia</li><li>Internet Archive / Archive Team pages</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{GEOCITIES_26OCT2009}</span><small>Tap, hover or Tab to reveal</small></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Brief</span></a></li><li><a href="#step-2"><b>2</b><span>Which hosting service fits &quot;millions of…</span></a></li><li><a href="#step-3"><b>3</b><span>Exact date it disappeared &quot;for good&quot;</span></a></li><li><a href="#step-4"><b>4</b><span>Formatting the flag</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261021d" defer></script>
+</body>
+</html>
