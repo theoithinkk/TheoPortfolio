@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Silent Observer (OSINT writeup) | Theodore Garcia</title>
+<meta name="description" content="Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account&#x27;s food posts) were decoys. The account&#x27;s own &quot;throwaway&quot; tweets explained how to use each clue.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261021d">
+<script src="../../prefs.js?v=20261021d" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">Medium</span><span>6 steps · 3 min read</span></p>
+    <h1>Silent Observer</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account's food posts) were decoys. The account's own "throwaway" tweets explained how to use each clue.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> absolute.png (a black-and-white portrait).</h2>
+      <ul><li><b>What I found:</b> the PNG text chunks carry Artist = @Skye_Chi14 and Comment = NOISE.</li><li class="think"><b>Thinking:</b> the brief says the image "was shared without anyone checking what came with it" and to "follow what the picture doesn't say". That points at metadata, not the visible content. The face in the photo is a decoy: identifying the person leads nowhere and isn't part of the puzzle.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/silent-observer/01_png_metadata.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/01_png_metadata.webp" alt="PNG metadata" width="590" height="150" loading="lazy"></a><figcaption>PNG metadata</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the handle @Skye_Chi14 on X.</h2>
+      <ul><li><b>What I found:</b> a small account (joined July 2026, bio "ops. relay stuff... Foodie") with a few everyday posts. Two stand out:<ul><li>"found this scribbled in my notes, no idea what it means anymore Z2J6bHFybmVyZmcua2xt"</li><li>"isn't it kind of sweet, searching your name on some anonymous platform just to see if anyone left you a message"</li></ul></li><li class="think"><b>Thinking:</b> the random-looking string is the only non-natural text on the account, so it's the next clue. The second post explains how to use what it decodes to: search her name on an anonymous message site.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/silent-observer/02_x_profile_skye_chi14.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/02_x_profile_skye_chi14.webp" alt="The @Skye_Chi14 profile" width="1600" height="1033" loading="lazy"></a><figcaption>The @Skye_Chi14 profile</figcaption></figure>
+      <figure><a href="../img/packet-capture-act-1/silent-observer/02b_x_encoded_tweet.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/02b_x_encoded_tweet.webp" alt="The encoded tweet" width="1600" height="1033" loading="lazy"></a><figcaption>The encoded tweet</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> decoding the string.</h2>
+      <ul><li><b>What I did:</b> Base64 decode, then ROT13.</li><li class="result"><b>Result:</b> Z2J6bHFybmVyZmcua2xt -&gt; gbzlqrnerfg.klm -&gt; tomydearest.xyz</li><li class="think"><b>Thinking:</b> the Base64 output had a dot and a three-letter "extension", so it looked like a domain with its letters shifted. ROT13 is the most common shift in CTFs and turned it into a real site.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/silent-observer/03_decode_chain.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/03_decode_chain.webp" alt="Decode chain" width="520" height="150" loading="lazy"></a><figcaption>Decode chain</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> tomydearest.xyz, an anonymous "message to someone" site.</h2>
+      <ul><li><b>What I did:</b> searched messages by the name "Skye", as the tweet suggested.</li><li class="result"><b>Result:</b> an anonymous message "To Skye..." ("If you ever want to find someone who's been paying attention... I'll be around.") that ends with three dot-separated words: wishes.slap.repeats</li><li class="think"><b>Thinking:</b> three lowercase words joined by dots is the what3words address format, a way to name a 3 m square anywhere in the world. This message is the "way to reach them" the brief mentions.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/silent-observer/04_tomydearest_message.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/04_tomydearest_message.webp" alt="The anonymous message ending in wishes.slap.repeats" width="1600" height="1033" loading="lazy"></a><figcaption>The anonymous message ending in wishes.slap.repeats</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Pivot:</b> the what3words address.</h2>
+      <ul><li><b>What I did:</b> opened what3words.com/wishes.slap.repeats.</li><li class="result"><b>Result:</b> the square sits on "cafe capyba (capybara cafe)" in Higashimukojima, Sumida City, Tokyo.</li><li class="think"><b>Thinking:</b> the brief says "reservations here aren't taken online - someone still has to actually call", so the answer is the venue's phone number, not its name or address.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/silent-observer/05_what3words_location.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/05_what3words_location.webp" alt="what3words square on cafe capyba" width="1600" height="1033" loading="lazy"></a><figcaption>what3words square on cafe capyba</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-6">
+      <h2><span class="wu-n">06</span><b>Pivot:</b> the venue on Google Maps.</h2>
+      <ul><li><b>What I did:</b> looked up cafe capyba on Google Maps.</li><li class="result"><b>Result:</b> 1-31-3 Higashimukojima, Sumida City, Tokyo; phone +81 3-6657-0748.</li><li><b>Formatting:</b> the number without spaces or dashes, in international format: <span class="flag" tabindex="0">PacketCapture{+81366570748}</span>.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/silent-observer/06_google_maps_phone.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/06_google_maps_phone.webp" alt="Google Maps listing with the phone number" width="1600" height="1033" loading="lazy"></a><figcaption>Google Maps listing with the phone number</figcaption></figure>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="scattered-identities.html"><small>Previous</small>Scattered Identities</a><a class="next" href="treasure-hunt-time.html"><small>Next</small>Treasure Hunt Time</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
+      <dt>Category</dt><dd>OSINT · Medium</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>PNG metadata inspection</li><li>Python</li><li>X/Twitter</li><li>tomydearest.xyz</li><li>what3words</li><li>Google Maps</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{+81366570748}</span><small>Tap, hover or Tab to reveal</small></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>absolute.png</span></a></li><li><a href="#step-2"><b>2</b><span>Handle @Skye_Chi14 on X</span></a></li><li><a href="#step-3"><b>3</b><span>Decoding the string</span></a></li><li><a href="#step-4"><b>4</b><span>tomydearest.xyz</span></a></li><li><a href="#step-5"><b>5</b><span>What3words address</span></a></li><li><a href="#step-6"><b>6</b><span>Venue on Google Maps</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261021d" defer></script>
+</body>
+</html>

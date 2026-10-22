@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Forgotten Repository (OSINT writeup) | Theodore Garcia</title>
+<meta name="description" content="Deleting a secret in a new commit doesn&#x27;t remove it from git history. Always read the diffs, not just the latest files, and expect decoys when several flag-shaped strings appear.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261021d">
+<script src="../../prefs.js?v=20261021d" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>4 steps · 1 min read</span></p>
+    <h1>Forgotten Repository</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Deleting a secret in a new commit doesn't remove it from git history. Always read the diffs, not just the latest files, and expect decoys when several flag-shaped strings appear.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> the repository github.com/SkyeChi/sentry-relay.</h2>
+      <ul><li><b>What I found:</b> the current config.env shows API_KEY=REDACTED.</li><li class="think"><b>Thinking:</b> a file that has clearly been scrubbed tells you a secret used to be there. Git keeps every version of every file, so the question becomes "which older version still has it?"</li></ul>
+      <figure><a href="../img/packet-capture-act-1/forgotten-repository/01_config_redacted.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/forgotten-repository/01_config_redacted.webp" alt="config.env today: API_KEY=REDACTED" width="1600" height="1033" loading="lazy"></a><figcaption>config.env today: API_KEY=REDACTED</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the commit history.</h2>
+      <ul><li><b>What I did:</b> listed all 15 commits and read the messages.</li><li class="result"><b>Result:</b> messages such as "rotate relay key", "remove exposed credentials" and "stop tracking sensitive files".</li><li class="think"><b>Thinking:</b> these messages are the developer admitting a leak. They point straight at the commits worth diffing, which saves reading the whole repo.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/forgotten-repository/02_commit_history.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/forgotten-repository/02_commit_history.webp" alt="Commit history" width="1584" height="1800" loading="lazy"></a><figcaption>Commit history</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the diffs.</h2>
+      <ul><li><b>What I did:</b> pulled every commit's patch with gh api and grepped for "PacketCapture{" and "KEY".</li><li class="result"><b>Result:</b> the real key was added in commit 413705f ("rotate relay key") and removed in 55a64f3 ("remove exposed credentials"); the removal diff still shows it in red. Two other flag-shaped values also appear in the history:<ul><li>API_KEY=<span class="flag" tabindex="0">PacketCapture{DECOY_ENDPOINT}</span></li><li>BACKUP_KEY=<span class="flag" tabindex="0">PacketCapture{RELAY_BACKUP_KEY}</span></li><li>API_KEY=<span class="flag" tabindex="0">PacketCapture{L34K3D_R3P0_D1SC0V3R3D_DAB2A78}</span></li></ul></li><li class="think"><b>Thinking:</b> the two decoys are named after config fields rather than telling a story, which is a common way authors plant wrong answers. The real one reads as a sentence ("leaked repo discovered") and ends with a short hash-like suffix, which is how real flags in this CTF look.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/forgotten-repository/03_diff_leaked_key.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/forgotten-repository/03_diff_leaked_key.webp" alt="Commit 55a64f3 removing the leaked key" width="1584" height="1575" loading="lazy"></a><figcaption>Commit 55a64f3 removing the leaked key</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Verification:</b> submitted the third value and the site accepted it.</h2>
+
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="digital-footprint.html"><small>Previous</small>Digital Footprint</a><a class="next" href="hidden-profile.html"><small>Next</small>Hidden Profile</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
+      <dt>Category</dt><dd>OSINT</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>GitHub CLI</li><li>grep</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{L34K3D_R3P0_D1SC0V3R3D_DAB2A78}</span><small>Tap, hover or Tab to reveal</small></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Repository github.com/SkyeChi/sentry-relay</span></a></li><li><a href="#step-2"><b>2</b><span>Commit history</span></a></li><li><a href="#step-3"><b>3</b><span>Diffs</span></a></li><li><a href="#step-4"><b>4</b><span>Submitted the third value and the site…</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261021d" defer></script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Content Security Policy. GitHub Pages can't send HTTP headers, so it lives in a meta tag.
+     Scripts only from this site (no inline JS), fonts only from Google Fonts, no plugins, no forms.
+     'unsafe-inline' for styles is needed for the per-element CSS variables (style="--x: ..."). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Theodore Garcia | GRC, Cloud &amp; AI Security</title>
+<meta name="description" content="Theodore Garcia: Computer Science (Network &amp; Information Security) student at De La Salle University focused on GRC, cloud security and AI security.">
+<meta name="theme-color" content="#0c1110">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<!-- Link previews (LinkedIn, Messenger, Discord, X). Update the URLs if the site moves. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Theodore Garcia">
+<meta property="og:title" content="Theodore Garcia | GRC, Cloud & AI Security">
+<meta property="og:description" content="CS student at De La Salle University (Network & Information Security). Control mapping, risk registers and cloud security on AWS. ISC2 CC, AWS Cloud & AI Practitioner.">
+<meta property="og:url" content="https://theoithinkk.github.io/">
+<meta property="og:image" content="https://theoithinkk.github.io/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Theodore Garcia, GRC, Cloud and AI Security">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://theoithinkk.github.io/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20261021d">
+<!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
+<script src="prefs.js?v=20261021d"></script>
+<script src="main.js?v=20261021d" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#education">Skip to content</a>
+
+<!-- Loading screen -->
+<div id="loader" class="overlay" aria-hidden="true">
+  <div class="shuffle"><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="loader-title">Ascending the Spire</p>
+  <div class="loader-bar"><i></i></div>
+  <p class="loader-tip"><b>TIP:</b> <span id="loader-tip"></span></p>
+  <button class="btn-ghost" type="button" data-skip-intro>Skip intro</button>
+</div>
+
+<!-- Character (palette) select -->
+<div id="charselect" class="overlay" role="dialog" aria-modal="true" aria-labelledby="cs-title" hidden>
+  <h2 id="cs-title">Choose Your Character</h2>
+  <p class="cs-sub">Each character recolors the site. You can change it anytime.</p>
+  <div class="cs-detail" aria-live="polite">
+    <h3 id="cs-name">&nbsp;</h3>
+    <p id="cs-blurb">Select a character below.</p>
+  </div>
+  <div class="cs-row">
+    <button class="cs-pick" type="button" data-char="ironclad" style="--c:#c8402f" aria-label="Ironclad">
+      <svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 10.5a5 5 0 0 1-10 0c0-3 1.6-4.2 2.2-6.6.9 1 1.7 2 2.3 3.3.6-2.3.8-4.6.5-7.2z"/></svg>
+      <span>Ironclad</span>
+    </button>
+    <button class="cs-pick" type="button" data-char="silent" style="--c:#7cc242" aria-label="Silent">
+      <svg viewBox="0 0 24 24"><path d="M12 2l2.2 11h-4.4zM7.5 13h9M12 13v6M10 21h4"/></svg>
+      <span>Silent</span>
+    </button>
+    <button class="cs-pick" type="button" data-char="regent" style="--c:#e8892e" aria-label="Regent">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l2.8 6.3 6.7.6-5.1 4.5 1.5 6.6L12 17l-5.9 3.5 1.5-6.6-5.1-4.5 6.7-.6z"/></svg>
+      <span>Regent</span>
+    </button>
+    <button class="cs-pick" type="button" data-char="necrobinder" style="--c:#d0609a" aria-label="Necrobinder">
+      <svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3zM9.5 10.5h.01M14.5 10.5h.01M10 19v2M14 19v2"/></svg>
+      <span>Necrobinder</span>
+    </button>
+    <button class="cs-pick" type="button" data-char="defect" style="--c:#3aa3d8" aria-label="Defect">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/></svg>
+      <span>Defect</span>
+    </button>
+  </div>
+  <div class="cs-actions">
+    <button class="plate back" type="button" data-skip-char><span>Skip, keep it simple</span></button>
+    <button class="plate arrow" type="button" id="cs-embark" disabled><span>Embark</span></button>
+  </div>
+</div>
+
+<!-- Top bar (StS2-style): name, current floor, map and settings -->
+<header class="topbar">
+  <!-- Name hover effect: data-fx="flip" (card flip), "shimmer" (gold sheen + embers), or "flip shimmer" for both -->
+  <a class="tb-name" href="#top" aria-label="Theodore Garcia, back to top" data-fx="shimmer"><span class="mono" aria-hidden="true"><span class="mono-card"><span class="mono-front">TG</span><span class="mono-back">GRC</span></span></span><span class="tb-full" aria-hidden="true"><span class="tb-real">Theodore Garcia</span><span class="tb-alt">GRC · Cloud · AI</span></span></a>
+  <p class="floor" aria-live="polite"><span class="floor-label">Floor</span><b id="floor-num">1</b><span class="floor-name" id="floor-name">Start</span></p>
+  <div class="tb-icons">
+    <button type="button" class="icon-btn" id="open-map" aria-haspopup="dialog" aria-controls="mapdlg" title="Map (M)"><i class="ic" style="--src:url(img/icons/ui-map.svg)"></i><span class="visually-hidden">Open map</span></button>
+    <button type="button" class="icon-btn" id="open-settings" aria-expanded="false" aria-controls="settings" title="Settings"><i class="ic" style="--src:url(img/icons/ui-settings.svg)"></i><span class="visually-hidden">Settings</span></button>
+  </div>
+  <div class="settings" id="settings" hidden>
+    <p class="settings-title">Settings</p>
+    <div class="tb-tools">
+      <button type="button" id="t-sound" aria-pressed="true">Sound effects</button>
+      <button type="button" id="t-music" aria-pressed="false">Music</button>
+      <button type="button" id="t-mode" aria-pressed="false">Light mode</button>
+      <button type="button" id="t-simple" aria-pressed="false">Simple mode</button>
+      <button type="button" id="t-char">Character palette…</button>
+    </div>
+  </div>
+</header>
+
+<!-- Map: every section as a node on a path, bottom (start) to top (rest site) -->
+<div id="mapdlg" class="mapdlg" role="dialog" aria-modal="true" aria-labelledby="map-title" hidden>
+  <div class="map-sheet">
+    <button class="map-close" type="button" aria-label="Close map"><i class="ic" style="--src:url(img/icons/tb-x.svg)"></i></button>
+    <h2 id="map-title">Map</h2>
+    <p class="map-sub">Pick a node to travel there.</p>
+    <div class="map-area">
+      <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points=""/></svg>
+      <a class="mnode boss" href="#contact"><i class="ic" style="--src:url(img/map/boss.svg)"></i><span>Boss · Contact</span></a>
+        <a class="mnode" href="#notes"><i class="ic" style="--src:url(img/map/notes.svg)"></i><span>Rest · Writeups &amp; Notes</span></a>
+        <a class="mnode" href="#stack"><i class="ic" style="--src:url(img/map/stack.svg)"></i><span>Shop · Stack</span></a>
+        <a class="mnode" href="#certifications"><i class="ic" style="--src:url(img/map/certifications.svg)"></i><span>Treasure · Certs</span></a>
+        <a class="mnode" href="#projects"><i class="ic" style="--src:url(img/map/projects.svg)"></i><span>Elite · Projects</span></a>
+        <a class="mnode" href="#experience"><i class="ic" style="--src:url(img/map/experience.svg)"></i><span>Event · Experience</span></a>
+        <a class="mnode" href="#education"><i class="ic" style="--src:url(img/map/education.svg)"></i><span>Education</span></a>
+        <a class="mnode" href="#top"><i class="ic" style="--src:url(img/map/start.svg)"></i><span>Start</span></a>
+    </div>
+    <!-- Ink filter: slightly wobbles the map icons so they look hand-stamped, like the StS map -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <filter id="ink"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter>
+    </svg>
+  </div>
+</div>
+<audio id="music" src="audio/music.mp3" loop preload="none"></audio>
+
+<main>
+  <!-- Hero: name on top, photo centered, cards floating around it -->
+  <section id="top" class="hero">
+    <div class="embers" aria-hidden="true"></div>
+
+    <header class="hero-head">
+      <p class="eyebrow whoami" aria-label="whoami"><span class="prompt">theo@cybersec:~$</span> whoami<span class="caret" aria-hidden="true"></span></p>
+      <h1 class="name" aria-label="Theodore Garcia"><span aria-hidden="true">Theodore</span> <span aria-hidden="true"><b class="g">G</b>a<b class="g">r</b><b class="g">c</b>ia</span></h1>
+      <p class="tagline"><span class="grc">GRC</span><i class="sep" aria-hidden="true"></i><span class="cloud">Cloud Security</span><i class="sep" aria-hidden="true"></i><span class="ai">AI Security</span></p>
+    </header>
+
+    <div class="stage">
+      <img class="hero-photo" src="img/theodore.webp" alt="Theodore Garcia" width="570" height="662">
+      <!-- Logos float around the photo. Hover (or focus) flips one into its card; click jumps to its section.
+           main.js scatters them on each side of the photo, and each one bobs on its own timer. -->
+      <div class="floaters">
+        <a class="floater" href="#education" aria-label="Dean's Lister, terms 1 to 6. Go to Education"><span class="token"><img src="img/logo-dlsu.svg" alt=""></span><span class="token-label">Dean's Lister</span><article class="card rare power" aria-hidden="true"><span class="cost">1</span><span class="banner">Dean's Lister</span><span class="art"><img src="img/logo-dlsu.svg" alt=""></span><span class="type">Power</span><span class="desc">Terms <em>1–6</em>, every term to date.</span></article></a>
+        <a class="floater" href="#certifications" aria-label="ISC2 Certified in Cybersecurity. Go to Certifications"><span class="token halo"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="token-label">ISC2 CC</span><article class="card rare skill" aria-hidden="true"><span class="cost">1</span><span class="banner">ISC2 CC</span><span class="art"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="type">Skill</span><span class="desc"><em>Certified</em> in Cybersecurity.</span></article></a>
+        <a class="floater" href="#certifications" aria-label="AWS Certified Cloud Practitioner. Go to Certifications"><span class="token"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="token-label">AWS Cloud Practitioner</span><article class="card uncommon skill" aria-hidden="true"><span class="cost">1</span><span class="banner">AWS Cloud Practitioner</span><span class="art"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em>.</span></article></a>
+        <a class="floater" href="#experience" aria-label="2nd place, ISO CTF 2026. Go to Experience"><span class="token"><img class="rounded" src="img/logo-iso.webp" alt="Information Security Organization, DLSU logo"></span><span class="token-label">ISO CTF · 2nd</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">ISO CTF 2026</span><span class="art"><img class="rounded" src="img/logo-iso.webp" alt="Information Security Organization, DLSU logo"><span class="chip">2nd</span></span><span class="type">Attack</span><span class="desc"><em>2nd Place</em>, Uncharted Knowledge CTF.</span></article></a>
+        <a class="floater target" href="#certifications" aria-label="Coming soon: CompTIA Security+. Go to Certifications"><span class="token"><img src="img/badge-secplus.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">Security+ · soon</span><article class="card common skill target" aria-hidden="true"><span class="cost">?</span><span class="banner">Security+</span><span class="art"><img src="img/badge-secplus.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc">CompTIA <em>Security+</em>, next up.</span></article></a>
+        <a class="floater target" href="#certifications" aria-label="Coming soon: ISO 27001 Lead Auditor or Implementer. Go to Certifications"><span class="token"><img src="img/badge-iso27001la.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">ISO 27001 · soon</span><article class="card common power target" aria-hidden="true"><span class="cost">?</span><span class="banner">ISO 27001 LA / LI</span><span class="art"><img src="img/badge-iso27001la.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc"><em>Lead Auditor</em> or Implementer.</span></article></a>
+        <a class="floater" href="#experience" aria-label="Associate VP for Academics, La Salle Computer Society. Go to Experience"><span class="token halo"><img src="img/logo-lscs.webp" alt=""></span><span class="token-label">LSCS</span><article class="card uncommon power" aria-hidden="true"><span class="cost">2</span><span class="banner">LSCS</span><span class="art"><img src="img/logo-lscs.webp" alt=""></span><span class="type">Power</span><span class="desc">10+ events as <em>Associate VP</em> for Academics.</span></article></a>
+        <a class="floater" href="#experience" aria-label="Associate for Activities, DLSU ACM Student Chapter. Go to Experience"><span class="token"><img src="img/logo-acm.svg" alt=""></span><span class="token-label">DLSU ACM</span><article class="card common power" aria-hidden="true"><span class="cost">1</span><span class="banner">DLSU ACM</span><span class="art"><img src="img/logo-acm.svg" alt=""></span><span class="type">Power</span><span class="desc"><em>Associate</em> for Activities.</span></article></a>
+        <a class="floater" href="#education" aria-label="DOST Merit Scholar. Go to Education"><span class="token"><img src="img/logo-dost.svg" alt=""></span><span class="token-label">DOST Scholar</span><article class="card uncommon power" aria-hidden="true"><span class="cost">1</span><span class="banner">DOST Scholar</span><span class="art"><img src="img/logo-dost.svg" alt=""></span><span class="type">Power</span><span class="desc"><em>Merit</em> scholarship, DOST.</span></article></a>
+        <a class="floater" href="#certifications" aria-label="AWS Certified AI Practitioner. Go to Certifications"><span class="token"><img src="img/badge-aws-aip.webp" alt=""></span><span class="token-label">AWS AI Practitioner</span><article class="card uncommon skill" aria-hidden="true"><span class="cost">1</span><span class="banner">AWS AI Practitioner</span><span class="art"><img src="img/badge-aws-aip.webp" alt=""></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em>.</span></article></a>
+        <a class="floater" href="#projects" aria-label="DarkHole V2 penetration test, 13 findings. Go to Projects"><span class="token"><img src="img/fx/skull.webp" alt=""></span><span class="token-label">DarkHole V2</span><article class="card rare attack" aria-hidden="true"><span class="cost">3</span><span class="banner">DarkHole V2</span><span class="art"><img src="img/fx/skull.webp" alt=""><span class="chip">13</span></span><span class="type">Attack</span><span class="desc">Findings, <em>2 Critical</em>. 39-page report.</span></article></a>
+        <a class="floater" href="#experience" aria-label="K17 CTF 2026, top 23 percent. Go to Experience"><span class="token"><img src="img/fx/triangular-flag.webp" alt=""></span><span class="token-label">K17 CTF · top 23%</span><article class="card uncommon attack" aria-hidden="true"><span class="cost">2</span><span class="banner">K17 CTF 2026</span><span class="art"><img src="img/fx/triangular-flag.webp" alt=""><span class="chip">Top 23%</span></span><span class="type">Attack</span><span class="desc">152nd of 682 teams, <em>SlayTheFlagII</em>.</span></article></a>
+        <a class="floater target" href="#certifications" aria-label="Coming soon: AWS Certified Security Specialty. Go to Certifications"><span class="token"><img src="img/badge-aws-scs.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">AWS Security · soon</span><article class="card common skill target" aria-hidden="true"><span class="cost">?</span><span class="banner">AWS Security Specialty</span><span class="art"><img src="img/badge-aws-scs.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc">Specialty, the <em>cloud security</em> step.</span></article></a>
+        <a class="floater target" href="#certifications" aria-label="Coming soon: ISACA CISA or CRISC. Go to Certifications"><span class="token"><img src="img/badge-cisa.webp" alt=""><img class="duo" src="img/badge-crisc.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">CISA / CRISC · soon</span><article class="card common power target" aria-hidden="true"><span class="cost">?</span><span class="banner">CISA / CRISC</span><span class="art"><img src="img/badge-cisa.webp" alt=""><img class="duo" src="img/badge-crisc.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc">Audit and <em>risk</em>, longer term.</span></article></a>
+        <a class="floater" href="#experience" aria-label="Associate VP for HR Development, DLSU SPRINT. Go to Experience"><span class="token"><img class="rounded" src="img/logo-sprint-square.webp" alt=""></span><span class="token-label">DLSU SPRINT</span><article class="card uncommon power" aria-hidden="true"><span class="cost">2</span><span class="banner">DLSU SPRINT</span><span class="art"><img src="img/logo-sprint.png" alt=""></span><span class="type">Power</span><span class="desc">30+ members, as <em>Associate VP</em> for HR.</span></article></a>
+        <a class="floater" href="#experience" aria-label="Executive for Internal Relations, Computer Studies Government. Go to Experience"><span class="token"><img src="img/logo-csg.webp" alt=""></span><span class="token-label">CCS Government</span><article class="card common power" aria-hidden="true"><span class="cost">1</span><span class="banner">CS Government</span><span class="art"><img src="img/logo-csg.webp" alt=""></span><span class="type">Power</span><span class="desc"><em>Internal Relations</em> executive.</span></article></a>
+      </div>
+    </div>
+
+    <div class="hero-foot">
+      <p class="intro">
+        I'm a Computer Science student at De La Salle University, majoring in Network and Information Security.
+        I like the part of security where frameworks meet real systems: mapping controls to ISO 27001 and NIST 800-53,
+        scoring risk, and writing it up so people can actually act on it. Lately I've been building toward cloud security on AWS.
+      </p>
+      <div class="hero-actions">
+        <a class="plate gold" href="files/Theodore-Garcia-CV.pdf" download data-file><span>Download CV</span></a>
+        <a class="plate gold" href="files/Theodore-Garcia-Resume.pdf" download data-file><span>Download Résumé</span></a>
+      </div>
+      <div class="hero-actions secondary socials">
+        <a class="soc" href="mailto:garciatheodoreiii715@gmail.com" aria-label="Email" data-tip="Email" style="--b:#EA4335;--g:#EA4335"><i class="ic" style="--src:url(img/icons/si-gmail.svg)"></i></a>
+        <a class="soc" href="https://www.linkedin.com/in/theodore-garcia-179b24333/" target="_blank" rel="noopener" aria-label="LinkedIn" data-tip="LinkedIn" style="--b:#0A66C2;--g:#0A66C2"><i class="ic" style="--src:url(img/icons/si-linkedin.svg)"></i></a>
+        <a class="soc" href="https://github.com/theoithinkk" target="_blank" rel="noopener" aria-label="GitHub" data-tip="GitHub" style="--b:#24292F;--g:#24292F"><i class="ic" style="--src:url(img/icons/si-github.svg)"></i></a>
+        <a class="soc" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener" aria-label="Credly" data-tip="Credly" style="--b:#FF6B00;--g:#FF6B00"><i class="ic" style="--src:url(img/icons/si-credly.svg)"></i></a>
+        <a class="soc" href="https://www.facebook.com/theodore.rodolfo/" target="_blank" rel="noopener" aria-label="Facebook" data-tip="Facebook" style="--b:#0866FF;--g:#0866FF"><i class="ic" style="--src:url(img/icons/si-facebook.svg)"></i></a>
+        <a class="soc" href="https://www.instagram.com/theoithink/" target="_blank" rel="noopener" aria-label="Instagram, @theoithink" data-tip="@theoithink" style="--b:radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);--g:#d6249f"><i class="ic" style="--src:url(img/icons/si-instagram.svg)"></i></a>
+        <!-- Discord has no public profile URL by username, so this copies it instead -->
+        <button class="soc" type="button" data-copy="cianai" aria-label="Copy Discord username cianai" data-tip="Discord: cianai" style="--b:#5865F2;--g:#5865F2"><i class="ic" style="--src:url(img/icons/si-discord.svg)"></i></button>
+      </div>
+      <p class="hero-meta">Manila, Philippines · Open to GRC and cloud security internships</p>
+    </div>
+
+    <div class="hand-wrap">
+      <div class="pile" aria-hidden="true"><span>6</span></div>
+      <nav class="hand" aria-label="Jump to a section">
+        <a class="card common skill" href="#education"><span class="cost">0</span><span class="banner">Education</span><span class="art"><img src="img/logo-dlsu.svg" alt=""></span><span class="type">Skill</span><span class="desc">My <em>degree</em> and honors.</span></a>
+        <a class="card uncommon power" href="#experience"><span class="cost">1</span><span class="banner">Experience</span><span class="art"><img src="img/logo-lscs.webp" alt=""></span><span class="type">Power</span><span class="desc"><em>Leadership</em> and CTFs.</span></a>
+        <a class="card rare attack" href="#projects"><span class="cost">2</span><span class="banner">Projects</span><span class="art"><img src="img/fx/hammer-and-wrench.webp" alt=""></span><span class="type">Attack</span><span class="desc">GRC tools, pentests, <em>real apps</em>.</span></a>
+        <a class="card common skill" href="#stack"><span class="cost">1</span><span class="banner">Stack</span><span class="art"><img src="img/fx/toolbox.webp" alt=""></span><span class="type">Skill</span><span class="desc">Frameworks and <em>tools</em>.</span></a>
+        <a class="card rare power" href="#certifications"><span class="cost">1</span><span class="banner">Certifications</span><span class="art"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="type">Power</span><span class="desc">ISC2 and <em>AWS</em>.</span></a>
+        <a class="card common skill" href="#contact"><span class="cost">0</span><span class="banner">Contact</span><span class="art"><img src="img/fx/envelope-with-arrow.webp" alt=""></span><span class="type">Skill</span><span class="desc">Open a <em>channel</em>.</span></a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Education -->
+  <section id="education" class="sec">
+    <header class="sec-head"><p class="act">Origins</p><h2 tabindex="-1">Education</h2></header>
+    <div class="entry">
+      <article class="card rare skill"><span class="cost">4</span><h3 class="banner">De La Salle University</h3><div class="art"><img src="img/logo-dlsu.svg" alt="De La Salle University seal" loading="lazy"></div><span class="type">Skill</span><p class="desc">BS CS, major in <em>Network &amp; Information Security</em>.</p></article>
+      <div class="panel">
+        <h3>De La Salle University</h3>
+        <p class="meta">BS Computer Science, major in Network &amp; Information Security · Manila · 2024 – 2028</p>
+        <ul>
+          <li>Dean's Lister for Terms 1–6, every term to date</li>
+          <li>DOST Merit Scholar, an undergraduate scholarship from the Department of Science and Technology for students in science and technology programs</li>
+        </ul>
+        <div class="logo-row">
+          <img src="img/logo-dlsu.svg" alt="De La Salle University" loading="lazy">
+          <img src="img/logo-dost.svg" alt="Department of Science and Technology" loading="lazy">
+        </div>
+      </div>
+    </div>
+    <div class="entry">
+      <article class="card uncommon power"><span class="cost">2</span><h3 class="banner">Elizabeth Seton School</h3><div class="art"><img src="img/fx/school.webp" alt="" loading="lazy"></div><span class="type">Power</span><p class="desc">Senior High, <em>STEM</em> strand. Top 20%.</p></article>
+      <div class="panel">
+        <h3>Elizabeth Seton School</h3>
+        <p class="meta">Senior High School · STEM strand</p>
+        <ul>
+          <li>Ranked in the top 20% of the STEM batch</li>
+          <li>Excellence Award (With Honors)</li>
+          <li>Annual Excellence Award (With Honors)</li>
+          <li>Outstanding Research Award for senior high research work</li>
+          <li>Oral presenter at the PAREF Southridge Research Congress</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Experience: StS-style maps, split into positions and competitions. Newest at the top. -->
+  <section id="experience" class="sec">
+    <header class="sec-head"><p class="act">The Map</p><h2 tabindex="-1">Experience</h2></header>
+    <div class="view-toggle" role="group" aria-label="Experience view"><button type="button" data-view="map" aria-pressed="true">Map</button><button type="button" data-view="compact" aria-pressed="false">Compact</button></div>
+
+    <h3 class="sub-head map-head">Positions</h3>
+    <ol class="map">
+      <li class="stop event">
+        <div class="node"><img class="rounded" src="img/logo-sprint-square.webp" alt="DLSU SPRINT logo"></div>
+        <div class="panel">
+          <p class="node-type">Leadership</p>
+          <h3>Associate Vice President for Human Resource Development</h3>
+          <p class="org">DLSU SPRINT</p>
+          <p class="meta">Sep 2025 – Sep 2026</p>
+          <ul>
+            <li>Led member engagement and growth for DLSU SPRINT, an invite-only leadership organization for College of Computer Studies students.</li>
+            <li>Planned and ran team-building activities and development workshops for 30+ members, aimed at building leadership and teamwork skills.</li>
+            <li>Organized 3+ engagement and development initiatives over the term to keep members involved and growing.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="stop event">
+        <div class="node"><img class="ink" src="img/logo-lscs.webp" alt="La Salle Computer Society logo"></div>
+        <div class="panel">
+          <p class="node-type">Leadership · Promoted</p>
+          <h3>La Salle Computer Society</h3>
+          <div class="role-step">
+            <p class="role-title">Associate Vice President for Academics</p>
+            <p class="meta">Sep 2025 – Sep 2026</p>
+            <ul>
+              <li>Promoted after a year as a Junior Officer to lead the Academics portfolio of the La Salle Computer Society.</li>
+              <li>Directed pre-event operations for 10+ academic events, including technical talks, exam review sessions, publications and coding competitions for computing students.</li>
+              <li>Coordinated scheduling, documentation and stakeholder communication with faculty members and partner departments so each event ran on time.</li>
+            </ul>
+          </div>
+          <div class="role-step">
+            <p class="role-title">Junior Officer, Research and Development</p>
+            <p class="meta">Oct 2024 – Sep 2025</p>
+            <ul><li>Supported the Research and Development committee with event planning and event management, helping prepare and run the committee's events.</li></ul>
+          </div>
+        </div>
+      </li>
+      <li class="stop event">
+        <div class="node"><img src="img/logo-acm.svg" alt="ACM logo"></div>
+        <div class="panel">
+          <p class="node-type">Organization</p>
+          <h3>Associate for Activities</h3>
+          <p class="org">DLSU ACM Student Chapter</p>
+          <p class="meta">Oct 2024 – Oct 2025</p>
+          <ul>
+            <li>Part of the Activities team of the DLSU ACM Student Chapter, the university's chapter of the Association for Computing Machinery.</li>
+            <li>Ran the chapter's general assemblies and lab orientations for members.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="stop event">
+        <div class="node"><img src="img/logo-csg.webp" alt=""></div>
+        <div class="panel">
+          <p class="node-type">Student government</p>
+          <h3>Executive for Internal Relations</h3>
+          <p class="org">Computer Studies Government, De La Salle University</p>
+          <p class="meta">Sep 2024 – Oct 2025</p>
+          <ul>
+            <li>Handled internal communications and email management for the Computer Studies Government, the student government of the College of Computer Studies.</li>
+            <li>Acted as a point of contact between CSG, 10+ student organizations and the Dean's Office, keeping announcements and requests moving between them.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="stop start">
+        <div class="node"><img src="img/logo-dlsu.svg" alt="De La Salle University seal"></div>
+        <div class="panel">
+          <p class="node-type">Start</p>
+          <h3>Entered De La Salle University</h3>
+          <p class="meta">2024</p>
+          <ul><li>Started a BS in Computer Science, major in Network &amp; Information Security. Dean's Lister every term so far and a DOST Merit Scholar. <a href="#education">See Education</a>.</li></ul>
+        </div>
+      </li>
+    </ol>
+
+    <h3 class="sub-head map-head">Competitions</h3>
+    <ol class="map">
+      <li class="stop elite">
+        <div class="node"><img src="img/fx/triangular-flag.webp" alt=""></div>
+        <div class="panel">
+          <p class="node-type">CTF</p>
+          <h3>K17 CTF 2026</h3>
+          <p class="org">UNSW Security Society · Team SlayTheFlagII</p>
+          <p class="meta">Sep 2026</p>
+          <ul>
+            <li>Placed <strong>152nd of 682 teams</strong> (top 23%) with Team SlayTheFlagII in K17 CTF, an international jeopardy-style capture-the-flag run by the UNSW Security Society.</li>
+            <li>Solved challenges across cryptography, digital forensics, reverse engineering, web exploitation, OSINT and miscellaneous categories.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="stop elite">
+        <div class="node"><img class="rounded" src="img/logo-iso.webp" alt="Information Security Organization, DLSU logo"></div>
+        <div class="panel">
+          <p class="node-type">CTF</p>
+          <h3>ISO 2026 CTF: Uncharted Knowledge</h3>
+          <p class="org">Information Security Organization, DLSU</p>
+          <p class="meta">2026</p>
+          <ul>
+            <li>Placed <strong>2nd</strong> in the ISO 2026 CTF, hosted by DLSU's Information Security Organization.</li>
+            <li>Solved challenges across cryptography, OS and Linux, digital forensics, web, metadata analysis, OSINT and steganography.</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Projects: a plain list. Media on the left, write-up on the right. -->
+  <section id="projects" class="sec sec-wide">
+    <header class="sec-head"><p class="act">Elite Fights</p><h2 tabindex="-1">Projects</h2></header>
+    <div class="shelf-filters" role="group" aria-label="Filter projects"><button type="button" data-f="all" aria-pressed="true">All</button><button type="button" data-f="grc" aria-pressed="false">GRC</button><button type="button" data-f="security" aria-pressed="false">Security</button><button type="button" data-f="ai" aria-pressed="false">AI</button><button type="button" data-f="dev" aria-pressed="false">Dev</button><button type="button" data-f="networking" aria-pressed="false">Networking</button></div>
+    <div class="proj-list shelf">
+
+      <article class="prow" data-tags="grc security">
+        <div class="prow-media">
+          <figure class="heat" aria-label="Illustration of a 5 by 5 likelihood and impact risk matrix">
+            <div class="heat-grid">
+              <i class="m"></i><i class="h"></i><i class="h"></i><i class="c"></i><i class="c"></i>
+              <i class="l"></i><i class="m"></i><i class="h"></i><i class="h"></i><i class="c"></i>
+              <i class="l"></i><i class="m"></i><i class="m"></i><i class="h"></i><i class="h"></i>
+              <i class="l"></i><i class="l"></i><i class="m"></i><i class="m"></i><i class="h"></i>
+              <i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="m"></i>
+            </div>
+            <figcaption>Likelihood × Impact, 5×5</figcaption>
+          </figure>
+        </div>
+        <div class="prow-body">
+          <p class="prow-kicker">GRC · Python · In progress</p>
+          <h3>AuditBridge</h3>
+          <p class="prow-sum">A compliance mapping and risk register engine.</p>
+          <ul>
+            <li>Collects findings from CIS configuration checks, Nmap service scans and read-only web checks in a lab, with severity and evidence.</li>
+            <li>Maps each finding to ISO/IEC 27001, NIST SP 800-53, PCI DSS, SOC 2, OWASP and CIS controls, with the reasoning written down.</li>
+            <li>Scores risk on an explainable 5×5 scale and exports risk registers (CSV/XLSX), compliance report cards and an HTML heat map.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="security dev">
+        <div class="prow-media"><img src="img/proj-scanner-results.webp" alt="Galicious Secret Scanner report showing 9 critical, 6 high, 4 medium and 2 low findings" loading="lazy"></div>
+        <div class="prow-body">
+          <p class="prow-kicker">Team project · Python · Flask · SARIF</p>
+          <h3>Galicious Secret Scanner</h3>
+          <p class="prow-sum">Finds leaked credentials in folders and GitHub repos, including ones deleted from the latest commit but still in Git history.</p>
+          <ul>
+            <li>Regex signatures plus a Shannon-entropy check, with an opt-in validity test against AWS STS, GitHub, Stripe and Slack. Every output is redacted.</li>
+            <li>Tested against VulnRepo, a purpose-built repo with history-only secrets and decoys that must not be flagged.</li>
+          </ul>
+          <p class="prow-links">
+            <a href="https://github.com/theoithinkk/GaliciousSecretScanner" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a>
+            <a href="https://youtu.be/wDCP1lN0BF0" target="_blank" rel="noopener">Video demo <i class="ii ii-ext" aria-hidden="true"></i></a>
+            <a href="https://github.com/theoithinkk/VulnRepo" target="_blank" rel="noopener">VulnRepo <i class="ii ii-ext" aria-hidden="true"></i></a>
+          </p>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="security">
+        <div class="prow-media">
+          <ol class="chain" aria-label="Attack chain">
+            <li>Exposed <b>.git</b> repo</li>
+            <li>Hardcoded <b>credentials</b></li>
+            <li><b>SQL injection</b></li>
+            <li>Cron <b>command injection</b></li>
+            <li>Password reuse + <b>sudo</b></li>
+            <li class="root">root#</li>
+          </ol>
+        </div>
+        <div class="prow-body">
+          <p class="prow-kicker">Team VAPT · Jul – Aug 2026 · Nmap · Nessus · Burp Suite · sqlmap</p>
+          <h3>DarkHole V2 penetration test</h3>
+          <p class="prow-sum">A black-box internal test of a Linux host and its PHP web app, under a defined scope and rules of engagement.</p>
+          <ul>
+            <li>Validated scanner output by hand, then chained five weaknesses into full root access.</li>
+            <li>Co-authored a 39-page findings report: 13 findings (2 Critical, 5 High) with CVSS 3.1 vectors and prioritized remediation.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="dev">
+        <div class="prow-media"><img src="img/proj-pablings.webp" alt="Pablings Barbershop Management System home screen" loading="lazy"></div>
+        <div class="prow-body">
+          <p class="prow-kicker">Real client · Electron · SheetJS</p>
+          <h3>Pablings Payroll</h3>
+          <p class="prow-sum">A local-first Windows payroll app built for a working barbershop.</p>
+          <ul>
+            <li>Turns the shop's weekly Google Sheet export into commissions, allowances, late deductions and net pay per employee, then exports payslips in the shop's own layout.</li>
+            <li>No cloud and no database, so employee pay data stays on the owner's machine.</li>
+          </ul>
+          <p class="prow-links"><a href="https://github.com/theoithinkk/PablingsApp" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="ai dev">
+        <div class="prow-media"><img src="img/proj-promptathon.webp" alt="Prompt-a-thon starter chat interface with an editable system prompt" loading="lazy"></div>
+        <div class="prow-body">
+          <p class="prow-kicker">Personal · Node.js · Express · Claude API</p>
+          <h3>Prompt-a-thon practice app</h3>
+          <p class="prow-sum">My own starting layout for the LSCS Prompt-a-thon, so competition time goes into the idea instead of setup.</p>
+          <ul>
+            <li>Streams Claude API replies to a plain JavaScript chat UI with a live-editable system prompt.</li>
+            <li>Mock mode runs with no API key, and keys stay in an ignored <code>.env</code> file.</li>
+          </ul>
+          <p class="prow-links"><a href="https://github.com/theoithinkk/Promptathon" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="networking dev">
+        <div class="prow-media">
+          <div class="ladder" aria-label="SIP call flow between caller and callee">
+            <span class="who">Caller</span><span class="who">Callee</span>
+            <span class="msg r">INVITE + SDP</span>
+            <span class="msg l">180 Ringing</span>
+            <span class="msg l">200 OK + SDP</span>
+            <span class="msg r">ACK</span>
+            <span class="msg both">RTP audio · RTCP SR</span>
+            <span class="msg r">BYE</span>
+          </div>
+        </div>
+        <div class="prow-body">
+          <p class="prow-kicker">Java · UDP · Networking</p>
+          <h3>VoIP over SIP/RTP</h3>
+          <p class="prow-sum">A Java voice-call client built from the protocols up.</p>
+          <ul>
+            <li>SIP signaling and SDP negotiation over UDP, RTP audio, and RTCP sender reports every 5 seconds.</li>
+            <li>File, one-way and two-way call modes, with clean teardown between calls.</li>
+          </ul>
+          <p class="prow-links"><a href="https://github.com/theoithinkk/NSCOM01-MP2-RealTimeAudioStreamingOverIP" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="ai">
+        <div class="prow-media"><img class="illus" src="img/proj-catbot.webp" alt="CatBot mascot, a green robot head" loading="lazy"></div>
+        <div class="prow-body">
+          <p class="prow-kicker">Python · Reinforcement learning</p>
+          <h3>CatBot</h3>
+          <p class="prow-sum">A tabular Q-learning bot that learns to catch cats with different movement styles on an 8×8 grid.</p>
+          <ul><li>Evaluated over 20 games against 5 graded cats plus unseen behaviors, with results written to CSV.</li></ul>
+          <p class="prow-links"><a href="https://github.com/theoithinkk/CSINTSY_CatBot" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Certifications -->
+  <section id="certifications" class="sec">
+    <header class="sec-head"><p class="act">Card Rewards</p><h2 tabindex="-1">Certifications</h2></header>
+    <div class="rewards">
+      <a class="card rare skill" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener"><span class="cost">1</span><span class="banner">ISC2 CC</span><span class="art"><img src="img/badge-isc2-cc.webp" alt="ISC2 Certified in Cybersecurity badge" loading="lazy"></span><span class="type">Skill</span><span class="desc">ISC2 <em>Certified in Cybersecurity</em>.</span><span class="verify">Verify on Credly</span></a>
+      <a class="card rare skill" href="https://www.credly.com/badges/e03933a1-c0ac-4186-a29b-f93934ee32c1" target="_blank" rel="noopener"><span class="cost">1</span><span class="banner">AWS Cloud Practitioner</span><span class="art"><img src="img/badge-aws-ccp.webp" alt="AWS Certified Cloud Practitioner badge" loading="lazy"></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em> Cloud Practitioner.</span><span class="verify">Verify on Credly</span></a>
+      <a class="card rare skill" href="https://www.credly.com/badges/d066766f-7b21-424d-b5b6-7977efddf29d" target="_blank" rel="noopener"><span class="cost">1</span><span class="banner">AWS AI Practitioner</span><span class="art"><img src="img/badge-aws-aip.webp" alt="AWS Certified AI Practitioner badge" loading="lazy"></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em> AI Practitioner.</span><span class="verify">Verify on Credly</span></a>
+    </div>
+    <p class="rewards-more"><a class="plate" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener"><span>All badges on Credly</span></a></p>
+    <h3 class="sub-head">Skill badges</h3>
+    <p class="sub-note">Course badges from IBM SkillsBuild, separate from the certifications above.</p>
+    <div class="btiles">
+      <a class="btile" href="https://www.credly.com/badges/bc15332c-565b-4d0f-bd4c-3e4d4d7f3e03" target="_blank" rel="noopener"><span class="btile-img"><img src="img/badge-ibm-grc.webp" alt="" loading="lazy"></span><span class="btile-name">GRC &amp; Data Privacy</span><span class="btile-sub">IBM SkillsBuild</span><span class="btile-link">Verify on Credly <i class="ii ii-ext" aria-hidden="true"></i></span></a>
+      <a class="btile" href="https://www.credly.com/badges/030bbdb9-d8c7-479f-898a-e5d9b198d25f" target="_blank" rel="noopener"><span class="btile-img"><img src="img/badge-ibm-vulnmgmt.webp" alt="" loading="lazy"></span><span class="btile-name">Vulnerability Management</span><span class="btile-sub">IBM SkillsBuild</span><span class="btile-link">Verify on Credly <i class="ii ii-ext" aria-hidden="true"></i></span></a>
+      <a class="btile" href="https://www.credly.com/badges/fae467bc-ce29-464f-b4ec-f1cf8ec03b5c" target="_blank" rel="noopener"><span class="btile-img"><img src="img/badge-ibm-netsec.webp" alt="" loading="lazy"></span><span class="btile-name">System &amp; Network Security</span><span class="btile-sub">IBM SkillsBuild</span><span class="btile-link">Verify on Credly <i class="ii ii-ext" aria-hidden="true"></i></span></a>
+      <a class="btile" href="https://www.credly.com/badges/ae7a7cc3-5c97-4775-8acb-aff5e24b2b8f" target="_blank" rel="noopener"><span class="btile-img"><img src="img/badge-ibm-cloudsec.webp" alt="" loading="lazy"></span><span class="btile-name">Cloud Security</span><span class="btile-sub">IBM SkillsBuild</span><span class="btile-link">Verify on Credly <i class="ii ii-ext" aria-hidden="true"></i></span></a>
+    </div>
+    <h3 class="sub-head">Working towards</h3>
+    <div class="btiles">
+      <article class="btile goal"><span class="btile-img"><img src="img/badge-secplus.webp" alt="" loading="lazy"></span><span class="btile-name">Security+</span><span class="btile-sub">CompTIA · next up</span><span class="btile-soon">Soon</span></article>
+      <article class="btile goal"><span class="btile-img"><img src="img/badge-aws-scs.webp" alt="" loading="lazy"></span><span class="btile-name">AWS Security Specialty</span><span class="btile-sub">AWS · the cloud security step</span><span class="btile-soon">Soon</span></article>
+      <article class="btile goal"><span class="btile-img"><img src="img/badge-iso27001la.webp" alt="" loading="lazy"></span><span class="btile-name">ISO 27001 Lead Auditor / Implementer</span><span class="btile-sub">PECB</span><span class="btile-soon">Soon</span></article>
+      <article class="btile goal"><span class="btile-img"><img src="img/badge-cisa.webp" alt="" loading="lazy"><img src="img/badge-crisc.webp" alt="" loading="lazy"></span><span class="btile-name">CISA / CRISC</span><span class="btile-sub">ISACA · longer term</span><span class="btile-soon">Soon</span></article>
+    </div>
+  </section>
+
+  <!-- Stack -->
+  <section id="stack" class="sec sec-wide">
+    <header class="sec-head"><p class="act">Relics</p><h2 tabindex="-1">Stack</h2></header>
+    <div class="relics">
+      <div class="relic-group">
+        <h3>GRC &amp; Privacy</h3>
+        <ul class="tiles">
+          <li><i class="ico tb" style="--src:url(img/icons/tb-certificate.svg)"></i>ISO/IEC 27001</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-list-check.svg)"></i>NIST SP 800-53</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-checklist.svg)"></i>CIS Benchmarks</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-credit-card.svg)"></i>PCI DSS</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-file-certificate.svg)"></i>SOC 2</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-user-shield.svg)"></i>RA 10173 Data Privacy Act</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-layout-grid.svg)"></i>5×5 risk scoring</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-clipboard-list.svg)"></i>Risk registers</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-affiliate.svg)"></i>Control mapping</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-file-pencil.svg)"></i>Policy &amp; SOP drafting</li>
+        </ul>
+      </div>
+      <div class="relic-group">
+        <h3>Cloud &amp; AI</h3>
+        <ul class="tiles">
+          <li><img class="logo on-dark" src="img/logos/aws-white.svg" alt=""><img class="logo on-light" src="img/logos/aws.svg" alt="">AWS core services</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-key.svg)"></i>AWS IAM</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-users.svg)"></i>Shared responsibility</li>
+          <li><i class="ico" style="--src:url(img/icons/claude.svg);--c:#D97757"></i>Claude API</li>
+          <li><i class="ico" style="--src:url(img/icons/githubactions.svg);--c:#2088FF"></i>GitHub Actions</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-file-code.svg)"></i>SARIF 2.1.0</li>
+        </ul>
+      </div>
+      <div class="relic-group">
+        <h3>Offensive Security</h3>
+        <ul class="tiles">
+          <li><i class="ico" style="--src:url(img/icons/burpsuite.svg);--c:#FF6633"></i>Burp Suite</li>
+          <li><i class="ico" style="--src:url(img/icons/kalilinux.svg);--c:#3d9bea"></i>Kali Linux</li>
+          <li><i class="ico" style="--src:url(img/icons/owasp.svg)"></i>OWASP Top 10</li>
+          <li><img class="logo" src="img/logos/nmap.png" alt="">Nmap + NSE</li>
+          <li><img class="logo xwide" src="img/logos/nessus-full.svg" alt="">Nessus</li>
+          <li><img class="logo wide" src="img/logos/sqlmap.png" alt="">sqlmap</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-world-search.svg)"></i>Nikto</li>
+          <li><i class="ico tb" style="--src:url(img/icons/tb-gauge.svg)"></i>CVSS 3.1</li>
+        </ul>
+      </div>
+      <div class="relic-group">
+        <h3>Languages</h3>
+        <ul class="tiles">
+          <li><i class="ico" style="--src:url(img/icons/python.svg);--c:#4b8bbe"></i>Python</li>
+          <li><i class="ico" style="--src:url(img/icons/javascript.svg);--c:#F7DF1E"></i>JavaScript</li>
+          <li><i class="ico" style="--src:url(img/icons/openjdk.svg)"></i>Java</li>
+          <li><i class="ico" style="--src:url(img/icons/c.svg);--c:#A8B9CC"></i>C</li>
+          <li><i class="ico" style="--src:url(img/icons/mysql.svg);--c:#4f8ec7"></i>SQL</li>
+          <li><i class="ico" style="--src:url(img/icons/php.svg);--c:#8f93d1"></i>PHP</li>
+          <li><i class="ico" style="--src:url(img/icons/rust.svg)"></i>Rust</li>
+          <li><i class="ico" style="--src:url(img/icons/html5.svg);--c:#E34F26"></i>HTML</li>
+          <li><i class="ico" style="--src:url(img/icons/css.svg);--c:#8a5cc7"></i>CSS</li>
+          <li><i class="ico" style="--src:url(img/icons/gnubash.svg);--c:#4EAA25"></i>Bash</li>
+        </ul>
+      </div>
+      <div class="relic-group">
+        <h3>Tools &amp; Frameworks</h3>
+        <ul class="tiles">
+          <li><i class="ico" style="--src:url(img/icons/linux.svg);--c:#FCC624"></i>Linux</li>
+          <li><i class="ico" style="--src:url(img/icons/git.svg);--c:#F03C2E"></i>Git</li>
+          <li><i class="ico" style="--src:url(img/icons/github.svg)"></i>GitHub</li>
+          <li><i class="ico" style="--src:url(img/icons/flask.svg);--c:#3BABC3"></i>Flask</li>
+          <li><i class="ico" style="--src:url(img/icons/nodedotjs.svg);--c:#5FA04E"></i>Node.js</li>
+          <li><i class="ico" style="--src:url(img/icons/express.svg)"></i>Express</li>
+          <li><i class="ico" style="--src:url(img/icons/electron.svg);--c:#6fb3c0"></i>Electron</li>
+          <li><i class="ico" style="--src:url(img/icons/googleappsscript.svg);--c:#4285F4"></i>Apps Script</li>
+          <li><img class="logo" src="img/logos/m365.svg" alt="">Microsoft 365</li>
+          <li><img class="logo" src="img/logos/excel.svg" alt="">Excel</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Field notes -->
+  <section id="notes" class="sec sec-wide">
+    <header class="sec-head"><p class="act">Codex</p><h2 tabindex="-1">Writeups &amp; Notes</h2></header>
+    <div class="codex">
+    <div id="writeups" class="codex-col">
+      <h3 class="sub-head">CTF solves</h3>
+      <p class="sub-note">Every square is a challenge I solved and wrote up. Hover one to see how, click to read it.</p>
+    <!-- writeups:start (generated by tools/build_writeups.py; edit the writeups, then rebuild) -->
+    <div class="solves">
+      <div class="solve-head"><p class="solve-count"><b>8</b> flags · <b>1</b> event · <b>1</b> category · <b>43</b> steps</p><ul class="solve-legend" aria-label="Highlight a category"><li><button type="button" data-cat="osint" style="--c:#4fc1a6" aria-pressed="false">OSINT <span>8</span></button></li></ul></div>
+      <div class="solve-body">
+      <div class="solve-grid">
+      <a class="solve" href="writeups/packet-capture-act-1/digital-footprint.html" style="--c:#4fc1a6" data-cat="osint" data-title="Digital Footprint" data-meta="OSINT · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Bans and deletions remove content from the live site, not from the internet." aria-label="Digital Footprint, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/forgotten-repository.html" style="--c:#4fc1a6" data-cat="osint" data-title="Forgotten Repository" data-meta="OSINT · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Deleting a secret in a new commit doesn&#x27;t remove it from git history." aria-label="Forgotten Repository, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/hidden-profile.html" style="--c:#4fc1a6" data-cat="osint" data-title="Hidden Profile" data-meta="OSINT · 5 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Deleted or hidden posts can still exist in web archives." aria-label="Hidden Profile, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/last-breadcrumb.html" style="--c:#4fc1a6" data-cat="osint" data-title="Last Breadcrumb" data-meta="OSINT · 9 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Each pivot reuses the latest clue on a site already visited (hash &gt; YouTube &gt; Mastodon &gt; paste &gt; PGP keyserver &gt; Mastodon &gt; YouTube)." aria-label="Last Breadcrumb, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/scattered-identities.html" style="--c:#4fc1a6" data-cat="osint" data-title="Scattered Identities" data-meta="OSINT · 6 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Every identity here is linked, not named." aria-label="Scattered Identities, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/silent-observer.html" style="--c:#4fc1a6" data-cat="osint" data-title="Silent Observer" data-meta="OSINT · Medium · 6 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account&#x27;s food posts) were decoys." aria-label="Silent Observer, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/treasure-hunt-time.html" style="--c:#4fc1a6" data-cat="osint" data-title="Treasure Hunt Time" data-meta="OSINT · 5 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="When the file says &quot;wrong hole&quot;, go back to the brief." aria-label="Treasure Hunt Time, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/under-construction.html" style="--c:#4fc1a6" data-cat="osint" data-title="Under Construction" data-meta="OSINT · internet history · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="The description itself is the search query." aria-label="Under Construction, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      </div>
+      <aside class="solve-info" aria-live="polite"><p class="solve-kicker">Toughest solve</p><h4>Last Breadcrumb</h4><p class="solve-meta">OSINT · 9 steps · Packet Capture CTF · Act I: The Signal</p><p>Each pivot reuses the latest clue on a site already visited (hash &gt; YouTube &gt; Mastodon &gt; paste &gt; PGP keyserver &gt; Mastodon &gt; YouTube).</p><a class="solve-read" href="writeups/packet-capture-act-1/last-breadcrumb.html">Read the writeup <i class="ii ii-go" aria-hidden="true"></i></a></aside>
+      <div class="solve-ranked"><p class="solve-kicker">Hardest solves</p><ol class="solve-list"><li><a href="writeups/packet-capture-act-1/last-breadcrumb.html" style="--c:#4fc1a6"><span class="solve-rank">1</span><span class="solve-row-title">Last Breadcrumb</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">9 steps</span></a></li><li><a href="writeups/packet-capture-act-1/scattered-identities.html" style="--c:#4fc1a6"><span class="solve-rank">2</span><span class="solve-row-title">Scattered Identities</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">6 steps</span></a></li><li><a href="writeups/packet-capture-act-1/silent-observer.html" style="--c:#4fc1a6"><span class="solve-rank">3</span><span class="solve-row-title">Silent Observer</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">6 steps</span></a></li><li><a href="writeups/packet-capture-act-1/hidden-profile.html" style="--c:#4fc1a6"><span class="solve-rank">4</span><span class="solve-row-title">Hidden Profile</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">5 steps</span></a></li><li><a href="writeups/packet-capture-act-1/treasure-hunt-time.html" style="--c:#4fc1a6"><span class="solve-rank">5</span><span class="solve-row-title">Treasure Hunt Time</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">5 steps</span></a></li></ol></div>
+      </div>
+    </div>
+    <!-- writeups:end -->
+    </div>
+    <div class="codex-col">
+      <h3 class="sub-head">Field notes</h3>
+      <p class="sub-note">Short notes on things I learned along the way. Open one to read it.</p>
+    <div class="notes">
+      <article class="note">
+        <p class="note-meta"><time datetime="2026-10">Oct 2026</time> · Secrets · Git · Cloud</p>
+        <h3>Deleting a secret doesn't un-leak it</h3>
+        <p class="note-lead">Why my secret scanner reads Git history, not just the current files.</p>
+        <details>
+          <summary>Read note</summary>
+          <p>When we built the Galicious Secret Scanner, the most important test wasn't in the latest commit. In our VulnRepo fixture, a "security cleanup" commit moved hardcoded credentials into environment variables. The working tree looked almost clean, but the AWS secret key, a GitHub token and a database password were all still one <code>git log -p</code> away.</p>
+          <p>The lesson for GRC: the control isn't "remove the secret", it's <strong>rotate it, then remove it</strong>. Removing it without rotating leaves the likelihood exactly where it was, with a false sense of closure.</p>
+          <p>In a risk register, a leaked credential that was only deleted should stay open until there's evidence it was rotated.</p>
+        </details>
+      </article>
+      <article class="note">
+        <p class="note-meta"><time datetime="2026-10">Oct 2026</time> · Control mapping</p>
+        <h3>One finding, five frameworks</h3>
+        <p class="note-lead">Mapping an exposed <code>.git</code> directory, and why the rationale matters more than the IDs.</p>
+        <details>
+          <summary>Read note</summary>
+          <p>In DarkHole V2, an exposed <code>.git</code> directory was the first step to root. Here's how that one finding maps:</p>
+          <ul>
+            <li><strong>OWASP Top 10 (2021):</strong> A05 Security Misconfiguration.</li>
+            <li><strong>CIS Controls v8:</strong> Control 4, Secure Configuration of Enterprise Assets and Software.</li>
+            <li><strong>NIST SP 800-53 Rev. 5:</strong> CM-6 Configuration Settings, CM-7 Least Functionality.</li>
+            <li><strong>ISO/IEC 27001:2022 Annex A:</strong> 8.9 Configuration management, 8.4 Access to source code.</li>
+            <li><strong>PCI DSS v4.0:</strong> Requirement 2, apply secure configurations to all system components.</li>
+          </ul>
+          <p>Matching IDs is the easy part. What makes a mapping useful to an auditor is the <strong>why</strong>: the server shipped files it never needed to serve (least functionality), and source code with credentials was reachable by anyone (access to source code). That rationale is what AuditBridge stores next to every mapping.</p>
+        </details>
+      </article>
+      <article class="note">
+        <p class="note-meta"><time datetime="2026-10">Oct 2026</time> · Risk</p>
+        <h3>5×5 risk scoring without fooling yourself</h3>
+        <p class="note-lead">The matrix is for sorting risks, not measuring them.</p>
+        <details>
+          <summary>Read note</summary>
+          <ul>
+            <li><strong>The score is ordinal.</strong> Likelihood × impact gives 1–25, but a 12 isn't "twice as risky" as a 6. Use it to rank and prioritize, not to do math.</li>
+            <li><strong>Define the levels before you score.</strong> Write down what each likelihood and impact level means for this organization, or two people will score the same risk differently.</li>
+            <li><strong>Score inherent and residual separately.</strong> The gap between them is the value of the control, so record the evidence that the control actually works.</li>
+            <li><strong>Explain every score.</strong> AuditBridge keeps a one-line rationale next to each rating, so the register still makes sense months later.</li>
+          </ul>
+        </details>
+      </article>
+      <article class="note">
+        <p class="note-meta"><time datetime="2026-10">Oct 2026</time> · Banking · In progress</p>
+        <h3>Reading BSP Circular 1140 as a student</h3>
+        <p class="note-lead">Notes from preparing for IT risk roles at Philippine banks.</p>
+        <details>
+          <summary>Read note</summary>
+          <p>BSP Circular No. 1140 (2019) sets the Bangko Sentral's expectations for how supervised financial institutions manage IT risk. I'm reading it area by area:</p>
+          <ul>
+            <li>IT governance, with oversight from the board and senior management</li>
+            <li>The IT risk management process: identify, measure, control, monitor</li>
+            <li>Information security</li>
+            <li>IT operations, projects and outsourcing to third parties</li>
+          </ul>
+          <p>What stands out so far: expectations scale with how complex an institution's IT is, and accountability sits with the board, not only the IT team. These notes are a work in progress, so read the circular itself for anything you rely on.</p>
+        </details>
+      </article>
+    </div>
+    </div>
+    </div>
+  </section>
+  <!-- Contact -->
+  <section id="contact" class="sec">
+    <header class="sec-head"><p class="act">The Boss</p><h2 tabindex="-1">Contact</h2></header>
+    <div class="panel contact">
+      <p>Open to <strong>GRC</strong>, information security and <strong>cloud security</strong> internships. Based in Las Piñas City, Philippines.</p>
+      <div class="contact-links">
+        <a class="plate gold" href="files/Theodore-Garcia-CV.pdf" download data-file><span>Download CV</span></a>
+        <a class="plate gold" href="files/Theodore-Garcia-Resume.pdf" download data-file><span>Download Résumé</span></a>
+      </div>
+      <div class="contact-links socials">
+        <a class="soc" href="mailto:garciatheodoreiii715@gmail.com" aria-label="Email" data-tip="Email" style="--b:#EA4335;--g:#EA4335"><i class="ic" style="--src:url(img/icons/si-gmail.svg)"></i></a>
+        <a class="soc" href="https://www.linkedin.com/in/theodore-garcia-179b24333/" target="_blank" rel="noopener" aria-label="LinkedIn" data-tip="LinkedIn" style="--b:#0A66C2;--g:#0A66C2"><i class="ic" style="--src:url(img/icons/si-linkedin.svg)"></i></a>
+        <a class="soc" href="https://github.com/theoithinkk" target="_blank" rel="noopener" aria-label="GitHub" data-tip="GitHub" style="--b:#24292F;--g:#24292F"><i class="ic" style="--src:url(img/icons/si-github.svg)"></i></a>
+        <a class="soc" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener" aria-label="Credly" data-tip="Credly" style="--b:#FF6B00;--g:#FF6B00"><i class="ic" style="--src:url(img/icons/si-credly.svg)"></i></a>
+        <a class="soc" href="https://www.facebook.com/theodore.rodolfo/" target="_blank" rel="noopener" aria-label="Facebook" data-tip="Facebook" style="--b:#0866FF;--g:#0866FF"><i class="ic" style="--src:url(img/icons/si-facebook.svg)"></i></a>
+        <a class="soc" href="https://www.instagram.com/theoithink/" target="_blank" rel="noopener" aria-label="Instagram, @theoithink" data-tip="@theoithink" style="--b:radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);--g:#d6249f"><i class="ic" style="--src:url(img/icons/si-instagram.svg)"></i></a>
+        <!-- Discord has no public profile URL by username, so this copies it instead -->
+        <button class="soc" type="button" data-copy="cianai" aria-label="Copy Discord username cianai" data-tip="Discord: cianai" style="--b:#5865F2;--g:#5865F2"><i class="ic" style="--src:url(img/icons/si-discord.svg)"></i></button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>&copy; 2026 Theodore Garcia · <a href="privacy.html">Privacy &amp; security</a> · <a href=".well-known/security.txt">security.txt</a></p>
+  <p>Fan-made design inspired by Slay the Spire. Not affiliated with Mega Crit.</p>
+  <p>Sound effects by Kenney (CC0). Music: "The Old Tower Inn" by RandomMind (CC0). Icons: Simple Icons (CC0), Tabler Icons (MIT), Microsoft Fluent Emoji (MIT). Map and header icons are original, drawn for this site. Badges and logos belong to their owners.</p>
+</footer>
+
+<button class="plate arrow proceed" type="button" id="proceed"><span>Proceed</span></button>
+</body>
+</html>

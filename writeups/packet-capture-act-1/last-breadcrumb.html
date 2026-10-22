@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Last Breadcrumb (OSINT writeup) | Theodore Garcia</title>
+<meta name="description" content="Each pivot reuses the latest clue on a site already visited (hash &gt; YouTube &gt; Mastodon &gt; paste &gt; PGP keyserver &gt; Mastodon &gt; YouTube). The decoys (thisIsNotTheFlag, 0ld_k3ys) are labelled as wrong keys by the story itself, and the flag is split, so both halves must be joined before submitting.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261021d">
+<script src="../../prefs.js?v=20261021d" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>9 steps · 4 min read</span></p>
+    <h1>Last Breadcrumb</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Each pivot reuses the latest clue on a site already visited (hash &gt; YouTube &gt; Mastodon &gt; paste &gt; PGP keyserver &gt; Mastodon &gt; YouTube). The decoys (thisIsNotTheFlag, 0ld_k3ys) are labelled as wrong keys by the story itself, and the flag is split, so both halves must be joined before submitting.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> MALgenta.zip from MediaFire.</h2>
+      <ul><li><b>What I found:</b> a fake "malware sample" (a harmless Linux binary and a matching .py beacon), three identical magenta/black checkerboard PNGs, and docs/signature.txt = F5C4612C8848B517DBE7FFE64D7D300D33AC69B3.</li><li class="think"><b>Thinking:</b> the binary and C2 domain went nowhere (the domain was never registered), so the only unique, searchable artifact was the 40-character "signature". The brief says to "keep abusing the breadcrumb at every place you've been", so the hash itself is the breadcrumb to search everywhere.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/01_zip_contents.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/01_zip_contents.webp" alt="Zip contents and signature" width="880" height="280" loading="lazy"></a><figcaption>Zip contents and signature</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the hash on YouTube.</h2>
+      <ul><li><b>What I did:</b> searched the full hash on YouTube.</li><li class="result"><b>Result:</b> a channel named "PacketCapture" ("A mastodon can only handle 30.") with one Short titled with the hash. The clip is from Final Destination and the description is "magentatexture".</li><li class="think"><b>Thinking:</b> "magentatexture" names the checkerboard (the classic missing-texture image), and the channel line says Mastodon usernames max out at 30 characters. So the next stop is the first 30 characters of the hash on Mastodon. The Final Destination clip later turned out to mark this Short as the "final destination" in Intel 3.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/02_youtube_hash_search.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/02_youtube_hash_search.webp" alt="YouTube search for the hash" width="1600" height="309" loading="lazy"></a><figcaption>YouTube search for the hash</figcaption></figure>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/03_short_final_destination.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/03_short_final_destination.webp" alt="The Final Destination Short and its &quot;magentatexture&quot; description" width="940" height="1035" loading="lazy"></a><figcaption>The Final Destination Short and its &quot;magentatexture&quot; description</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the first 30 characters on Mastodon.</h2>
+      <ul><li><b>What I did:</b> looked up @F5C4612C8848B517DBE7FFE64D7D30 on mastodon.social.</li><li class="result"><b>Result:</b> avatar = the magenta/black checkerboard, bio = "Missing second key", one post "Get owned" linking a Pastebin paste.</li><li class="think"><b>Thinking:</b> "second key" suggested something key-shaped was still to be found.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/04_mastodon_first30.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/04_mastodon_first30.webp" alt="Mastodon account with the first 30 characters" width="1600" height="1033" loading="lazy"></a><figcaption>Mastodon account with the first 30 characters</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> the Pastebin paste (the first crossroad).</h2>
+      <ul><li><b>What I found:</b> a table "Key Name | Email" of 65 colours, each with an address @mastodon.me, plus a decoy row <span class="flag" tabindex="0">PacketCapture{thisIsNotTheFlag}</span> and a few odd names (blueflair, stillwhite, coraltjsipw...).</li><li class="dead"><b>Dead ends:</b> I spent a long time treating the odd names as usernames on other sites; they led only to real, unrelated people (one is a Roblox YouTuber), which the rules say not to pursue.</li><li class="think"><b>Thinking that worked:</b> "Key Name" + email is exactly how a PGP keyring lists keys, the Mastodon bio says "Missing second key", and Magenta is the one obvious colour missing from the list. So the missing key is probably a real PGP key published under that email domain.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/05_pastebin_keyring.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/05_pastebin_keyring.webp" alt="The paste (raw view)" width="1584" height="1400" loading="lazy"></a><figcaption>The paste (raw view)</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Pivot:</b> the PGP keyserver.</h2>
+      <ul><li><b>What I did:</b> searched keyserver.ubuntu.com for "mastodon.me".</li><li class="result"><b>Result:</b> exactly one key, "M4g3NtaTxtre &lt;magenta@mastodon.me&gt;", created 2026-07-30 (the same week as the zip).</li><li class="think"><b>Thinking:</b> M4g3NtaTxtre is leetspeak for "MagentaTexture", so this is the second sibling. Following the brief again, the new name is the next breadcrumb to try on every site already visited.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/06_keyserver_magenta_key.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/06_keyserver_magenta_key.webp" alt="Keyserver search result" width="1600" height="404" loading="lazy"></a><figcaption>Keyserver search result</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-6">
+      <h2><span class="wu-n">06</span><b>Pivot:</b> M4g3NtaTxtre on Mastodon (the real crossroad from Intel 1).</h2>
+      <ul><li class="result"><b>Result:</b> an account made the same day, with display name "irCgPekP6sg", bio "Just swapped to a new key", and three links (a public video about the error texture, a r/MissingTexture link, and a CreepyLink short URL).</li><li class="think"><b>Thinking:</b> Intel 1 says the crossroad has one path to the sibling and one to a "wrong key". The display name is 11 characters in YouTube's video-ID alphabet, so it's a path to try. The short URL is the other path.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/07_mastodon_m4g3ntatxtre_crossroad.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/07_mastodon_m4g3ntatxtre_crossroad.webp" alt="The crossroad account" width="1600" height="1033" loading="lazy"></a><figcaption>The crossroad account</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-7">
+      <h2><span class="wu-n">07</span>Path A, the wrong key.</h2>
+      <ul><li><b>What I did:</b> read the CreepyLink redirect without opening it. It pointed to a MediaFire image, onionfromdinoera.jpg (a magenta onion). stegseek confirmed hidden steghide data, and a dictionary attack recovered the passphrase "missing". The payload linked to a file named <span class="flag" tabindex="0">PacketCapture{0ld_k3ys_n0_W0rr1es}</span>.asc.</li><li class="result"><b>Result:</b> that file is the private half of the M4g3NtaTxtre PGP key, and its name was rejected as a flag.</li><li class="think"><b>Thinking:</b> "old keys" plus "Just swapped to a new key" marks this branch as the decoy "wrong key".</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/08a_onion_image.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/08a_onion_image.webp" alt="onionfromdinoera.jpg" width="1000" height="1000" loading="lazy"></a><figcaption>onionfromdinoera.jpg</figcaption></figure>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/08b_stegseek_wrong_key.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/08b_stegseek_wrong_key.webp" alt="stegseek output" width="1020" height="306" loading="lazy"></a><figcaption>stegseek output</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-8">
+      <h2><span class="wu-n">08</span>Path B, the sibling.</h2>
+      <ul><li><b>What I did:</b> opened youtube.com/watch?v=irCgPekP6sg.</li><li class="result"><b>Result:</b> an unlisted video, "Hansel and Grettel", by @MagentaHideout. It is a magenta/black checkerboard (the "world of two colors" from Intel 3). Its description is mofsj7hk44wtsh762nv46lt3bnprcmttbaqxknux66rnaddmyd} and "you found the witch house... there's no house, only address".</li><li class="think"><b>Thinking:</b> the closing brace means this is the back half of the flag. The front half has to come from the other sibling.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/last-breadcrumb/09_hansel_grettel_video.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/last-breadcrumb/09_hansel_grettel_video.webp" alt="The Hansel and Grettel video" width="940" height="1035" loading="lazy"></a><figcaption>The Hansel and Grettel video</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-9">
+      <h2><span class="wu-n">09</span>Reuniting the siblings.</h2>
+      <ul><li class="think"><b>Thinking:</b> Intel 3 says the other half "is found at the final destination", which is the Final Destination Short from step 2 (screenshot 03). Intel 2 and 4 say the "house" is back on the original breadcrumb trail. The only text that Short carries besides the hash is its description, "magentatexture".</li><li class="result"><b>Result:</b> PacketCapture{ + magentatexture + mofsj7hk44wtsh762nv46lt3bnprcmttbaqxknux66rnaddmyd} was accepted.</li><li><b>Note:</b> I had tried "magentatexture" on its own early on (rejected) and the tail on its own (rejected). Neither half works alone, which is the whole point of "reunite the two siblings".</li></ul>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="hidden-profile.html"><small>Previous</small>Hidden Profile</a><a class="next" href="scattered-identities.html"><small>Next</small>Scattered Identities</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
+      <dt>Category</dt><dd>OSINT</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>yt-dlp</li><li>Mastodon public API</li><li>Ubuntu PGP keyserver</li><li>gpg</li><li>steghide/stegseek</li><li>Python</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{magentatexturemofsj7hk44wtsh762nv46lt3bnprcmttbaqxknux66rnaddmyd}</span><small>Tap, hover or Tab to reveal</small></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>MALgenta.zip from MediaFire</span></a></li><li><a href="#step-2"><b>2</b><span>Hash on YouTube</span></a></li><li><a href="#step-3"><b>3</b><span>First 30 characters on Mastodon</span></a></li><li><a href="#step-4"><b>4</b><span>Pastebin paste</span></a></li><li><a href="#step-5"><b>5</b><span>PGP keyserver</span></a></li><li><a href="#step-6"><b>6</b><span>M4g3NtaTxtre on Mastodon</span></a></li><li><a href="#step-7"><b>7</b><span>Path A, the wrong key</span></a></li><li><a href="#step-8"><b>8</b><span>Path B, the sibling</span></a></li><li><a href="#step-9"><b>9</b><span>Reuniting the siblings</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261021d" defer></script>
+</body>
+</html>

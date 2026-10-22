@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Digital Footprint (OSINT writeup) | Theodore Garcia</title>
+<meta name="description" content="Bans and deletions remove content from the live site, not from the internet. Archives keep it, and following the people instead of the place shows where a community moved.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261021d">
+<script src="../../prefs.js?v=20261021d" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>4 steps · 2 min read</span></p>
+    <h1>Digital Footprint</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Bans and deletions remove content from the live site, not from the internet. Archives keep it, and following the people instead of the place shows where a community moved.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> the subreddit r/CogitantStray.</h2>
+      <ul><li><b>What I found:</b> the subreddit is banned, so Reddit shows nothing.</li><li class="think"><b>Thinking:</b> a ban hides content from the live site but doesn't erase it. Third-party archives such as Arctic Shift keep a copy of every post and comment as it was made, so the "deleted" community is still readable there.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the archive of r/CogitantStray.</h2>
+      <ul><li><b>What I did:</b> pulled all of its posts and comments from Arctic Shift and searched them for "PacketCapture{".</li><li class="result"><b>Result:</b> no flag inside the banned subreddit itself, but a full list of who was active (YogutoN, the game's dev, opened the sub on 2026-03-13).</li><li class="think"><b>Thinking:</b> the content wasn't there, but the archive gives me the people. When a community is banned, its members usually regroup somewhere else, so the people are the trail, not the subreddit.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/digital-footprint/01_banned_sub_archive.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/digital-footprint/01_banned_sub_archive.webp" alt="Archived r/CogitantStray" width="1584" height="1800" loading="lazy"></a><figcaption>Archived r/CogitantStray</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the authors, and where they moved.</h2>
+      <ul><li><b>What I did:</b> listed every author from the archive and looked up which other subreddits each of them posts in.</li><li class="result"><b>Result:</b> the same names (YogutoN, nommerGod, pin-needles, Wasaboomm19...) reappear in r/CogitantStrayOfiicial, a misspelled "official" migration sub. A dev announcement there by YogutoN credits "Axusismynameom" as part of the dev team.</li><li class="think"><b>Thinking:</b> overlap between several members is the signal that this is the new home. The announcement turns one username into a named insider, which makes that account worth following on its own.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/digital-footprint/02_migration_sub_archive.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/digital-footprint/02_migration_sub_archive.webp" alt="Migration sub r/CogitantStrayOfiicial" width="1584" height="1800" loading="lazy"></a><figcaption>Migration sub r/CogitantStrayOfiicial</figcaption></figure>
+      <figure><a href="../img/packet-capture-act-1/digital-footprint/02b_dev_announcement_axus.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/digital-footprint/02b_dev_announcement_axus.webp" alt="Dev announcement naming Axusismynameom" width="1584" height="1055" loading="lazy"></a><figcaption>Dev announcement naming Axusismynameom</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> u/Axusismynameom's other posts.</h2>
+      <ul><li><b>What I did:</b> searched the archive for that author's posts and grepped for "PacketCapture{".</li><li class="result"><b>Result:</b> in r/PaperDreams, a post titled with the flag (2026-07-30), next to two "I Dream Of A Pallid World" posts.</li><li class="think"><b>Thinking:</b> the flag text itself ("even if I disappear, the world remembers") confirms the intended lesson.</li></ul>
+      <figure><a href="../img/packet-capture-act-1/digital-footprint/03_flag_post_archive.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/digital-footprint/03_flag_post_archive.webp" alt="Flag post by u/Axusismynameom in r/PaperDreams" width="1584" height="1800" loading="lazy"></a><figcaption>Flag post by u/Axusismynameom in r/PaperDreams</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Note</h2><p>live Reddit pages block automated browsers (reCAPTCHA / network block), so all screenshots come from the Arctic Shift archive, which is also the tool that solved the challenge.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><span></span><a class="next" href="forgotten-repository.html"><small>Next</small>Forgotten Repository</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
+      <dt>Category</dt><dd>OSINT</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>Arctic Shift Reddit archive</li><li>Python</li><li>grep</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{3Ven_1f_i_D1s4ppe4r_tH3_W0rld_r3Memb3rs}</span><small>Tap, hover or Tab to reveal</small></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Subreddit r/CogitantStray</span></a></li><li><a href="#step-2"><b>2</b><span>Archive of r/CogitantStray</span></a></li><li><a href="#step-3"><b>3</b><span>Authors, and where they moved</span></a></li><li><a href="#step-4"><b>4</b><span>u/Axusismynameom&#x27;s other posts</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261021d" defer></script>
+</body>
+</html>
