@@ -35,15 +35,17 @@ from PIL import Image
 
 SITE = Path(__file__).resolve().parent.parent
 OUT = SITE / "writeups"
-VERSION = "20261029a"   # cache tag for style.css / prefs.js on the generated pages
+VERSION = "20261029e"   # cache tag for style.css / prefs.js on the generated pages
 MAX_IMG_W = 1600
 CATEGORY_COLORS = {"osint": "#4fc1a6", "crypto": "#a27fe0", "forensics": "#5aa7dc", "web": "#e8b84a",
-                   "pwn": "#e0573f", "rev": "#f08a4b", "reverse engineering": "#f08a4b", "misc": "#9aa0a6"}
+                   "pwn": "#e0573f", "rev": "#f08a4b", "reverse engineering": "#f08a4b", "misc": "#9aa0a6",
+                   "web exploitation": "#e8b84a", "digital forensics": "#5aa7dc", "network forensics": "#3f7fc4",
+                   "steganography": "#d77fb3"}
 FALLBACK_COLORS = ["#d77fb3", "#7fc06a", "#c9b458", "#6fb3c9"]
 
 
 def slugify(s):
-    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+    return re.sub(r"[^a-z0-9]+", "-", s.lower().replace("'", "").replace("’", "")).strip("-")
 
 
 def git(cwd, *args):
@@ -151,6 +153,7 @@ PAGE = """<!doctype html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../style.css?v={v}">
+<link rel="stylesheet" href="../../paper.css?v={v}">
 <script src="../../prefs.js?v={v}" data-static></script>
 </head>
 <body class="wu-body">
@@ -245,10 +248,12 @@ def render_page(event_slug, event_title, w, prev, nxt):
                        tools=tools, flag=inline(w["flag"]), source=source, steps="\n".join(steps_html), callouts=callouts, nav=nav, v=VERSION)
 
 
-def build_event(src_dir, event_slug, event_title):
+def build_event(src_dir, event_slug, event_title, done_only=False):
+    """done_only: publish only challenge folders marked "(DONE)", so a draft writeup.md never goes live."""
     items = []
     repo, src_url = github_source(src_dir)
-    for d in sorted((p for p in Path(src_dir).iterdir() if (p / "writeup.md").is_file()),
+    for d in sorted((p for p in Path(src_dir).iterdir() if (p / "writeup.md").is_file()
+                     and (not done_only or p.name.upper().startswith("(DONE)"))),
                     key=lambda p: re.sub(r"^\(.*?\)\s*", "", p.name)):
         head, steps, callouts = parse((d / "writeup.md").read_text(encoding="utf-8"))
         cat_raw = head.get("category", "Misc")
@@ -347,13 +352,17 @@ def render_index_block(manifest):
 def main():
     if sys.argv[1] == "--all":
         events = json.loads((SITE / "tools" / "writeup_events.json").read_text(encoding="utf-8"))
-        jobs = [(Path(sys.argv[2]) / ev["path"], ev["slug"], ev["title"]) for ev in events]
+        jobs = [(Path(sys.argv[2]) / ev["path"], ev["slug"], ev["title"], ev.get("done_only", True)) for ev in events]
     else:
-        jobs = [(Path(sys.argv[1]), sys.argv[2], sys.argv[3])]
+        jobs = [(Path(sys.argv[1]), sys.argv[2], sys.argv[3], False)]
     mf = OUT / "manifest.json"
     manifest = json.loads(mf.read_text(encoding="utf-8")) if mf.exists() else {}
-    for src, event_slug, event_title in jobs:
-        repo, items = build_event(src, event_slug, event_title)
+    for src, event_slug, event_title, done_only in jobs:
+        repo, items = build_event(src, event_slug, event_title, done_only)
+        if not items and manifest.get(event_slug, {}).get("items"):
+            # e.g. the checkout doesn't have this act's writeups yet: keep what's published.
+            print(f"kept {event_slug}: no finished writeups found in {src}")
+            continue
         manifest[event_slug] = {"title": event_title, "repo": repo, "items": items}
         print(f"built {len(items)} writeups for {event_slug}")
     mf.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")

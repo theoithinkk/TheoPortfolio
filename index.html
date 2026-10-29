@@ -27,10 +27,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261029d">
+<link rel="stylesheet" href="style.css?v=20261029h">
+<link rel="stylesheet" href="paper.css?v=20261029h">
 <!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
-<script src="prefs.js?v=20261029d"></script>
-<script src="main.js?v=20261029d" defer></script>
+<script src="prefs.js?v=20261029h"></script>
+<script src="main.js?v=20261029h" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#education">Skip to content</a>
@@ -109,14 +110,14 @@
     <p class="map-sub">Pick a node to travel there.</p>
     <div class="map-area">
       <svg class="map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points=""/></svg>
-      <a class="mnode boss" href="#contact"><i class="ic" style="--src:url(img/map/boss.svg)"></i><span>Boss · Contact</span></a>
-        <a class="mnode" href="#notes"><i class="ic" style="--src:url(img/map/notes.svg)"></i><span>Rest · Writeups &amp; Notes</span></a>
-        <a class="mnode" href="#stack"><i class="ic" style="--src:url(img/map/stack.svg)"></i><span>Shop · Stack</span></a>
-        <a class="mnode" href="#certifications"><i class="ic" style="--src:url(img/map/certifications.svg)"></i><span>Treasure · Certs</span></a>
-        <a class="mnode" href="#projects"><i class="ic" style="--src:url(img/map/projects.svg)"></i><span>Elite · Projects</span></a>
-        <a class="mnode" href="#experience"><i class="ic" style="--src:url(img/map/experience.svg)"></i><span>Event · Experience</span></a>
-        <a class="mnode" href="#education"><i class="ic" style="--src:url(img/map/education.svg)"></i><span>Education</span></a>
-        <a class="mnode" href="#top"><i class="ic" style="--src:url(img/map/start.svg)"></i><span>Start</span></a>
+      <a class="mnode boss" href="#contact"><img class="mapic" src="img/paper/map-boss.svg" alt=""><span>Boss · Contact</span></a>
+        <a class="mnode" href="#notes"><img class="mapic" src="img/paper/map-rest.svg" alt=""><span>Rest · Writeups &amp; Notes</span></a>
+        <a class="mnode" href="#stack"><img class="mapic" src="img/paper/map-shop.svg" alt=""><span>Shop · Stack</span></a>
+        <a class="mnode" href="#certifications"><img class="mapic" src="img/paper/map-treasure.svg" alt=""><span>Treasure · Certs</span></a>
+        <a class="mnode" href="#projects"><img class="mapic" src="img/paper/map-elite.svg" alt=""><span>Elite · Projects</span></a>
+        <a class="mnode" href="#experience"><img class="mapic" src="img/paper/map-event.svg" alt=""><span>Event · Experience</span></a>
+        <a class="mnode" href="#education"><img class="mapic" src="img/paper/map-education.svg" alt=""><span>Education</span></a>
+        <a class="mnode" href="#top"><img class="mapic" src="img/paper/map-start.svg" alt=""><span>Start</span></a>
     </div>
     <!-- Ink filter: slightly wobbles the map icons so they look hand-stamped, like the StS map -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -145,7 +146,7 @@
         <a class="floater" href="#education" aria-label="Dean's Lister, terms 1 to 6. Go to Education"><span class="token"><img src="img/logo-dlsu.svg" alt=""></span><span class="token-label">Dean's Lister</span><article class="card rare power" aria-hidden="true"><span class="cost">1</span><span class="banner">Dean's Lister</span><span class="art"><img src="img/logo-dlsu.svg" alt=""></span><span class="type">Power</span><span class="desc">Terms <em>1–6</em>, every term to date.</span></article></a>
         <a class="floater" href="#certifications" aria-label="ISC2 Certified in Cybersecurity. Go to Certifications"><span class="token halo"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="token-label">ISC2 CC</span><article class="card rare skill" aria-hidden="true"><span class="cost">1</span><span class="banner">ISC2 CC</span><span class="art"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="type">Skill</span><span class="desc"><em>Certified</em> in Cybersecurity.</span></article></a>
         <a class="floater" href="#certifications" aria-label="AWS Certified Cloud Practitioner. Go to Certifications"><span class="token"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="token-label">AWS Cloud Practitioner</span><article class="card uncommon skill" aria-hidden="true"><span class="cost">1</span><span class="banner">AWS Cloud Practitioner</span><span class="art"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em>.</span></article></a>
-        <a class="floater" href="#experience" aria-label="2nd place, ISO CTF 2026. Go to Experience"><span class="token"><img src="img/logo-iso-cut.webp" alt="Information Security Organization, DLSU logo"></span><span class="token-label">ISO CTF · 2nd</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">ISO CTF 2026</span><span class="art"><img src="img/logo-iso-cut.webp" alt="Information Security Organization, DLSU logo"><span class="chip">2nd</span></span><span class="type">Attack</span><span class="desc"><em>2nd Place</em>, Uncharted Knowledge CTF.</span></article></a>
+        <a class="floater" href="#experience" aria-label="2nd place, ISO CTF 2026. Go to Experience"><span class="token"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"></span><span class="token-label">ISO CTF · 2nd</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">ISO CTF 2026</span><span class="art"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"><span class="chip">2nd</span></span><span class="type">Attack</span><span class="desc"><em>2nd Place</em>, Uncharted Knowledge CTF.</span></article></a>
         <a class="floater target" href="#certifications" aria-label="Coming soon: CompTIA Security+. Go to Certifications"><span class="token"><img src="img/badge-secplus.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">Security+ · soon</span><article class="card common skill target" aria-hidden="true"><span class="cost">?</span><span class="banner">Security+</span><span class="art"><img src="img/badge-secplus.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc">CompTIA <em>Security+</em>, next up.</span></article></a>
         <a class="floater target" href="#certifications" aria-label="Coming soon: ISO 27001 Lead Auditor or Implementer. Go to Certifications"><span class="token"><img src="img/badge-iso27001la.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">ISO 27001 · soon</span><article class="card common power target" aria-hidden="true"><span class="cost">?</span><span class="banner">ISO 27001 LA / LI</span><span class="art"><img src="img/badge-iso27001la.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc"><em>Lead Auditor</em> or Implementer.</span></article></a>
         <a class="floater" href="#experience" aria-label="Associate VP for Academics, La Salle Computer Society. Go to Experience"><span class="token halo"><img src="img/logo-lscs.webp" alt=""></span><span class="token-label">LSCS</span><article class="card uncommon power" aria-hidden="true"><span class="cost">2</span><span class="banner">LSCS</span><span class="art"><img src="img/logo-lscs.webp" alt=""></span><span class="type">Power</span><span class="desc">10+ events as <em>Associate VP</em> for Academics.</span></article></a>
@@ -253,7 +254,7 @@
         </div>
       </li>
       <li class="stop elite">
-        <div class="node"><img src="img/logo-iso-cut.webp" alt="Information Security Organization, DLSU logo"></div>
+        <div class="node"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"></div>
         <div class="panel">
           <p class="node-type">CTF</p>
           <h3>ISO 2026 CTF · 2nd place</h3>
@@ -338,7 +339,7 @@
   <!-- Projects: a plain list. Media on the left, write-up on the right. -->
   <section id="projects" class="sec sec-wide">
     <header class="sec-head"><p class="act">Elite Fights</p><h2 tabindex="-1">Projects</h2></header>
-    <div class="shelf-filters" role="group" aria-label="Filter projects"><button type="button" data-f="all" aria-pressed="true">All</button><button type="button" data-f="grc" aria-pressed="false">GRC</button><button type="button" data-f="security" aria-pressed="false">Security</button><button type="button" data-f="ai" aria-pressed="false">AI</button><button type="button" data-f="dev" aria-pressed="false">Dev</button><button type="button" data-f="networking" aria-pressed="false">Networking</button></div>
+    <div class="shelf-filters" role="group" aria-label="Filter projects"><button type="button" data-f="all" aria-pressed="true">All</button><button type="button" data-f="grc" aria-pressed="false">GRC</button><button type="button" data-f="security" aria-pressed="false">Security</button><button type="button" data-f="ai" aria-pressed="false">AI</button><button type="button" data-f="dev" aria-pressed="false">Dev</button><button type="button" data-f="networking" aria-pressed="false">Networking</button><button type="button" data-f="automation" aria-pressed="false">Automation</button></div>
     <div class="proj-list shelf">
 
       <article class="prow" data-tags="grc security">
@@ -468,6 +469,19 @@
           <p class="prow-links"><a href="https://github.com/theoithinkk/CSINTSY_CatBot" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
         </div>
       </article>
+
+      <article class="prow" data-tags="automation dev">
+        <div class="prow-media"><img class="illus paper" src="img/paper/automation.svg" alt="Paper cut-out of a three-step process flow driven by a gear" loading="lazy"></div>
+        <div class="prow-body">
+          <p class="prow-kicker">RPA · UiPath Studio</p>
+          <h3>UiPath automation</h3>
+          <p class="prow-sum">A robotic process automation workflow built in UiPath Studio, with a recorded demo of it running.</p>
+          <p class="prow-links">
+            <a href="https://drive.google.com/file/d/18ATL5nTUGfZf4bkaZCWGSCijfH1-By7P/view" target="_blank" rel="noopener">Video demo <i class="ii ii-ext" aria-hidden="true"></i></a>
+            <a href="https://cloud.uipath.com/theoithink/studio_/designer/e0d041d4-50fe-4d56-815b-a4f6adf0838d?solutionId=a7656f72-9d4a-4e52-7c28-08df2f5f4e80" target="_blank" rel="noopener">Studio project (UiPath sign-in) <i class="ii ii-ext" aria-hidden="true"></i></a>
+          </p>
+        </div>
+      </article>
     </div>
   </section>
 
@@ -519,23 +533,23 @@
       <div class="relic-group">
         <h3>Cloud &amp; AI</h3>
         <ul class="tiles">
-          <li><img class="logo on-dark" src="img/logos/aws-white.svg" alt=""><img class="logo on-light" src="img/logos/aws.svg" alt="">AWS core services</li>
+          <li style="--c:#FF9900"><i class="ico" style="--src:url(img/logos/aws-white.svg)"></i>AWS core services</li>
           <li><i class="ico tb" style="--src:url(img/icons/tb-key.svg)"></i>AWS IAM</li>
           <li><i class="ico tb" style="--src:url(img/icons/tb-users.svg)"></i>Shared responsibility</li>
-          <li><i class="ico" style="--src:url(img/icons/claude.svg);--c:#D97757"></i>Claude API</li>
-          <li><i class="ico" style="--src:url(img/icons/githubactions.svg);--c:#2088FF"></i>GitHub Actions</li>
+          <li style="--c:#D97757"><i class="ico" style="--src:url(img/icons/claude.svg)"></i>Claude API</li>
+          <li style="--c:#2088FF"><i class="ico" style="--src:url(img/icons/githubactions.svg)"></i>GitHub Actions</li>
           <li><i class="ico tb" style="--src:url(img/icons/tb-file-code.svg)"></i>SARIF 2.1.0</li>
         </ul>
       </div>
       <div class="relic-group">
         <h3>Offensive Security</h3>
         <ul class="tiles">
-          <li><i class="ico" style="--src:url(img/icons/burpsuite.svg);--c:#FF6633"></i>Burp Suite</li>
-          <li><i class="ico" style="--src:url(img/icons/kalilinux.svg);--c:#3d9bea"></i>Kali Linux</li>
+          <li style="--c:#FF6633"><i class="ico" style="--src:url(img/icons/burpsuite.svg)"></i>Burp Suite</li>
+          <li style="--c:#3d9bea"><i class="ico" style="--src:url(img/icons/kalilinux.svg)"></i>Kali Linux</li>
           <li><i class="ico" style="--src:url(img/icons/owasp.svg)"></i>OWASP Top 10</li>
-          <li><img class="logo" src="img/logos/nmap.png" alt="">Nmap + NSE</li>
-          <li><img class="logo xwide" src="img/logos/nessus-full.svg" alt="">Nessus</li>
-          <li><img class="logo wide" src="img/logos/sqlmap.png" alt="">sqlmap</li>
+          <li style="--c:#5B9BD5"><i class="ico" style="--src:url(img/icons/tb-radar.svg)"></i>Nmap + NSE</li>
+          <li style="--c:#00A6B6"><i class="ico" style="--src:url(img/icons/tb-shield-search.svg)"></i>Nessus</li>
+          <li style="--c:#E0573F"><i class="ico" style="--src:url(img/icons/tb-database-injection.svg)"></i>sqlmap</li>
           <li><i class="ico tb" style="--src:url(img/icons/tb-world-search.svg)"></i>Nikto</li>
           <li><i class="ico tb" style="--src:url(img/icons/tb-gauge.svg)"></i>CVSS 3.1</li>
         </ul>
@@ -543,31 +557,31 @@
       <div class="relic-group">
         <h3>Languages</h3>
         <ul class="tiles">
-          <li><i class="ico" style="--src:url(img/icons/python.svg);--c:#4b8bbe"></i>Python</li>
-          <li><i class="ico" style="--src:url(img/icons/javascript.svg);--c:#F7DF1E"></i>JavaScript</li>
+          <li style="--c:#4b8bbe"><i class="ico" style="--src:url(img/icons/python.svg)"></i>Python</li>
+          <li style="--c:#F7DF1E"><i class="ico" style="--src:url(img/icons/javascript.svg)"></i>JavaScript</li>
           <li><i class="ico" style="--src:url(img/icons/openjdk.svg)"></i>Java</li>
-          <li><i class="ico" style="--src:url(img/icons/c.svg);--c:#A8B9CC"></i>C</li>
-          <li><i class="ico" style="--src:url(img/icons/mysql.svg);--c:#4f8ec7"></i>SQL</li>
-          <li><i class="ico" style="--src:url(img/icons/php.svg);--c:#8f93d1"></i>PHP</li>
+          <li style="--c:#A8B9CC"><i class="ico" style="--src:url(img/icons/c.svg)"></i>C</li>
+          <li style="--c:#4f8ec7"><i class="ico" style="--src:url(img/icons/mysql.svg)"></i>SQL</li>
+          <li style="--c:#8f93d1"><i class="ico" style="--src:url(img/icons/php.svg)"></i>PHP</li>
           <li><i class="ico" style="--src:url(img/icons/rust.svg)"></i>Rust</li>
-          <li><i class="ico" style="--src:url(img/icons/html5.svg);--c:#E34F26"></i>HTML</li>
-          <li><i class="ico" style="--src:url(img/icons/css.svg);--c:#8a5cc7"></i>CSS</li>
-          <li><i class="ico" style="--src:url(img/icons/gnubash.svg);--c:#4EAA25"></i>Bash</li>
+          <li style="--c:#E34F26"><i class="ico" style="--src:url(img/icons/html5.svg)"></i>HTML</li>
+          <li style="--c:#8a5cc7"><i class="ico" style="--src:url(img/icons/css.svg)"></i>CSS</li>
+          <li style="--c:#4EAA25"><i class="ico" style="--src:url(img/icons/gnubash.svg)"></i>Bash</li>
         </ul>
       </div>
       <div class="relic-group">
         <h3>Tools &amp; Frameworks</h3>
         <ul class="tiles">
-          <li><i class="ico" style="--src:url(img/icons/linux.svg);--c:#FCC624"></i>Linux</li>
-          <li><i class="ico" style="--src:url(img/icons/git.svg);--c:#F03C2E"></i>Git</li>
+          <li style="--c:#FCC624"><i class="ico" style="--src:url(img/icons/linux.svg)"></i>Linux</li>
+          <li style="--c:#F03C2E"><i class="ico" style="--src:url(img/icons/git.svg)"></i>Git</li>
           <li><i class="ico" style="--src:url(img/icons/github.svg)"></i>GitHub</li>
-          <li><i class="ico" style="--src:url(img/icons/flask.svg);--c:#3BABC3"></i>Flask</li>
-          <li><i class="ico" style="--src:url(img/icons/nodedotjs.svg);--c:#5FA04E"></i>Node.js</li>
+          <li style="--c:#3BABC3"><i class="ico" style="--src:url(img/icons/flask.svg)"></i>Flask</li>
+          <li style="--c:#5FA04E"><i class="ico" style="--src:url(img/icons/nodedotjs.svg)"></i>Node.js</li>
           <li><i class="ico" style="--src:url(img/icons/express.svg)"></i>Express</li>
-          <li><i class="ico" style="--src:url(img/icons/electron.svg);--c:#6fb3c0"></i>Electron</li>
-          <li><i class="ico" style="--src:url(img/icons/googleappsscript.svg);--c:#4285F4"></i>Apps Script</li>
-          <li><img class="logo" src="img/logos/m365.svg" alt="">Microsoft 365</li>
-          <li><img class="logo" src="img/logos/excel.svg" alt="">Excel</li>
+          <li style="--c:#6fb3c0"><i class="ico" style="--src:url(img/icons/electron.svg)"></i>Electron</li>
+          <li style="--c:#4285F4"><i class="ico" style="--src:url(img/icons/googleappsscript.svg)"></i>Apps Script</li>
+          <li style="--c:#EB3C00"><i class="ico" style="--src:url(img/icons/tb-microsoft.svg)"></i>Microsoft 365</li>
+          <li style="--c:#21A366"><i class="ico" style="--src:url(img/icons/tb-table.svg)"></i>Excel</li>
         </ul>
       </div>
     </div>
@@ -582,7 +596,7 @@
       <p class="sub-note">Every square is a challenge I solved and wrote up. Hover one to see how, click to read it.</p>
     <!-- writeups:start (generated by tools/build_writeups.py; edit the writeups, then rebuild) -->
     <div class="solves">
-      <div class="solve-head"><p class="solve-count"><b>8</b> flags · <b>1</b> event · <b>1</b> category · <b>43</b> steps</p><ul class="solve-legend" aria-label="Highlight a category"><li><button type="button" data-cat="osint" style="--c:#4fc1a6" aria-pressed="false">OSINT <span>8</span></button></li></ul><a class="solve-read solve-repo" href="https://github.com/theoithinkk/CTFwriteups" target="_blank" rel="noopener">All writeups on GitHub <i class="ii ii-go" aria-hidden="true"></i></a></div>
+      <div class="solve-head"><p class="solve-count"><b>16</b> flags · <b>3</b> events · <b>5</b> categories · <b>69</b> steps</p><ul class="solve-legend" aria-label="Highlight a category"><li><button type="button" data-cat="digital-forensics" style="--c:#5aa7dc" aria-pressed="false">Digital Forensics <span>4</span></button></li><li><button type="button" data-cat="network-forensics" style="--c:#3f7fc4" aria-pressed="false">Network Forensics <span>1</span></button></li><li><button type="button" data-cat="osint" style="--c:#4fc1a6" aria-pressed="false">OSINT <span>8</span></button></li><li><button type="button" data-cat="steganography" style="--c:#d77fb3" aria-pressed="false">Steganography <span>1</span></button></li><li><button type="button" data-cat="web-exploitation" style="--c:#e8b84a" aria-pressed="false">Web Exploitation <span>2</span></button></li></ul><a class="solve-read solve-repo" href="https://github.com/theoithinkk/CTFwriteups" target="_blank" rel="noopener">All writeups on GitHub <i class="ii ii-go" aria-hidden="true"></i></a></div>
       <div class="solve-body">
       <div class="solve-grid">
       <a class="solve" href="writeups/packet-capture-act-1/digital-footprint.html" style="--c:#4fc1a6" data-cat="osint" data-title="Digital Footprint" data-meta="OSINT · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Bans and deletions remove content from the live site, not from the internet." aria-label="Digital Footprint, OSINT, Packet Capture CTF · Act I: The Signal"></a>
@@ -593,14 +607,14 @@
       <a class="solve" href="writeups/packet-capture-act-1/silent-observer.html" style="--c:#4fc1a6" data-cat="osint" data-title="Silent Observer" data-meta="OSINT · Medium · 6 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account&#x27;s food posts) were decoys." aria-label="Silent Observer, OSINT, Packet Capture CTF · Act I: The Signal"></a>
       <a class="solve" href="writeups/packet-capture-act-1/treasure-hunt-time.html" style="--c:#4fc1a6" data-cat="osint" data-title="Treasure Hunt Time" data-meta="OSINT · 5 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="When the file says &quot;wrong hole&quot;, go back to the brief." aria-label="Treasure Hunt Time, OSINT, Packet Capture CTF · Act I: The Signal"></a>
       <a class="solve" href="writeups/packet-capture-act-1/under-construction.html" style="--c:#4fc1a6" data-cat="osint" data-title="Under Construction" data-meta="OSINT · internet history · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="The description itself is the search query." aria-label="Under Construction, OSINT, Packet Capture CTF · Act I: The Signal"></a>
-      <i class="solve empty" aria-hidden="true"></i>
-      <i class="solve empty" aria-hidden="true"></i>
-      <i class="solve empty" aria-hidden="true"></i>
-      <i class="solve empty" aria-hidden="true"></i>
-      <i class="solve empty" aria-hidden="true"></i>
-      <i class="solve empty" aria-hidden="true"></i>
-      <i class="solve empty" aria-hidden="true"></i>
-      <i class="solve empty" aria-hidden="true"></i>
+      <a class="solve" href="writeups/packet-capture-act-2/forgotten-router.html" style="--c:#e8b84a" data-cat="web-exploitation" data-title="Forgotten Router" data-meta="Web Exploitation · information disclosure / exposed file · 3 steps" data-event="Packet Capture CTF · Act II: The Breach" data-trick="The login/diagnostics CGI is a distraction." aria-label="Forgotten Router, Web Exploitation, Packet Capture CTF · Act II: The Breach"></a>
+      <a class="solve" href="writeups/packet-capture-act-2/internal-trouble.html" style="--c:#e8b84a" data-cat="web-exploitation" data-title="Internal Trouble" data-meta="Web Exploitation · SSRF · 4 steps" data-event="Packet Capture CTF · Act II: The Breach" data-trick="The &quot;Is Website Down?&quot; checker is an SSRF primitive." aria-label="Internal Trouble, Web Exploitation, Packet Capture CTF · Act II: The Breach"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/deleted-doesnt-mean-gone.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Deleted Doesn&#x27;t Mean Gone" data-meta="Digital Forensics · Disk / File Carving · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="deleting or wiping the file table doesn&#x27;t erase the data." aria-label="Deleted Doesn&#x27;t Mean Gone, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/hidden-within.html" style="--c:#d77fb3" data-cat="steganography" data-title="Hidden Within" data-meta="Steganography · 2 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="test each colour channel&#x27;s LSB on its own as well as interleaved." aria-label="Hidden Within, Steganography, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/last-packet.html" style="--c:#3f7fc4" data-cat="network-forensics" data-title="Last Packet" data-meta="Network Forensics · 4 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="ICMP payloads are a common covert channel." aria-label="Last Packet, Network Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/memory-echoes.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Memory Echoes" data-meta="Digital Forensics · 4 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream." aria-label="Memory Echoes, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/registry-secrets.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Registry Secrets" data-meta="Digital Forensics · Memory · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="tie the process list to network activity first." aria-label="Registry Secrets, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/usb-secrets.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="USB Secrets" data-meta="Digital Forensics · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out." aria-label="USB Secrets, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
       <i class="solve empty" aria-hidden="true"></i>
       <i class="solve empty" aria-hidden="true"></i>
       <i class="solve empty" aria-hidden="true"></i>

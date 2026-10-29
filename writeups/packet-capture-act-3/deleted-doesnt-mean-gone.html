@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Deleted Doesn&#x27;t Mean Gone (Digital Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="deleting or wiping the file table doesn&#x27;t erase the data. Signature-based carving (PK, %PDF, JPEG FFD8, etc.) finds intact files in unallocated space without any filesystem metadata.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261029e">
+<link rel="stylesheet" href="../../paper.css?v=20261029e">
+<script src="../../prefs.js?v=20261029e" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act III: The Echo</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Digital Forensics</span><span class="wu-lvl">Disk / File Carving</span><span>3 steps · 1 min read</span></p>
+    <h1>Deleted Doesn&#x27;t Mean Gone</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>deleting or wiping the file table doesn't erase the data. Signature-based carving (PK, %PDF, JPEG FFD8, etc.) finds intact files in unallocated space without any filesystem metadata.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> evidence.dd (17 KB disk image).</h2>
+      <ul><li><b>What I found:</b> almost all high-entropy noise with no filesystem structure, which is what a wiped or damaged volume looks like.</li><li class="think"><b>Thinking:</b> when the filesystem is gone, ignore it and carve by file signature.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> carving for signatures.</h2>
+      <ul><li><b>What I did:</b> searched the raw bytes for common magic numbers.</li><li class="result"><b>Result:</b> a ZIP local file header (PK\x03\x04) at offset 12800 (0x3200). Its central directory and end record (PK\x01\x02 / PK\x05\x06) are intact right after, so the archive is complete.</li><li><b>It holds one file:</b> confidential_report.txt (484 bytes, deflate).</li></ul>
+      <figure><a href="../img/packet-capture-act-3/deleted-doesnt-mean-gone/01_signature_carve.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/deleted-doesnt-mean-gone/01_signature_carve.webp" alt="Signature scan: a complete ZIP at offset 12800" width="900" height="180" loading="lazy"></a><figcaption>Signature scan: a complete ZIP at offset 12800</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span>Extraction.</h2>
+      <ul><li><b>What I did:</b> opened the ZIP from that offset with Python's zipfile and read the file.</li><li class="result"><b>Result:</b> "CLASSIFIED - INTERNAL INCIDENT REPORT, Case Ref: CIRT-2291-ECHO". The report says the Node-7 backup array was wiped at 03:14 UTC, but remnants "survived in unallocated space". The last line is FLAG: <span class="flag" tabindex="0">PacketCapture{RECOVERED_DOCUMENT}</span></li></ul>
+      <figure><a href="../img/packet-capture-act-3/deleted-doesnt-mean-gone/02_recovered_report.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/deleted-doesnt-mean-gone/02_recovered_report.webp" alt="Extracted confidential_report.txt with the flag" width="900" height="380" loading="lazy"></a><figcaption>Extracted confidential_report.txt with the flag</figcaption></figure>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><span></span><a class="next" href="hidden-within.html"><small>Next</small>Hidden Within</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act III: The Echo</dd>
+      <dt>Category</dt><dd>Digital Forensics · Disk / File Carving</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>strings</li><li>Python</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{RECOVERED_DOCUMENT}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Deleted%20Doesn%27t%20Mean%20Gone/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>evidence.dd</span></a></li><li><a href="#step-2"><b>2</b><span>Carving for signatures</span></a></li><li><a href="#step-3"><b>3</b><span>Extraction</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261029e" defer></script>
+</body>
+</html>

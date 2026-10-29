@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Last Packet (Network Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="ICMP payloads are a common covert channel. Reorder by sequence number, not timestamp. A known flag prefix exposes the first keystream bytes, and from those you can work out the key schedule.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261029e">
+<link rel="stylesheet" href="../../paper.css?v=20261029e">
+<script src="../../prefs.js?v=20261029e" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act III: The Echo</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Network Forensics</span><span>4 steps · 2 min read</span></p>
+    <h1>Last Packet</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>ICMP payloads are a common covert channel. Reorder by sequence number, not timestamp. A known flag prefix exposes the first keystream bytes, and from those you can work out the key schedule.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> capture.pcap.</h2>
+      <ul><li><b>What I found:</b> about 120 UDP packets to port 53, each with a payload of 28 'A' characters, from rotating 192.168.1.x hosts; 9 ICMP Echo Requests from 10.0.0.42 to 192.168.1.100; and one TCP packet from port 4444 to 1337 whose payload reads "KEY_SEED_ACKNOWLEDGED: Use seed to decode ICMP streams."</li><li class="think"><b>Thinking:</b> the UDP traffic is filler: the second half repeats the first half's packets in reverse order. The ICMP packets carry the data, and the TCP packet is the hint.</li></ul>
+      <figure><a href="../img/packet-capture-act-3/last-packet/01_capture_overview.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/last-packet/01_capture_overview.webp" alt="Traffic overview: UDP filler, out-of-order ICMP pings, and the KEY_SEED TCP packet" width="900" height="380" loading="lazy"></a><figcaption>Traffic overview: UDP filler, out-of-order ICMP pings, and the KEY_SEED TCP packet</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> putting the ICMP stream back in order.</h2>
+      <ul><li><b>What I found:</b> all 9 pings share ICMP ID 0x1337. Their payloads are 4 bytes each (2 in the last one), and they arrive out of order: the sequence numbers come in as 0, 3, 7, 2, 1, 6, 4, 5, 8.</li><li><b>What I did:</b> sorted them by ICMP sequence number. Sorting by arrival time gives the wrong order.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the seed.</h2>
+      <ul><li><b>What I found:</b> the "KEY_SEED" packet's TCP sequence number is 1066085402 = 0x3F8B2C1A. Its second byte, 0x8B, XORed with the first payload (db ea e8 e0) gives "Pack".</li><li class="think"><b>Thinking:</b> the key changes per packet. Known plaintext ("PacketCapture{") gives the first four keys: 0x8B, 0x78, 0x64, 0x51. They fall by about 19.5 each time, which fits key_i = ((seed - i*D) &gt;&gt; 16) &amp; 0xFF with a constant step D.</li><li><b>What I did:</b> solved for the D range that fits the known keys. That gives the full key list 0x8B 0x78 0x64 0x51 0x3E 0x2B 0x18 0x05 0xF2.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span>Decoding.</h2>
+      <ul><li class="result"><b>Result:</b> XORing each sorted payload with its key gives <span class="flag" tabindex="0">PacketCapture{gh057_h057_l457_53n}</span> (leetspeak for "ghost host last seen").</li></ul>
+      <figure><a href="../img/packet-capture-act-3/last-packet/02_icmp_decode.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/last-packet/02_icmp_decode.webp" alt="Keys from known plaintext, the key schedule, and the decoded flag" width="900" height="460" loading="lazy"></a><figcaption>Keys from known plaintext, the key schedule, and the decoded flag</figcaption></figure>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="hidden-within.html"><small>Previous</small>Hidden Within</a><a class="next" href="memory-echoes.html"><small>Next</small>Memory Echoes</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act III: The Echo</dd>
+      <dt>Category</dt><dd>Network Forensics</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{gh057_h057_l457_53n}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Last%20Packet/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>capture.pcap</span></a></li><li><a href="#step-2"><b>2</b><span>Putting the ICMP stream back in order</span></a></li><li><a href="#step-3"><b>3</b><span>Seed</span></a></li><li><a href="#step-4"><b>4</b><span>Decoding</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261029e" defer></script>
+</body>
+</html>

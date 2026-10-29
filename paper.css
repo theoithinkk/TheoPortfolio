@@ -1,0 +1,186 @@
+/* ==========================================================================
+   Paper layer: Slay the Spire, cut from paper.
+   Loaded after style.css and only changes material (surfaces, edges, shadows,
+   textures), never layout. Assets live in img/paper/.
+   - Cut edge: cream die-cut border on anything that is a "piece" (cards, logos,
+     stickers, buttons, the photo).
+   - Paper shadow: short, slightly soft, offset down-right. No glows.
+   - Torn edges only as accents: heading strips and the bottom of the photo.
+   ========================================================================== */
+:root {
+  --edge: #efe6cf;                                   /* cream cut edge */
+  --grain: url(img/paper/grain.png);
+  --lift: 1px 2px 0 #0a080570, 2px 5px 6px -2px #0a080580;          /* a piece resting on the page */
+  --lift-hi: 2px 4px 0 #0a080560, 6px 14px 14px -6px #0a080590;     /* a piece picked up */
+  --cut: drop-shadow(2.5px 0 0 var(--edge)) drop-shadow(-2.5px 0 0 var(--edge))
+         drop-shadow(0 2.5px 0 var(--edge)) drop-shadow(0 -2.5px 0 var(--edge));
+}
+:root[data-mode="light"] {
+  --edge: #fffdf7;
+  --lift: 1px 2px 0 #4a3a2040, 2px 5px 6px -2px #4a3a2050;
+  --lift-hi: 2px 4px 0 #4a3a2035, 6px 14px 14px -6px #4a3a2060;
+}
+
+/* ---------- The page: dark paper with real fibre instead of film grain ---------- */
+body::before { opacity: 1; background-image: var(--grain); background-size: 192px; }
+:root[data-mode="light"] body::before { opacity: .8; }
+
+/* ---------- Top bar: a strip of card laid across the top (no glass) ---------- */
+.topbar {
+  background: var(--grain), color-mix(in srgb, var(--bg) 94%, #000);
+  backdrop-filter: none;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--edge) 22%, transparent), 0 3px 0 #0a080540, 0 8px 12px -6px #0a080570;
+}
+.topbar::after { display: none; }
+.tb-tools { background: var(--grain), color-mix(in srgb, var(--surface) 92%, #000); }
+
+/* ---------- Sheets: panels, notes, rows, tiles ---------- */
+.panel, .note, .prow, .btile, .codex-col, .wu-callout, .wu-facts, .settings {
+  background: var(--grain), var(--surface);
+  border: 0;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--edge) 12%, transparent), var(--lift);
+}
+.prow:hover, .prow:focus-within, a.btile:hover, a.btile:focus-visible {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent), var(--lift-hi);
+}
+.btile.goal { box-shadow: 0 0 0 1px color-mix(in srgb, var(--edge) 10%, transparent), 0 0 0 1px transparent; outline: 1.5px dashed color-mix(in srgb, var(--edge) 30%, transparent); outline-offset: -6px; }
+.wu-callout.key { box-shadow: 0 0 0 1.5px color-mix(in srgb, #f5c542 60%, transparent), var(--lift); }
+/* Media windows sit under the sheet, like a cut-out window. */
+.prow-media { border: 0; border-radius: 2px; box-shadow: inset 2px 3px 0 #0007, inset 0 0 0 1px #0006; }
+/* List rows in Experience are lines on one sheet, not sheets. */
+.map.compact .stop .panel, .map.compact .stop:nth-child(even) .panel { background: none; box-shadow: none; }
+
+/* ---------- StS cards as cardstock ---------- */
+.card {
+  border-width: 3px;
+  border-radius: calc(var(--w) * .05);
+  background: var(--grain), linear-gradient(170deg, var(--body1), color-mix(in srgb, var(--body1) 55%, var(--body2)));
+  box-shadow: 0 0 0 2.5px var(--edge), var(--lift);
+}
+.card:hover, .card:focus-visible {
+  box-shadow: 0 0 0 2.5px var(--edge), 0 0 0 5px color-mix(in srgb, var(--glow) 70%, transparent), var(--lift-hi);
+}
+.card .banner {
+  background: var(--grain), color-mix(in srgb, var(--frame) 78%, #3a3a3a);
+  text-shadow: 0 1px 0 #0009;
+}
+.card .art {                        /* a window cut through the top layer: shadow falls inward */
+  background: var(--grain), color-mix(in srgb, var(--body1) 70%, #f2ead6 12%);
+  border: 0;
+  box-shadow: inset 2px 3px 0 #0008, inset 0 0 0 1.5px #0007;
+}
+.card .cost {                       /* a punched paper disc */
+  background: var(--grain), var(--accent);
+  border: 0;
+  box-shadow: 0 0 0 2px var(--edge), 1px 2px 0 #0009;
+  text-shadow: 0 1px 0 #0009;
+}
+.card .type { background: #211d18; border: 0; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--edge) 70%, transparent); }
+.card.target { border-style: dashed; }
+
+/* ---------- Logos and badges as printed stickers (real marks, never redrawn) ---------- */
+.token img, .token.halo img { filter: var(--cut) drop-shadow(2px 4px 2px #0a0805a0); }
+.token img.paper { filter: drop-shadow(2px 4px 2px #0a0805b3); }        /* paper art already has its edge */
+.logo-row img, .btile-img img { filter: var(--cut) drop-shadow(1.5px 3px 1.5px #0a080590); }
+
+/* ---------- Stack: every skill is the same paper chip, in its own colour ----------
+   --c (the brand colour) sits on the <li>, so the icon is printed in it and the chip is tinted
+   with it. Concept icons (.tb) print in gold on a gold-tinted chip; marks without a colour stay neutral. */
+.tiles li { --tint: var(--c, var(--text)); position: relative; isolation: isolate; }
+.tiles li:has(.ico.tb) { --tint: var(--gold); }
+.tiles li::before {
+  content: ""; position: absolute; top: 0; left: 50%; z-index: -1;
+  width: 76px; height: 76px; translate: -50% 0; rotate: -1.5deg;
+  border-radius: 6px;
+  background: var(--grain), color-mix(in srgb, var(--tint) 16%, var(--surface));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--edge) 85%, transparent), var(--lift);
+  transition: box-shadow .2s;
+}
+.tiles li:nth-child(3n + 2)::before { rotate: 1.2deg; }
+.tiles li:nth-child(3n)::before { rotate: -.4deg; }
+.tiles .ico { background: var(--c, var(--text)); width: 40px; height: 40px; margin: 18px 0; }
+.tiles .ico.tb { background: var(--gold); }
+/* Light mode: bright brand colours (JS yellow, Linux yellow) need more ink to read on cream. */
+:root[data-mode="light"] .tiles .ico:not(.tb) { background: color-mix(in srgb, var(--c, var(--text)) 78%, #000); }
+.tiles li:hover .ico { filter: none; }
+.tiles li:hover::before { box-shadow: 0 0 0 2px var(--edge), var(--lift-hi); }
+@media (max-width: 600px) {
+  .tiles li::before { width: 64px; height: 64px; }
+  .tiles .ico, .tiles .ico.tb { width: 34px; height: 34px; margin: 15px 0; }
+}
+.simple .tiles li::before { rotate: 0deg; }
+.stop .node img, .stop .node img.ink, .stop .node img.rounded { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
+.stop .node img.paper, .card .art img.paper { filter: drop-shadow(1.5px 3px 1.5px #0b0805a6); }
+.map.compact .stop .node { background: none; }
+.card .art img:not(.paper) { filter: var(--cut) drop-shadow(1.5px 3px 1px #0009); }
+.soon { box-shadow: 0 0 0 1.5px var(--edge), 1px 2px 0 #0008; }
+/* The same sticker edge where older, more specific rules set their own filter. */
+.btile.goal .btile-img img { filter: saturate(.55) brightness(.85) var(--cut) drop-shadow(1.5px 3px 1.5px #0a080590); }
+.map.compact .stop .node img:not(.paper), .map.compact .stop:hover .node img:not(.paper),
+.map.compact .stop.on .node img:not(.paper) { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
+.map.compact .stop.on .node img:not(.paper) { filter: var(--cut) drop-shadow(3px 6px 3px #0a0805a0); }   /* the entry you're reading sits a little higher */
+/* Stickers with the die-cut baked into the image (img/logo-iso-sticker.webp): shadow only. */
+.token img.sticker, .card .art img.sticker, .stop .node img.sticker,
+.map.compact .stop .node img.sticker, .map.compact .stop.on .node img.sticker { filter: drop-shadow(2px 4px 2px #0a0805a0); }
+.token img.sticker { scale: 1.12; }   /* tall shape: match the visual weight of its neighbours */
+.prow-media img.illus:not(.paper) { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
+
+/* ---------- The photo: die-cut around the silhouette, torn across the bottom ---------- */
+.hero-photo {
+  filter: drop-shadow(4px 0 0 var(--edge)) drop-shadow(-4px 0 0 var(--edge)) drop-shadow(0 -4px 0 var(--edge))
+          drop-shadow(3px 8px 4px #0a0805a0);
+  -webkit-mask: url(img/paper/torn-bottom.svg) 0 0 / 100% 100% no-repeat;
+  mask: url(img/paper/torn-bottom.svg) 0 0 / 100% 100% no-repeat;
+}
+.stage::before {                    /* a disc of darker paper instead of a glowing ring */
+  background: var(--grain), color-mix(in srgb, var(--accent) 34%, var(--bg));
+  border: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--edge) 55%, transparent), 3px 7px 0 #0a080560, 6px 16px 22px -8px #0a080590;
+}
+
+/* ---------- Section titles on torn paper strips ---------- */
+.sec-head h2 { position: relative; display: inline-block; isolation: isolate; padding: .12em .5em .18em; color: #1d1a14; }
+.sec-head h2::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: 1.35em; z-index: -1;   /* the text line only */
+  background: var(--grain), var(--edge);
+  -webkit-mask: url(img/paper/strip.svg) 0 0 / 100% 100% no-repeat;
+  mask: url(img/paper/strip.svg) 0 0 / 100% 100% no-repeat;
+  rotate: -1.2deg;
+  filter: drop-shadow(2px 4px 0 #0a080560);
+}
+.sec-head h2::after { margin-top: 1rem; }
+.sec-head:nth-of-type(even) h2::before, section:nth-of-type(even) .sec-head h2::before { rotate: .9deg; }
+
+/* ---------- Buttons as cardstock tabs ---------- */
+.plate, .plate.gold { filter: none; }
+.plate span {
+  border: 0;
+  background: var(--grain), color-mix(in srgb, var(--accent) 40%, #1e1e1e);
+  box-shadow: 0 0 0 2px var(--edge), var(--lift);
+  transition: box-shadow .15s, translate .15s;
+}
+.plate.gold span { background: var(--grain), #e8b84a; box-shadow: 0 0 0 2px var(--edge), var(--lift); }
+.plate:hover { filter: none; }
+.plate:hover span { box-shadow: 0 0 0 2px var(--edge), var(--lift-hi); }
+.plate:active span { translate: 1px 2px; box-shadow: 0 0 0 2px var(--edge), 0 0 0 #0000; }
+.plate.missing span { box-shadow: 0 0 0 2px color-mix(in srgb, var(--edge) 50%, transparent); }
+.shelf-filters button, .view-toggle button[aria-pressed="true"], .tb-tools button[aria-pressed="true"] { background-image: var(--grain); }
+.shelf-filters button[aria-pressed="true"] { background: var(--grain), #e8b84a; box-shadow: 0 0 0 1.5px var(--edge), 1px 2px 0 #0007; }
+
+/* ---------- Small pieces ---------- */
+.soc { background: var(--grain), var(--b); border: 0; border-radius: 4px; box-shadow: 0 0 0 2px var(--edge), var(--lift); }   /* --b can be a gradient (Instagram) */
+.soc:hover, .soc:focus-visible { box-shadow: 0 0 0 2px var(--edge), var(--lift-hi); }
+.solve { box-shadow: 1px 1.5px 0 #0a080580; background: var(--grain), var(--c); }
+.solve.empty { box-shadow: none; }
+.stop .tags span { background: var(--grain), color-mix(in srgb, var(--surface) 70%, #000); border-color: color-mix(in srgb, var(--edge) 18%, transparent); }
+.proceed, .proceed:hover { animation: none; filter: drop-shadow(2px 4px 0 #0a080570); }   /* paper doesn't glow */
+
+/* ---------- Map dialog: paper icons on the parchment ---------- */
+/* Same sizes as the old ink icons, so the "you are here" circle and the node spacing still fit. */
+.mnode .mapic { display: block; width: 48px; height: 48px; filter: drop-shadow(1.5px 3px 1px #3b2f2270); transition: scale .2s; }
+.mnode.boss .mapic { width: 68px; height: 68px; }
+.mnode:hover .mapic, .mnode:focus-visible .mapic { scale: 1.08; }
+
+/* ---------- Simple mode keeps the material, drops the decorative tilt ---------- */
+.simple .sec-head h2::before { rotate: 0deg; }

@@ -3,5 +3,15 @@
     "path": "Packet Capture CTF/ACT I - The Signal",
     "slug": "packet-capture-act-1",
     "title": "Packet Capture CTF · Act I: The Signal"
+  },
+  {
+    "path": "Packet Capture CTF/ACT II - The Breach",
+    "slug": "packet-capture-act-2",
+    "title": "Packet Capture CTF · Act II: The Breach"
+  },
+  {
+    "path": "Packet Capture CTF/ACT III - The Echo",
+    "slug": "packet-capture-act-3",
+    "title": "Packet Capture CTF · Act III: The Echo"
   }
 ]

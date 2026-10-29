@@ -659,13 +659,15 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
   33% { transform: rotate(1.6deg) translate(1px, -1px); }
   66% { transform: rotate(-.6deg) translate(-1px, 1px); }
 }
-.anim .sec-head h2 {   /* masked rather than hidden, so the heading can still take focus */
-  -webkit-mask: url(img/paper/tear.svg) 0 0 / 300% 100% no-repeat;
-  mask: url(img/paper/tear.svg) 0 0 / 300% 100% no-repeat;
+/* Masked rather than hidden, so the heading can still take focus. The mask is taller than the heading
+   and ends 5% past its left edge, so the tilted paper strip and its shadow (paper.css) aren't clipped. */
+.anim .sec-head h2 {
+  -webkit-mask: url(img/paper/tear.svg) 5% 50% / 300% 160% no-repeat;
+  mask: url(img/paper/tear.svg) 5% 50% / 300% 160% no-repeat;
 }
-.anim .sec-head:not(.in) h2 { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+.anim .sec-head:not(.in) h2 { -webkit-mask-position: 100% 50%; mask-position: 100% 50%; }
 .anim .sec-head.in h2 { animation: paper-tear .6s steps(7, jump-none) backwards; }
-@keyframes paper-tear { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } }
+@keyframes paper-tear { from { -webkit-mask-position: 100% 50%; mask-position: 100% 50%; } }
 
 /* ---------- Simple mode / reduced motion ---------- */
 .simple .proceed, .reduced .proceed { animation: none; }

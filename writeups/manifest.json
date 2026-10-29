@@ -135,5 +135,126 @@
         "steps": 4
       }
     ]
+  },
+  "packet-capture-act-2": {
+    "title": "Packet Capture CTF · Act II: The Breach",
+    "repo": "https://github.com/theoithinkk/CTFwriteups",
+    "items": [
+      {
+        "slug": "forgotten-router",
+        "title": "Forgotten Router",
+        "category": "Web Exploitation",
+        "note": "information disclosure / exposed file",
+        "tools": [
+          "curl"
+        ],
+        "insight": "The login/diagnostics CGI is a distraction. The actual vulnerability is a plain information disclosure - the flag file was left readable at the web root (`/flag.txt`), bypassing the entire authentication gate. \"A request that can finally end its misery\" is literally one GET request to the file the firmware forgot to protect.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20II%20-%20The%20Breach/%28DONE%29%20Forgotten%20Router/writeup.md",
+        "steps": 3
+      },
+      {
+        "slug": "internal-trouble",
+        "title": "Internal Trouble",
+        "category": "Web Exploitation",
+        "note": "SSRF",
+        "tools": [
+          "Burp Suite / curl",
+          "base64 decoder"
+        ],
+        "insight": "The \"Is Website Down?\" checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as `http://[::1]:3001` (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20II%20-%20The%20Breach/%28DONE%29%20Internal%20Trouble/writeup.md",
+        "steps": 4
+      }
+    ]
+  },
+  "packet-capture-act-3": {
+    "title": "Packet Capture CTF · Act III: The Echo",
+    "repo": "https://github.com/theoithinkk/CTFwriteups",
+    "items": [
+      {
+        "slug": "deleted-doesnt-mean-gone",
+        "title": "Deleted Doesn't Mean Gone",
+        "category": "Digital Forensics",
+        "note": "Disk / File Carving",
+        "tools": [
+          "strings",
+          "Python"
+        ],
+        "insight": "deleting or wiping the file table doesn't erase the data. Signature-based carving (PK, %PDF, JPEG FFD8, etc.) finds intact files in unallocated space without any filesystem metadata.",
+        "minutes": 1,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Deleted%20Doesn%27t%20Mean%20Gone/writeup.md",
+        "steps": 3
+      },
+      {
+        "slug": "hidden-within",
+        "title": "Hidden Within",
+        "category": "Steganography",
+        "note": "",
+        "tools": [
+          "Python"
+        ],
+        "insight": "test each colour channel's LSB on its own as well as interleaved. Here the message was only in red, so the common \"RGB interleaved\" extraction gives garbage.",
+        "minutes": 1,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Hidden%20Within/writeup.md",
+        "steps": 2
+      },
+      {
+        "slug": "last-packet",
+        "title": "Last Packet",
+        "category": "Network Forensics",
+        "note": "",
+        "tools": [
+          "Python"
+        ],
+        "insight": "ICMP payloads are a common covert channel. Reorder by sequence number, not timestamp. A known flag prefix exposes the first keystream bytes, and from those you can work out the key schedule.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Last%20Packet/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "memory-echoes",
+        "title": "Memory Echoes",
+        "category": "Digital Forensics",
+        "note": "",
+        "tools": [
+          "Python",
+          "strings"
+        ],
+        "insight": "in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text (\"echo in the registry\") matches the challenge story.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Memory%20Echoes/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "registry-secrets",
+        "title": "Registry Secrets",
+        "category": "Digital Forensics",
+        "note": "Memory",
+        "tools": [
+          "strings",
+          "Python"
+        ],
+        "insight": "tie the process list to network activity first. The process talking to a known-bad port is the one whose data matters, and the key is sitting in the dump as a config value. Read \"90\" as decimal (0x5A), not hex.",
+        "minutes": 1,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Registry%20Secrets/writeup.md",
+        "steps": 3
+      },
+      {
+        "slug": "usb-secrets",
+        "title": "USB Secrets",
+        "category": "Digital Forensics",
+        "note": "",
+        "tools": [
+          "text editor",
+          "Python"
+        ],
+        "insight": "know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out. Hex that starts with 50 61 63 6B is \"Pack\", the start of the flag format.",
+        "minutes": 1,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20USB%20Secrets/writeup.md",
+        "steps": 3
+      }
+    ]
   }
 }

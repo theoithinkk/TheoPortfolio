@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Hidden Within (Steganography writeup) | Theodore Garcia</title>
+<meta name="description" content="test each colour channel&#x27;s LSB on its own as well as interleaved. Here the message was only in red, so the common &quot;RGB interleaved&quot; extraction gives garbage.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261029e">
+<link rel="stylesheet" href="../../paper.css?v=20261029e">
+<script src="../../prefs.js?v=20261029e" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act III: The Echo</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Steganography</span><span>2 steps · 1 min read</span></p>
+    <h1>Hidden Within</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>test each colour channel's LSB on its own as well as interleaved. Here the message was only in red, so the common "RGB interleaved" extraction gives garbage.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> a 200x150 PNG of purple/green diagonal stripes.</h2>
+      <ul><li><b>What I found:</b> no metadata, no text chunks and no data appended after IEND. The image is a plain smooth gradient.</li><li class="think"><b>Thinking:</b> a plain gradient image with nothing in the file structure usually means LSB (least significant bit) steganography. Changing the last bit of a colour value is invisible to the eye.</li></ul>
+      <figure><a href="../img/packet-capture-act-3/hidden-within/01_challenge_image.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/hidden-within/01_challenge_image.webp" alt="The challenge image (scaled up)" width="600" height="450" loading="lazy"></a><figcaption>The challenge image (scaled up)</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> LSB extraction per channel.</h2>
+      <ul><li><b>What I did:</b> read the lowest bit of each pixel, row by row, and packed every 8 bits into a byte. I tried R, G and B separately and RGB interleaved.</li><li class="result"><b>Result:</b> G and B gave only runs of 0x00/0xFF (no data), and RGB interleaved was noise. The red channel alone gave readable ASCII, terminated by a null byte: FLAG:<span class="flag" tabindex="0">PacketCapture{STEGO_DECODED}</span></li></ul>
+      <figure><a href="../img/packet-capture-act-3/hidden-within/02_lsb_extraction.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/hidden-within/02_lsb_extraction.webp" alt="LSB extraction: only the red channel carries the message" width="1102" height="260" loading="lazy"></a><figcaption>LSB extraction: only the red channel carries the message</figcaption></figure>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="deleted-doesnt-mean-gone.html"><small>Previous</small>Deleted Doesn&#x27;t Mean Gone</a><a class="next" href="last-packet.html"><small>Next</small>Last Packet</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act III: The Echo</dd>
+      <dt>Category</dt><dd>Steganography</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{STEGO_DECODED}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Hidden%20Within/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>200x150 PNG of purple/green diagonal stripes</span></a></li><li><a href="#step-2"><b>2</b><span>LSB extraction per channel</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261029e" defer></script>
+</body>
+</html>

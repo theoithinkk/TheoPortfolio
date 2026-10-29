@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Forgotten Router (Web Exploitation writeup) | Theodore Garcia</title>
+<meta name="description" content="The login/diagnostics CGI is a distraction. The actual vulnerability is a plain information disclosure - the flag file was left readable at the web root (`/flag.txt`), bypassing the entire authentication gate. &quot;A request that can finally end its misery&quot; is literally one GET request to the file the firmware forgot to protect.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261029e">
+<link rel="stylesheet" href="../../paper.css?v=20261029e">
+<script src="../../prefs.js?v=20261029e" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act II: The Breach</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Web Exploitation</span><span class="wu-lvl">information disclosure / exposed file</span><span>3 steps · 2 min read</span></p>
+    <h1>Forgotten Router</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The login/diagnostics CGI is a distraction. The actual vulnerability is a plain information disclosure - the flag file was left readable at the web root (`/flag.txt`), bypassing the entire authentication gate. "A request that can finally end its misery" is literally one GET request to the file the firmware forgot to protect.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> https://router.challs.packetcapture.xyz</h2>
+      <ul><li><b>What I did / What I found:</b> GET / returned `302 Found -&gt; /cgi-bin/login.cgi`. The login page is a fake router admin console: "vRouter 0.1-beta - Admin Console", footer "vRouter v0.1-beta; 0566.23.2 firmware". The server only allows GET/HEAD/POST (501 "The requested method is not recognized" for anything else - classic embedded httpd behaviour).</li><li class="result"><b>Result:</b> Identified a CGI-based router web UI with a login gate.</li><li class="think"><b>Thinking:</b> The brief - "its firmware still listens for a request that can finally end its misery" - means there is one specific HTTP request the device responds to. That could be an auth bypass, but first rule out the cheapest thing: a file the firmware image left exposed at the web root.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> enumerate endpoints behind the login</h2>
+      <ul><li><b>What I did / What I found:</b> login.cgi (POST) only returns `alert('Invalid credentials')`; no SQLi, no command injection, no cookie/header/XFF auth bypass. `index.cgi` and `diagnostics.cgi` both 302-redirect to login (auth-gated). Then I fuzzed the web root for leftover files.</li><li class="result"><b>Result:</b> `GET /flag.txt` returned `200 OK` with a 33-byte text/plain body.</li><li class="think"><b>Thinking:</b> Embedded firmware builds routinely ship stray files packed into the web root. If the gated CGI pages are the "front door", the exposed static file is the forgotten side door the brief points at.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> read the exposed file</h2>
+      <ul><li><b>What I did / What I found:</b> `curl https://router.challs.packetcapture.xyz/flag.txt` -&gt; `<span class="flag" tabindex="0">PacketCapture{r0ut3_99_bb6cfead}</span>`. Re-fetched twice: identical content and a stable Last-Modified, confirming it is a real static file and not a per-request decoy.</li><li class="result"><b>Result:</b> Flag recovered without ever authenticating to the router.</li></ul>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><span></span><a class="next" href="internal-trouble.html"><small>Next</small>Internal Trouble</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act II: The Breach</dd>
+      <dt>Category</dt><dd>Web Exploitation · information disclosure / exposed file</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{r0ut3_99_bb6cfead}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20II%20-%20The%20Breach/%28DONE%29%20Forgotten%20Router/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>https://router.challs.packetcapture.xyz</span></a></li><li><a href="#step-2"><b>2</b><span>Enumerate endpoints behind the login</span></a></li><li><a href="#step-3"><b>3</b><span>Read the exposed file</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261029e" defer></script>
+</body>
+</html>

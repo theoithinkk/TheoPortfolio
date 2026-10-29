@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Memory Echoes (Digital Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text (&quot;echo in the registry&quot;) matches the challenge story.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261029e">
+<link rel="stylesheet" href="../../paper.css?v=20261029e">
+<script src="../../prefs.js?v=20261029e" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act III: The Echo</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Digital Forensics</span><span>4 steps · 2 min read</span></p>
+    <h1>Memory Echoes</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text ("echo in the registry") matches the challenge story.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> MFT.dd (9 KB).</h2>
+      <ul><li><b>What I found:</b> the file begins with "FILE" signatures, so it is a raw dump of NTFS Master File Table records. It holds 9 records: services.exe, notepad.exe, rundll32.exe, taskhostw.exe, winlogon.exe, cmd.exe, update_agent.dll, explorer.exe and svchost.exe.</li><li class="think"><b>Thinking:</b> every record's $DATA is the same filler text ("System file content holder."), so the real content had to be in whichever record didn't match the rest.</li></ul>
+      <figure><a href="../img/packet-capture-act-3/memory-echoes/01_mft_records.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/memory-echoes/01_mft_records.webp" alt="MFT records: only update_agent.dll has a second, named $DATA stream" width="900" height="300" loading="lazy"></a><figcaption>MFT records: only update_agent.dll has a second, named $DATA stream</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the odd record, update_agent.dll.</h2>
+      <ul><li><b>What I found:</b> this is the only record with a second, named $DATA attribute. That is an Alternate Data Stream called "zone.identifier".</li><li class="think"><b>Thinking:</b> ADS are a classic hiding spot because Explorer and `dir` don't show them. The real Windows stream is "Zone.Identifier" and holds plain text like "[ZoneTransfer] ZoneId=3". This one held 35 bytes of unreadable data, so it was disguised as something harmless.</li></ul>
+      <figure><a href="../img/packet-capture-act-3/memory-echoes/02_hidden_ads.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/memory-echoes/02_hidden_ads.webp" alt="The 35-byte &quot;zone.identifier&quot; stream" width="900" height="180" loading="lazy"></a><figcaption>The 35-byte &quot;zone.identifier&quot; stream</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the hidden stream's bytes.</h2>
+      <ul><li><b>What I did:</b> pulled the 35 bytes out with Python: 6c 5d 5f 57 59 48 7f 5d 4c 48 49 4e 59 47 0f 5f 54 0c 63 0d 52 63 0b 54 0f 63 4e 0f 0a 0d 09 0b 4e 45 41</li><li class="think"><b>Thinking:</b> no zlib, base64 or other file signature, but the values are clustered like text. That points to a single-byte XOR.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span>Decoding.</h2>
+      <ul><li><b>What I did:</b> tried all 256 single-byte XOR keys and kept only the outputs that were fully printable.</li><li class="result"><b>Result:</b> key 0x3C gives <span class="flag" tabindex="0">PacketCapture{3ch0_1n_7h3_r36157ry}</span>. Every other printable output was gibberish.</li></ul>
+      <figure><a href="../img/packet-capture-act-3/memory-echoes/03_xor_bruteforce.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/memory-echoes/03_xor_bruteforce.webp" alt="Single-byte XOR brute force: key 0x3C gives the flag" width="900" height="480" loading="lazy"></a><figcaption>Single-byte XOR brute force: key 0x3C gives the flag</figcaption></figure>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="last-packet.html"><small>Previous</small>Last Packet</a><a class="next" href="registry-secrets.html"><small>Next</small>Registry Secrets</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act III: The Echo</dd>
+      <dt>Category</dt><dd>Digital Forensics</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li><li>strings</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{3ch0_1n_7h3_r36157ry}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Memory%20Echoes/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>MFT.dd</span></a></li><li><a href="#step-2"><b>2</b><span>Odd record, update_agent.dll</span></a></li><li><a href="#step-3"><b>3</b><span>Hidden stream&#x27;s bytes</span></a></li><li><a href="#step-4"><b>4</b><span>Decoding</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261029e" defer></script>
+</body>
+</html>

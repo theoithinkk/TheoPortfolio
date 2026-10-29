@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Internal Trouble (Web Exploitation writeup) | Theodore Garcia</title>
+<meta name="description" content="The &quot;Is Website Down?&quot; checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as `http://[::1]:3001` (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css?v=20261029e">
+<link rel="stylesheet" href="../../paper.css?v=20261029e">
+<script src="../../prefs.js?v=20261029e" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act II: The Breach</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Web Exploitation</span><span class="wu-lvl">SSRF</span><span>4 steps · 2 min read</span></p>
+    <h1>Internal Trouble</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The "Is Website Down?" checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as `http://[::1]:3001` (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> the challenge page at https://internal.challs.packetcapture.xyz</h2>
+      <ul><li><b>What I did / What I found:</b> The landing page is an "Is Website Down?" checker with a form that submits to `/check?url=`. Reading the client-side JS in the result page showed the real work happens at a backend API: `POST /fetch` with JSON body `{"url": "..."}`, which returns `{"status":"ok","msg":"&lt;base64 PNG/JPEG screenshot&gt;"}` on success, or `{"status":"error","msg":...}`.</li><li class="result"><b>Result:</b> Identified `/fetch` as a server-side URL fetcher that renders a screenshot of whatever URL you give it - a classic SSRF surface.</li><li class="think"><b>Thinking:</b> The brief says "all 3001 systems" and "the troubles beeping within" - 3001 is a port, and "within" means an internal service only reachable from the server itself. A tool that takes a URL and fetches it server-side is the way in.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> probe the internal service on port 3001 via /fetch</h2>
+      <ul><li><b>What I did / What I found:</b> Sent `POST /fetch` with `{"url":"http://localhost:3001"}` and `http://127.0.0.1:3001`. Both returned `{"status":"error","msg":"Unauthorized."}`.</li><li class="result"><b>Result:</b> The app has an SSRF filter that blocks obvious loopback addresses.</li><li class="think"><b>Thinking:</b> "Unauthorized" only comes back if the request is being inspected and rejected - the service exists, it's just filtered. Need a filter bypass.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> bypass the SSRF allow/deny filter</h2>
+      <ul><li><b>What I did / What I found:</b> Tried several loopback representations against `/fetch`:<ul><li>`http://0.0.0.0:3001` -&gt; Unauthorized</li><li>`http://127.1:3001` -&gt; Unauthorized</li><li>`http://2130706433:3001` (decimal IP) -&gt; Unauthorized</li><li>`http://[::1]:3001` (IPv6 loopback) -&gt; **ok**, returned a base64 screenshot</li><li>`http://127.0.0.1.nip.io:3001` (DNS wildcard -&gt; 127.0.0.1) -&gt; **ok**</li><li>`http://localtest.me:3001` -&gt; **ok**</li></ul></li><li class="result"><b>Result:</b> The blocklist only covered IPv4 literal loopback forms. IPv6 `[::1]` and hostnames that resolve to 127.0.0.1 slipped straight through and reached the internal dashboard on port 3001.</li><li class="think"><b>Thinking:</b> SSRF denylists that string-match `127.0.0.1`/`localhost` almost always miss IPv6 and resolver tricks. `[::1]` is the same machine by a name the filter didn't list.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> extract the flag from the returned screenshot</h2>
+      <ul><li><b>What I did / What I found:</b> The internal dashboard screenshot came back base64-encoded. The flag was present both as readable text rendered in the image and, more directly, stored in the image's EXIF metadata. The EXIF description field contained the base64 string `UGFja2V0Q2FwdHVyZXt5MHVfZDFkTnRfczMzX3RoNFRfYzBtMW5nX2ZkMjNiYWNlfQ==`, which decodes to the flag.</li><li class="result"><b>Result:</b> Flag recovered.</li><li class="think"><b>Thinking:</b> When a challenge hands back an image, always decode it and check its metadata - the flag is usually planted in EXIF or rendered pixels rather than the page body.</li></ul>
+      <figure><a href="../img/packet-capture-act-2/internal-trouble/01_internal_dashboard.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-2/internal-trouble/01_internal_dashboard.webp" alt="Internal dashboard rendered via SSRF to [::1]:3001" width="142" height="88" loading="lazy"></a><figcaption>Internal dashboard rendered via SSRF to [::1]:3001</figcaption></figure>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="forgotten-router.html"><small>Previous</small>Forgotten Router</a><span></span></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Packet Capture CTF · Act II: The Breach</dd>
+      <dt>Category</dt><dd>Web Exploitation · SSRF</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Burp Suite / curl</li><li>base64 decoder</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{y0u_d1dNt_s33_th4T_c0m1ng_fd23bace}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20II%20-%20The%20Breach/%28DONE%29%20Internal%20Trouble/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Challenge page at…</span></a></li><li><a href="#step-2"><b>2</b><span>Probe the internal service on port 3001…</span></a></li><li><a href="#step-3"><b>3</b><span>Bypass the SSRF allow/deny filter</span></a></li><li><a href="#step-4"><b>4</b><span>Extract the flag from the returned…</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261029e" defer></script>
+</body>
+</html>
