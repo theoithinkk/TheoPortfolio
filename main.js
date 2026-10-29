@@ -434,7 +434,7 @@ const io = new IntersectionObserver(entries => {
     io.unobserve(en.target);
   });
 }, { threshold: 0.35 });
-$$('.sec .card, .prow, .stop').forEach(c => io.observe(c));
+$$('.sec .card, .prow, .stop, .sec-head').forEach(c => io.observe(c));
 
 /* ---------- Proceed button: optional, the page also scrolls normally ---------- */
 const sections = $$('main > section'), proceed = $('#proceed');
@@ -522,19 +522,21 @@ $$('[data-copy]').forEach(b => b.addEventListener('click', async () => {
   setTimeout(() => { b.dataset.tip = tip; }, 1500);
 }));
 
-/* ---------- Experience: Map / Compact switch (remembered) ---------- */
+/* ---------- Experience: List / Map switch (remembered) ----------
+   List ("compact") is the default so role, org and dates are readable at a glance. Stored under a
+   new key: the old 'expView' was saved as 'map' for every past visitor, not chosen by them. */
 const expMaps = $$('.map'), viewBtns = $$('.view-toggle button');
 function setView(v) {
   expMaps.forEach(m => m.classList.toggle('compact', v === 'compact'));
   viewBtns.forEach(b => b.setAttribute('aria-pressed', b.dataset.view === v));
-  save('expView', v);
+  save('expLayout', v);
 }
 viewBtns.forEach(b => b.addEventListener('click', () => { setView(b.dataset.view); sfx.toggle(); }));
-setView(prefs.expView === 'compact' ? 'compact' : 'map');
+setView(prefs.expLayout === 'map' ? 'map' : 'compact');
 
 /* ---------- Experience interactions ----------
    Map view: only the logos show. Pressing one pops its details up, one entry at a time.
-   Compact view: each row shows only the organization (or event) name until pressed, then unfolds.
+   List view: each row shows role, org, dates, tags and its timeline bar; pressing it unfolds the bullets.
    A gold path fills down beside the logos as you scroll, lighting each entry it reaches. */
 const stops = $$('.map .stop');
 const isCompact = () => expMaps[0]?.classList.contains('compact');
