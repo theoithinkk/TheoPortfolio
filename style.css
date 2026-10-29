@@ -1171,6 +1171,8 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 .wu-tools-list { display: flex; flex-wrap: wrap; gap: .3rem; margin: 0; padding: 0; list-style: none; }
 .wu-tools-list li { padding: .1em .45em; font-size: .76rem; border: 1px solid var(--line); border-radius: 3px; }
 .wu-facts .wu-flag small { display: block; margin-top: .25rem; font-size: .72rem; color: var(--muted); }
+.wu-source { font-weight: 600; color: var(--gold); text-decoration: none; overflow-wrap: anywhere; }
+.wu-source:hover { text-decoration: underline; }
 .wu-route > p { margin: 0 0 .6rem; font: 700 .72rem var(--sans); letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
 .wu-route ol { position: relative; margin: 0; padding: 0; list-style: none; }
 .wu-route ol::before, .wu-route ol::after { content: ""; position: absolute; left: 11px; top: 14px; width: 2px; }
@@ -1244,6 +1246,7 @@ a.solve:hover, a.solve:focus-visible, a.solve.on { scale: 1.18; box-shadow: 0 0 
 .solve-info p:not([class]), .solve-trick { margin: 0 0 .8rem; }
 .solve-read { font-weight: 600; color: var(--gold); text-decoration: none; }
 .solve-read:hover { text-decoration: underline; }
+.solve-repo { font-size: .85rem; }
 @media (max-width: 760px) {
   .solve-body { grid-template-columns: 1fr; }
   .solve-grid { grid-template-columns: repeat(auto-fill, 30px); }

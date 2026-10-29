@@ -2,6 +2,12 @@
 
 Usage (from the site folder):
     python -I tools/build_writeups.py "<folder of writeups>" <event-slug> "<Event title>"
+    python -I tools/build_writeups.py --all "<CTFwriteups checkout>"
+
+--all rebuilds every event listed in tools/writeup_events.json (the GitHub Action uses this); an
+event only goes on the site once it is listed there. A leading "(DONE)"-style tag on a challenge
+folder name is left out of its title and slug. When the writeups folder is a git checkout with a
+GitHub remote, each page links to its writeup.md there and the homepage links to the repo.
 
 The folder holds one subfolder per challenge, each with writeup.md and a screenshots/ folder.
 writeup.md starts with "Flag:", "Category:" and "Tools used:" lines, then "Steps:" with numbered
@@ -20,14 +26,16 @@ A new category needs nothing special: its filter button appears from the "Catego
 import html
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 from PIL import Image
 
 SITE = Path(__file__).resolve().parent.parent
 OUT = SITE / "writeups"
-VERSION = "20261021d"   # cache tag for style.css / prefs.js on the generated pages
+VERSION = "20261029a"   # cache tag for style.css / prefs.js on the generated pages
 MAX_IMG_W = 1600
 CATEGORY_COLORS = {"osint": "#4fc1a6", "crypto": "#a27fe0", "forensics": "#5aa7dc", "web": "#e8b84a",
                    "pwn": "#e0573f", "rev": "#f08a4b", "reverse engineering": "#f08a4b", "misc": "#9aa0a6"}
@@ -36,6 +44,25 @@ FALLBACK_COLORS = ["#d77fb3", "#7fc06a", "#c9b458", "#6fb3c9"]
 
 def slugify(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+
+
+def git(cwd, *args):
+    try:
+        return subprocess.run(["git", "-C", str(cwd), *args], capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+
+
+def github_source(src_dir):
+    """(repo URL, URL of src_dir on GitHub) when src_dir sits in a GitHub checkout, else ("", "")."""
+    remote = git(src_dir, "remote", "get-url", "origin")
+    m = re.match(r"(?:https://github\.com/|git@github\.com:)([\w.-]+/[\w.-]+?)(?:\.git)?/?$", remote)
+    if not m:
+        return "", ""
+    repo = f"https://github.com/{m.group(1)}"
+    branch = git(src_dir, "rev-parse", "--abbrev-ref", "HEAD")
+    rel = git(src_dir, "rev-parse", "--show-prefix").rstrip("/")
+    return repo, f"{repo}/blob/{quote(branch if branch and branch != 'HEAD' else 'main')}/{quote(rel)}"
 
 
 def inline(text):
@@ -146,7 +173,7 @@ PAGE = """<!doctype html>
       <dt>Event</dt><dd>{event}</dd>
       <dt>Category</dt><dd>{category}{level_plain}</dd>
       <dt>Tools</dt><dd><ul class="wu-tools-list">{tools}</ul></dd>
-      <dt>Flag</dt><dd class="wu-flag">{flag}<small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Flag</dt><dd class="wu-flag">{flag}<small>Tap, hover or Tab to reveal</small></dd>{source}
     </dl>
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol>{chain}</ol></nav>
   </aside>
@@ -208,21 +235,26 @@ def render_page(event_slug, event_title, w, prev, nxt):
     tools = "".join(f"<li>{html.escape(t)}</li>" for t in w["tools"])
     level = f'<span class="wu-lvl">{html.escape(w["note"])}</span>' if w["note"] else ""
     level_plain = f' · {html.escape(w["note"])}' if w["note"] else ""
+    source = (f'\n      <dt>Source</dt><dd><a class="wu-source" href="{html.escape(w["source"])}" target="_blank" rel="noopener">'
+              f'writeup.md on GitHub</a></dd>' if w.get("source") else "")
     nav = (f'<a class="prev" href="{prev["slug"]}.html"><small>Previous</small>{html.escape(prev["title"])}</a>' if prev else "<span></span>") + \
           (f'<a class="next" href="{nxt["slug"]}.html"><small>Next</small>{html.escape(nxt["title"])}</a>' if nxt else "<span></span>")
     return PAGE.format(title=html.escape(w["title"]), category=html.escape(w["category"]), desc=html.escape(w["insight"]),
                        event=html.escape(event_title), level=level, level_plain=level_plain, steps_n=len(w["steps"]),
                        minutes=w["minutes"], lede=html.escape(first_sentence(w["insight"])), tldr=tldr, chain=chain,
-                       tools=tools, flag=inline(w["flag"]), steps="\n".join(steps_html), callouts=callouts, nav=nav, v=VERSION)
+                       tools=tools, flag=inline(w["flag"]), source=source, steps="\n".join(steps_html), callouts=callouts, nav=nav, v=VERSION)
 
 
 def build_event(src_dir, event_slug, event_title):
     items = []
-    for d in sorted(p for p in Path(src_dir).iterdir() if (p / "writeup.md").is_file()):
+    repo, src_url = github_source(src_dir)
+    for d in sorted((p for p in Path(src_dir).iterdir() if (p / "writeup.md").is_file()),
+                    key=lambda p: re.sub(r"^\(.*?\)\s*", "", p.name)):
         head, steps, callouts = parse((d / "writeup.md").read_text(encoding="utf-8"))
         cat_raw = head.get("category", "Misc")
         cat, note = (re.match(r"([^(]+?)\s*(?:\((.*)\))?$", cat_raw).groups())
-        slug = slugify(d.name)
+        title = re.sub(r"^\(.*?\)\s*", "", d.name)   # "(DONE) Digital Footprint" -> "Digital Footprint"
+        slug = slugify(title)
         for st in steps:   # copy screenshots in, as webp
             for b in st["blocks"]:
                 if "fig" in b:
@@ -232,16 +264,17 @@ def build_event(src_dir, event_slug, event_title):
         insight = next((c["text"] for c in callouts if c["label"].lower().startswith("key")), "")
         tools = [re.sub(r"\s*\(.*?\)", "", t).strip() for t in head.get("tools used", "").split(",") if t.strip()]
         words = len((d / "writeup.md").read_text(encoding="utf-8").split())
-        items.append({"slug": slug, "title": d.name, "category": cat.strip(), "note": note or "", "flag": head.get("flag", ""),
+        source = f"{src_url}/{quote(d.name)}/writeup.md" if src_url else ""
+        items.append({"slug": slug, "title": title, "category": cat.strip(), "note": note or "", "flag": head.get("flag", ""),
                       "tools": tools, "insight": insight, "steps": steps, "callouts": callouts,
-                      "minutes": max(1, round(words / 200))})
+                      "minutes": max(1, round(words / 200)), "source": source})
     (OUT / event_slug).mkdir(parents=True, exist_ok=True)
     for i, w in enumerate(items):
         page = render_page(event_slug, event_title, w, items[i - 1] if i else None, items[i + 1] if i + 1 < len(items) else None)
         assert "<script>" not in page
         (OUT / event_slug / f'{w["slug"]}.html').write_text(page, encoding="utf-8")
-    return [{**{k: w[k] for k in ("slug", "title", "category", "note", "tools", "insight", "minutes")}, "steps": len(w["steps"])}
-            for w in items]
+    return repo, [{**{k: w[k] for k in ("slug", "title", "category", "note", "tools", "insight", "minutes", "source")},
+                   "steps": len(w["steps"])} for w in items]
 
 
 def first_sentence(s):
@@ -285,6 +318,9 @@ def render_index_block(manifest):
                 f'<p>{html.escape(first_sentence(hard["insight"]))}</p>'
                 f'<a class="solve-read" href="writeups/{ev_slug}/{hard["slug"]}.html">Read the writeup <i class="ii ii-go" aria-hidden="true"></i></a>')
     n_events = len(manifest)
+    repos = sorted({ev["repo"] for ev in manifest.values() if ev.get("repo")})
+    repo_links = "".join(f'<a class="solve-read solve-repo" href="{html.escape(r)}" target="_blank" rel="noopener">'
+                         f'All writeups on GitHub <i class="ii ii-go" aria-hidden="true"></i></a>' for r in repos)
     total_steps = sum(it.get("steps", 1) for _, _, it in items)
     # Top five by steps, as a ranked list under the panel; hovering a row previews it like its square.
     ranked = sorted(items, key=lambda x: -x[2].get("steps", 0))[:5]
@@ -297,7 +333,7 @@ def render_index_block(manifest):
         "    <!-- writeups:start (generated by tools/build_writeups.py; edit the writeups, then rebuild) -->",
         '    <div class="solves">',
         f'      <div class="solve-head"><p class="solve-count"><b>{len(items)}</b> flags · <b>{n_events}</b> event{"s" if n_events != 1 else ""} · <b>{len(cats)}</b> categor{"ies" if len(cats) != 1 else "y"} · <b>{total_steps}</b> steps</p>'
-        f'<ul class="solve-legend" aria-label="Highlight a category">{legend}</ul></div>',
+        f'<ul class="solve-legend" aria-label="Highlight a category">{legend}</ul>{repo_links}</div>',
         '      <div class="solve-body">',
         '      <div class="solve-grid">',
         *squares,
@@ -309,17 +345,23 @@ def render_index_block(manifest):
         "    <!-- writeups:end -->"])
 
 def main():
-    src, event_slug, event_title = sys.argv[1], sys.argv[2], sys.argv[3]
+    if sys.argv[1] == "--all":
+        events = json.loads((SITE / "tools" / "writeup_events.json").read_text(encoding="utf-8"))
+        jobs = [(Path(sys.argv[2]) / ev["path"], ev["slug"], ev["title"]) for ev in events]
+    else:
+        jobs = [(Path(sys.argv[1]), sys.argv[2], sys.argv[3])]
     mf = OUT / "manifest.json"
     manifest = json.loads(mf.read_text(encoding="utf-8")) if mf.exists() else {}
-    manifest[event_slug] = {"title": event_title, "items": build_event(src, event_slug, event_title)}
+    for src, event_slug, event_title in jobs:
+        repo, items = build_event(src, event_slug, event_title)
+        manifest[event_slug] = {"title": event_title, "repo": repo, "items": items}
+        print(f"built {len(items)} writeups for {event_slug}")
     mf.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     idx = SITE / "index.html"
     t = idx.read_text(encoding="utf-8")
     t, n = re.subn(r"    <!-- writeups:start.*?<!-- writeups:end -->", lambda _: render_index_block(manifest), t, flags=re.S)
     assert n == 1, "index.html needs the writeups:start / writeups:end markers"
     idx.write_text(t, encoding="utf-8")
-    print(f"built {len(manifest[event_slug]['items'])} writeups for {event_slug}")
 
 
 if __name__ == "__main__":
