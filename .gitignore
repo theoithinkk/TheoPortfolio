@@ -7,3 +7,5 @@ DESIGN.md
 DESIGN.json
 .impeccable/
 .taste-skill/
+
+node_modules/
