@@ -116,9 +116,9 @@ const isoctf = {
   bullets: ["Solved cryptography, OS and Linux, digital forensics, web, metadata analysis, OSINT and steganography challenges."],
 };
 const packet = {
-  org: "Packet Capture CTF", where: "",
-  role: "16 step-by-step writeups: OSINT, web exploitation, digital and network forensics, steganography (github.com/theoithinkk/CTFwriteups)", when: "",
-  bullets: [],
+  org: "Packet Capture: Beyond the Network CTF, CyberPH and MQ CyberSec Club", where: "",
+  role: "14th of 164 teams (top 9%)", when: "2026",
+  bullets: ["Solved OSINT, web exploitation, digital and network forensics and steganography challenges; published 16 step-by-step writeups (github.com/theoithinkk/CTFwriteups)."],
 };
 
 const lscs = {
@@ -175,8 +175,9 @@ module.exports = {
         { ...pinoyflex, bullets: ["Five-person full-stack fitness community app; secured with bcrypt hashing, hardened session cookies, role-based access control, rate limiting and non-enumerating login errors."] },
       ] },
       { title: "Competitions", lines: [
+        ["Packet Capture: Beyond the Network CTF (2026)", "14th of 164 teams (top 9%); 16 published writeups at github.com/theoithinkk/CTFwriteups"],
         ["K17 CTF 2026, UNSW Security Society (Sep 2026)", "152nd of 682 teams (top 23%) with Team SlayTheFlagII"],
-        ["ISO 2026 CTF: Uncharted Knowledge, DLSU (2026)", "2nd place; 16 published CTF writeups at github.com/theoithinkk/CTFwriteups"],
+        ["ISO 2026 CTF: Uncharted Knowledge, DLSU (2026)", "2nd place"],
       ] },
       { title: "Leadership Experience", entries: [
         { ...lscs, sub: undefined, role: "Associate Vice President for Academics (promoted from Junior Officer, Oct 2024)", when: "Oct 2024 – Sep 2026",
@@ -196,7 +197,7 @@ module.exports = {
         ["Working toward", "CompTIA Security+; AWS Certified Security Specialty; ISO/IEC 27001 Lead Auditor or Lead Implementer (PECB); ISACA CISA or CRISC"],
       ] },
       { title: "Projects", entries: [darkhole, auditbridge, sinag, galicious, pinoyflex, pablings, promptathon, voip, catbot, uipath] },
-      { title: "Competitions and Writeups", entries: [k17, isoctf, packet] },
+      { title: "Competitions and Writeups", entries: [packet, k17, isoctf] },
       { title: "Leadership Experience", entries: [lscs, sprint, csg, acm] },
       { title: "Research", lines: [
         ["Senior high research", "Outstanding Research Award, Elizabeth Seton School; oral presenter, PAREF Southridge Research Congress"],
