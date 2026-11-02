@@ -752,7 +752,7 @@ $('.mono').addEventListener('pointerenter', () => { if (nameFx().includes('flip'
 /* ---------- Big name hover: StS-style floating "damage numbers" ---------- */
 const DMG = [
   ['+GRC', '#f5c542'], ['+Cloud', '#7fc0e6'], ['+AI', '#c6a6ff'], ['+3 Certs', '#f5c542'],
-  ['+2 CTFs', '#ff6b57'], ['+13 Findings', '#ff6b57'], ["Dean's List ×6", '#9be38a'],
+  ['+3 CTFs', '#ff6b57'], ['+13 Findings', '#ff6b57'], ["Dean's List ×6", '#9be38a'],
 ];
 const bigName = $('.name');
 let dmgAt = 0;
