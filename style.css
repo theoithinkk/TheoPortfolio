@@ -1150,10 +1150,10 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 /* Experience tags (what carries into GRC work) and the shared Sep 2024 – Oct 2026 timeline. */
 .stop .tags { display: flex; flex-wrap: wrap; gap: .3rem; grid-column: 1 / -1; margin: .5rem 0 0; }
 .stop .tags span { padding: .1em .5em; font-size: .76rem; font-weight: 500; color: color-mix(in srgb, var(--text) 85%, transparent); border: 1px solid var(--line); border-radius: 3px; }
-.stop .span, .map .axis { --months: 25; }
+.stop .span, .map .axis { --months: 26; }   /* months on the axis from Sep 2024; bump it as time passes (26 = Nov 2026) */
 .stop .span { position: relative; display: block; grid-column: 1 / -1; height: 6px; margin: .7rem 0 .1rem; border-radius: 3px;
   /* year ticks at Jan 2025 (month 4) and Jan 2026 (month 16) */
-  background: linear-gradient(90deg, transparent calc(100% * 4 / 25 - 1px), var(--muted) 0 calc(100% * 4 / 25), transparent 0 calc(100% * 16 / 25 - 1px), var(--muted) 0 calc(100% * 16 / 25), transparent 0),
+  background: linear-gradient(90deg, transparent calc(100% * 4 / var(--months) - 1px), var(--muted) 0 calc(100% * 4 / var(--months)), transparent 0 calc(100% * 16 / var(--months) - 1px), var(--muted) 0 calc(100% * 16 / var(--months)), transparent 0),
               color-mix(in srgb, var(--line) 55%, transparent); }
 .stop .span i { position: absolute; top: 0; bottom: 0; left: calc(100% * var(--s) / var(--months)); width: calc(100% * (var(--e) - var(--s)) / var(--months) - 2px);
   border-radius: 3px; background: var(--ring); }
@@ -1161,8 +1161,8 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 .map .axis { display: none; }
 .map.compact .axis { position: relative; display: grid; grid-template-columns: 120px 1fr; gap: 1.4rem; padding: .4rem 2.8rem .2rem 0; list-style: none; font-size: .72rem; color: var(--muted); }
 .map.compact .axis span { grid-column: 2; grid-row: 1; justify-self: start; }
-.map.compact .axis span:nth-child(2) { margin-left: calc(100% * 4 / 25); }
-.map.compact .axis span:nth-child(3) { margin-left: calc(100% * 16 / 25); }
+.map.compact .axis span:nth-child(2) { margin-left: calc(100% * 4 / var(--months)); }
+.map.compact .axis span:nth-child(3) { margin-left: calc(100% * 16 / var(--months)); }
 .map.compact:has(.axis)::before { bottom: calc(60px + 1.6rem); }
 .map:not(.compact) .stop .span { display: none; }
 @media (max-width: 600px) { .map.compact .axis { grid-template-columns: 84px 1fr; gap: 1rem; } }

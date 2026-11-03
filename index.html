@@ -24,11 +24,11 @@
 <meta property="og:image:alt" content="Theodore Garcia, GRC, Cloud and AI Security">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://theoith.ink/">
-<link rel="stylesheet" href="style.css?v=20261103a">
-<link rel="stylesheet" href="paper.css?v=20261103a">
+<link rel="stylesheet" href="style.css?v=20261103b">
+<link rel="stylesheet" href="paper.css?v=20261103b">
 <!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
-<script src="prefs.js?v=20261103a"></script>
-<script src="main.js?v=20261103a" defer></script>
+<script src="prefs.js?v=20261103b"></script>
+<script src="main.js?v=20261103b" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#about">Skip to content</a>
@@ -279,8 +279,25 @@
 
     <h3 class="sub-head map-head">Leadership</h3>
     <p class="map-note">Student roles alongside my degree. The tags mark what carries into GRC work.</p>
-    <!-- Timeline bars: --s / --e are months from Sep 2024 (0) to Oct 2026 (25). -->
+    <!-- Timeline bars: --s / --e are months from Sep 2024 (0). The axis length is --months in style.css;
+         an ongoing role uses --e:var(--months) so its bar always reaches today. -->
     <ol class="map">
+      <li class="stop event">
+        <div class="node"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"></div>
+        <div class="panel">
+          <p class="node-type">Leadership · Current</p>
+          <h3>Research and Training Officer</h3>
+          <p class="org">Information Security Organization, DLSU</p>
+          <p class="meta">Sep 2026 – present</p>
+          <p class="tags"><span>Security awareness</span><span>Training design</span><span>CTF challenge authoring</span></p>
+          <span class="span" aria-hidden="true"><i style="--s:24;--e:var(--months)"></i></span>
+          <ul>
+            <li>Keep members current on the threat landscape by tracking cybersecurity news and briefing the organization on what matters and why.</li>
+            <li>Design and build <strong>CTF challenges</strong> that turn security concepts into hands-on problems, so members learn by exploiting and defending, not just reading.</li>
+            <li>Plan and lead technical training sessions that build members' practical security skills.</li>
+          </ul>
+        </div>
+      </li>
       <li class="stop event">
         <div class="node"><img class="ink" src="img/logo-lscs.webp" alt="La Salle Computer Society logo"></div>
         <div class="panel">

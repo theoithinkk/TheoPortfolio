@@ -8,9 +8,9 @@
 <title>Internal Trouble (Web Exploitation writeup) | Theodore Garcia</title>
 <meta name="description" content="The &quot;Is Website Down?&quot; checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as `http://[::1]:3001` (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261103a">
-<link rel="stylesheet" href="../../paper.css?v=20261103a">
-<script src="../../prefs.js?v=20261103a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261103b">
+<link rel="stylesheet" href="../../paper.css?v=20261103b">
+<script src="../../prefs.js?v=20261103b" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -54,6 +54,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Challenge page at…</span></a></li><li><a href="#step-2"><b>2</b><span>Probe the internal service on port 3001…</span></a></li><li><a href="#step-3"><b>3</b><span>Bypass the SSRF allow/deny filter</span></a></li><li><a href="#step-4"><b>4</b><span>Extract the flag from the returned…</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261103a" defer></script>
+<script src="../wu.js?v=20261103b" defer></script>
 </body>
 </html>

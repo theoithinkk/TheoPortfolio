@@ -121,6 +121,14 @@ const packet = {
   bullets: ["Solved OSINT, web exploitation, digital and network forensics and steganography challenges; published 16 step-by-step writeups (github.com/theoithinkk/CTFwriteups)."],
 };
 
+const isoofficer = {
+  org: "Information Security Organization, De La Salle University", where: "Manila, Philippines",
+  role: "Research and Training Officer", when: "Sep 2026 – present",
+  bullets: [
+    "Keep members current on the threat landscape by tracking cybersecurity news and briefing the organization on what matters and why.",
+    "Design CTF challenges and lead technical training sessions that turn security concepts into hands-on skills.",
+  ],
+};
 const lscs = {
   org: "La Salle Computer Society", where: "Manila, Philippines",
   role: "Associate Vice President for Academics", when: "Sep 2025 – Sep 2026",
@@ -175,14 +183,15 @@ module.exports = {
         { ...pinoyflex, bullets: ["Five-person full-stack fitness community app; secured with bcrypt hashing, hardened session cookies, role-based access control, rate limiting and non-enumerating login errors."] },
       ] },
       { title: "Competitions", lines: [
-        ["Packet Capture: Beyond the Network CTF (2026)", "14th of 164 teams (top 9%); 16 published writeups at github.com/theoithinkk/CTFwriteups"],
+        ["Packet Capture: Beyond the Network CTF (Oct 2026)", "14th of 164 teams (top 9%); 16 published writeups at github.com/theoithinkk/CTFwriteups"],
         ["K17 CTF 2026, UNSW Security Society (Sep 2026)", "152nd of 682 teams (top 23%) with Team SlayTheFlagII"],
-        ["ISO 2026 CTF: Uncharted Knowledge, DLSU (2026)", "2nd place"],
+        ["ISO 2026 CTF: Uncharted Knowledge, DLSU (Sep 2026)", "2nd place"],
       ] },
       { title: "Leadership Experience", entries: [
+        { ...isoofficer, bullets: ["Run security awareness and training for members: brief them on current threats from cybersecurity news, design CTF challenges and lead hands-on technical sessions."] },
         { ...lscs, sub: undefined, role: "Associate Vice President for Academics (promoted from Junior Officer, Oct 2024)", when: "Oct 2024 – Sep 2026",
           bullets: ["Directed pre-event operations for 10+ academic events and coordinated scheduling, documentation and stakeholder communication with faculty and partner departments."] },
-        csg] },   // DLSU SPRINT and ACM are in the CV
+      ] },   // DLSU SPRINT, CS Government and ACM are in the CV
       { title: "Skills", lines: [["GRC", "ISO/IEC 27001, NIST SP 800-53, CIS, PCI DSS, SOC 2, RA 10173, risk registers, 5×5 risk scoring, control mapping"], ["Cloud", skills.cloud], ["Security tools", skills.offsec], ["Programming", skills.code]] },
     ],
   },
@@ -198,7 +207,7 @@ module.exports = {
       ] },
       { title: "Projects", entries: [darkhole, auditbridge, sinag, galicious, pinoyflex, pablings, promptathon, voip, catbot, uipath] },
       { title: "Competitions and Writeups", entries: [packet, k17, isoctf] },
-      { title: "Leadership Experience", entries: [lscs, sprint, csg, acm] },
+      { title: "Leadership Experience", entries: [isoofficer, lscs, sprint, csg, acm] },
       { title: "Research", lines: [
         ["Senior high research", "Outstanding Research Award, Elizabeth Seton School; oral presenter, PAREF Southridge Research Congress"],
       ] },
