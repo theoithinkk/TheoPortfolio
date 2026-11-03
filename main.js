@@ -14,10 +14,20 @@ function save(key, val) {
   try { localStorage.setItem('tg-prefs', JSON.stringify(prefs)); } catch {}
 }
 const calm = () => root.classList.contains('simple') || root.classList.contains('reduced');
+// Keep Tab inside an open dialog (character select, map) instead of wandering onto the page behind it.
+function trapTab(dlg) {
+  dlg.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const f = $$('a[href], button:not([disabled])', dlg), first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+}
 
 /* ---------- Sound: Kenney CC0 card samples, with a synthesized fallback ----------
-   On for every visitor by default. Browsers block audio until the first user gesture
-   (a click, tap or key press), so the engine unlocks itself on that first gesture.
+   Off by default (visitors are often at work); the Settings toggle turns it on and is remembered.
+   Browsers block audio until the first user gesture (a click, tap or key press), so the engine
+   unlocks itself on that first gesture.
    - Sample files download immediately, so they're ready by the first click.
    - Nothing is scheduled while audio is suspended, so sounds never pile up and burst out later.
    - Sounds are panned left/right to match where the element sits on screen, with slight
@@ -42,7 +52,7 @@ const SAMPLES = {
 const sfx = (() => {
   // "sfx" replaces the old "sound" key: earlier builds saved sound=false for visitors who
   // skipped the intro, which left SFX off for them forever.
-  let ctx = null, noise = null, master = null, send = null, on = prefs.sfx ?? true;
+  let ctx = null, noise = null, master = null, send = null, on = prefs.sfx ?? false;
   const names = [...new Set(Object.values(SAMPLES).flat())];
   const raw = {}, buffers = {}, lastAt = {};
   const fetched = Promise.all(names.map(async n => {
@@ -267,11 +277,11 @@ $('[data-skip-char]').onclick = () => {
   setChar(null); save('char', 'none');
   closeCharSelect();
 };
+// Only opened from Settings now (first-time visitors go straight to the page), so Escape just cancels.
 cs.addEventListener('keydown', e => {
-  if (e.key !== 'Escape') return;
-  if (prefs.char) { setChar(before); closeCharSelect(); }  // reopened from the top bar: just cancel
-  else $('[data-skip-char]').click();
+  if (e.key === 'Escape') { setChar(before); closeCharSelect(); }
 });
+trapTab(cs);
 
 /* ---------- Loader ---------- */
 const TIPS = [
@@ -297,8 +307,9 @@ function runLoader() {
   // Deck-shuffle sound in time with the riffling cards (plays once audio is allowed).
   sfx.shuffle();
   const shuffling = setInterval(() => sfx.shuffle(), 1100);
-  const loaded = Promise.all([document.fonts.ready, imgReady($('.hero-photo')), wait(2300)]);
-  return Promise.race([loaded, skipped, wait(6000)]).then(async () => {
+  // Short on purpose: a recruiter's first seconds should go to the content, not the loader.
+  const loaded = Promise.all([document.fonts.ready, imgReady($('.hero-photo')), wait(900)]);
+  return Promise.race([loaded, skipped, wait(3000)]).then(async () => {
     clearInterval(shuffling);
     removeEventListener('keydown', onKey);
     el.classList.add('out');
@@ -492,7 +503,6 @@ $$('.notes details').forEach(d => d.addEventListener('toggle', () => sfx.page(d.
   try {
     embers();
     await runLoader();
-    if (!prefs.char) await openCharSelect();
     reveal();
   } catch (err) {
     // Never leave a visitor stuck behind the intro: show the page as-is.
@@ -721,6 +731,7 @@ function openMap() {
   ($('.mnode.here', mapDlg) || $('.mnode', mapDlg)).focus();
 }
 function closeMap() { mapDlg.hidden = true; $('#open-map').focus(); }
+trapTab(mapDlg);
 $('#open-map').addEventListener('click', openMap);
 $('.map-close').addEventListener('click', () => { sfx.toggle(); closeMap(); });
 mapDlg.addEventListener('click', e => {

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- Content Security Policy. GitHub Pages can't send HTTP headers, so it lives in a meta tag.
-     Scripts only from this site (no inline JS), fonts only from Google Fonts, no plugins, no forms.
+     Scripts and fonts only from this site (no inline JS), no plugins, no forms.
      'unsafe-inline' for styles is needed for the per-element CSS variables (style="--x: ..."). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Theodore Garcia | GRC, Cloud &amp; AI Security</title>
 <meta name="description" content="Theodore Garcia: Computer Science (Network &amp; Information Security) student at De La Salle University focused on GRC, cloud security and AI security.">
@@ -17,24 +17,21 @@
 <meta property="og:site_name" content="Theodore Garcia">
 <meta property="og:title" content="Theodore Garcia | GRC, Cloud & AI Security">
 <meta property="og:description" content="CS student at De La Salle University (Network & Information Security). Control mapping, risk registers and cloud security on AWS. ISC2 CC, AWS Cloud & AI Practitioner.">
-<meta property="og:url" content="https://theoithinkk.github.io/">
-<meta property="og:image" content="https://theoithinkk.github.io/img/og-image.png">
+<meta property="og:url" content="https://theoith.ink/">
+<meta property="og:image" content="https://theoith.ink/img/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Theodore Garcia, GRC, Cloud and AI Security">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="canonical" href="https://theoithinkk.github.io/">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261029h">
-<link rel="stylesheet" href="paper.css?v=20261029h">
+<link rel="canonical" href="https://theoith.ink/">
+<link rel="stylesheet" href="style.css?v=20261103a">
+<link rel="stylesheet" href="paper.css?v=20261103a">
 <!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
-<script src="prefs.js?v=20261029h"></script>
-<script src="main.js?v=20261029h" defer></script>
+<script src="prefs.js?v=20261103a"></script>
+<script src="main.js?v=20261103a" defer></script>
 </head>
 <body>
-<a class="skip-link" href="#education">Skip to content</a>
+<a class="skip-link" href="#about">Skip to content</a>
 
 <!-- Loading screen -->
 <div id="loader" class="overlay" aria-hidden="true">
@@ -93,7 +90,7 @@
   <div class="settings" id="settings" hidden>
     <p class="settings-title">Settings</p>
     <div class="tb-tools">
-      <button type="button" id="t-sound" aria-pressed="true">Sound effects</button>
+      <button type="button" id="t-sound" aria-pressed="false">Sound effects</button>
       <button type="button" id="t-music" aria-pressed="false">Music</button>
       <button type="button" id="t-mode" aria-pressed="false">Light mode</button>
       <button type="button" id="t-simple" aria-pressed="false">Simple mode</button>
@@ -136,6 +133,7 @@
       <p class="eyebrow whoami" aria-label="whoami"><span class="prompt">theo@cybersec:~$</span> whoami<span class="caret" aria-hidden="true"></span></p>
       <h1 class="name" aria-label="Theodore Garcia"><span aria-hidden="true">Theodore</span> <span aria-hidden="true"><b class="g">G</b>a<b class="g">r</b><b class="g">c</b>ia</span></h1>
       <p class="tagline"><span class="grc">GRC</span><i class="sep" aria-hidden="true"></i><span class="cloud">Cloud Security</span><i class="sep" aria-hidden="true"></i><span class="ai">AI Security</span></p>
+      <p class="hero-cta">Available now for GRC and cloud security internships, part-time or remote · <a href="files/Theodore-Garcia-CV.pdf" download data-file>Download CV</a></p>
     </header>
 
     <div class="stage">
@@ -147,8 +145,6 @@
         <a class="floater" href="#certifications" aria-label="ISC2 Certified in Cybersecurity. Go to Certifications"><span class="token halo"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="token-label">ISC2 CC</span><article class="card rare skill" aria-hidden="true"><span class="cost">1</span><span class="banner">ISC2 CC</span><span class="art"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="type">Skill</span><span class="desc"><em>Certified</em> in Cybersecurity.</span></article></a>
         <a class="floater" href="#certifications" aria-label="AWS Certified Cloud Practitioner. Go to Certifications"><span class="token"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="token-label">AWS Cloud Practitioner</span><article class="card uncommon skill" aria-hidden="true"><span class="cost">1</span><span class="banner">AWS Cloud Practitioner</span><span class="art"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em>.</span></article></a>
         <a class="floater" href="#experience" aria-label="2nd place, ISO CTF 2026. Go to Experience"><span class="token"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"></span><span class="token-label">ISO CTF · 2nd</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">ISO CTF 2026</span><span class="art"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"><span class="chip">2nd</span></span><span class="type">Attack</span><span class="desc"><em>2nd Place</em>, Uncharted Knowledge CTF.</span></article></a>
-        <a class="floater target" href="#certifications" aria-label="Coming soon: CompTIA Security+. Go to Certifications"><span class="token"><img src="img/badge-secplus.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">Security+ · soon</span><article class="card common skill target" aria-hidden="true"><span class="cost">?</span><span class="banner">Security+</span><span class="art"><img src="img/badge-secplus.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc">CompTIA <em>Security+</em>, next up.</span></article></a>
-        <a class="floater target" href="#certifications" aria-label="Coming soon: ISO 27001 Lead Auditor or Implementer. Go to Certifications"><span class="token"><img src="img/badge-iso27001la.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">ISO 27001 · soon</span><article class="card common power target" aria-hidden="true"><span class="cost">?</span><span class="banner">ISO 27001 LA / LI</span><span class="art"><img src="img/badge-iso27001la.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc"><em>Lead Auditor</em> or Implementer.</span></article></a>
         <a class="floater" href="#experience" aria-label="Associate VP for Academics, La Salle Computer Society. Go to Experience"><span class="token halo"><img src="img/logo-lscs.webp" alt=""></span><span class="token-label">LSCS</span><article class="card uncommon power" aria-hidden="true"><span class="cost">2</span><span class="banner">LSCS</span><span class="art"><img src="img/logo-lscs.webp" alt=""></span><span class="type">Power</span><span class="desc">10+ events as <em>Associate VP</em> for Academics.</span></article></a>
         <a class="floater" href="#experience" aria-label="Associate for Activities, DLSU ACM Student Chapter. Go to Experience"><span class="token"><img src="img/logo-acm.svg" alt=""></span><span class="token-label">DLSU ACM</span><article class="card common power" aria-hidden="true"><span class="cost">1</span><span class="banner">DLSU ACM</span><span class="art"><img src="img/logo-acm.svg" alt=""></span><span class="type">Power</span><span class="desc"><em>Associate</em> for Activities.</span></article></a>
         <a class="floater" href="#education" aria-label="DOST Merit Scholar. Go to Education"><span class="token"><img src="img/logo-dost.svg" alt=""></span><span class="token-label">DOST Scholar</span><article class="card uncommon power" aria-hidden="true"><span class="cost">1</span><span class="banner">DOST Scholar</span><span class="art"><img src="img/logo-dost.svg" alt=""></span><span class="type">Power</span><span class="desc"><em>Merit</em> scholarship, DOST.</span></article></a>
@@ -156,14 +152,12 @@
         <a class="floater" href="#projects" aria-label="DarkHole V2 penetration test, 13 findings. Go to Projects"><span class="token"><img class="paper" src="img/paper/skull.svg" alt=""></span><span class="token-label">DarkHole V2</span><article class="card rare attack" aria-hidden="true"><span class="cost">3</span><span class="banner">DarkHole V2</span><span class="art"><img class="paper" src="img/paper/skull.svg" alt=""><span class="chip">13</span></span><span class="type">Attack</span><span class="desc">Findings, <em>2 Critical</em>. 39-page report.</span></article></a>
         <a class="floater" href="#experience" aria-label="14th of 164 teams, Packet Capture CTF. Go to Experience"><span class="token"><img class="sticker" src="img/logo-packetcapture-sticker.webp" alt="Packet Capture CTF logo"></span><span class="token-label">Packet Capture · 14th</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">Packet Capture</span><span class="art"><img class="sticker" src="img/logo-packetcapture-sticker.webp" alt="Packet Capture CTF logo"><span class="chip">14th</span></span><span class="type">Attack</span><span class="desc"><em>14th</em> of 164 teams, top 9%.</span></article></a>
         <a class="floater" href="#experience" aria-label="K17 CTF 2026, top 23 percent. Go to Experience"><span class="token"><img class="paper" src="img/paper/triangular-flag.svg" alt=""></span><span class="token-label">K17 CTF · top 23%</span><article class="card uncommon attack" aria-hidden="true"><span class="cost">2</span><span class="banner">K17 CTF 2026</span><span class="art"><img class="paper" src="img/paper/triangular-flag.svg" alt=""><span class="chip">Top 23%</span></span><span class="type">Attack</span><span class="desc">152nd of 682 teams, <em>SlayTheFlagII</em>.</span></article></a>
-        <a class="floater target" href="#certifications" aria-label="Coming soon: AWS Certified Security Specialty. Go to Certifications"><span class="token"><img src="img/badge-aws-scs.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">AWS Security · soon</span><article class="card common skill target" aria-hidden="true"><span class="cost">?</span><span class="banner">AWS Security Specialty</span><span class="art"><img src="img/badge-aws-scs.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc">Specialty, the <em>cloud security</em> step.</span></article></a>
-        <a class="floater target" href="#certifications" aria-label="Coming soon: ISACA CISA or CRISC. Go to Certifications"><span class="token"><img src="img/badge-cisa.webp" alt=""><img class="duo" src="img/badge-crisc.webp" alt=""><span class="soon">Soon</span></span><span class="token-label">CISA / CRISC · soon</span><article class="card common power target" aria-hidden="true"><span class="cost">?</span><span class="banner">CISA / CRISC</span><span class="art"><img src="img/badge-cisa.webp" alt=""><img class="duo" src="img/badge-crisc.webp" alt=""><span class="soon">Soon</span></span><span class="type">Coming soon</span><span class="desc">Audit and <em>risk</em>, longer term.</span></article></a>
         <a class="floater" href="#experience" aria-label="Associate VP for HR Development, DLSU SPRINT. Go to Experience"><span class="token"><img class="rounded" src="img/logo-sprint-square.webp" alt=""></span><span class="token-label">DLSU SPRINT</span><article class="card uncommon power" aria-hidden="true"><span class="cost">2</span><span class="banner">DLSU SPRINT</span><span class="art"><img src="img/logo-sprint.png" alt=""></span><span class="type">Power</span><span class="desc">30+ members, as <em>Associate VP</em> for HR.</span></article></a>
         <a class="floater" href="#experience" aria-label="Executive for Internal Relations, Computer Studies Government. Go to Experience"><span class="token"><img src="img/logo-csg.webp" alt=""></span><span class="token-label">CCS Government</span><article class="card common power" aria-hidden="true"><span class="cost">1</span><span class="banner">CS Government</span><span class="art"><img src="img/logo-csg.webp" alt=""></span><span class="type">Power</span><span class="desc"><em>Internal Relations</em> executive.</span></article></a>
       </div>
     </div>
 
-    <div class="hero-foot">
+    <div class="hero-foot" id="about">
       <p class="intro">
         I'm a Computer Science student at De La Salle University, majoring in Network and Information Security.
         I like the part of security where frameworks meet real systems: mapping controls to ISO 27001 and NIST 800-53,
@@ -178,12 +172,10 @@
         <a class="soc" href="https://www.linkedin.com/in/theodore-garcia-179b24333/" target="_blank" rel="noopener" aria-label="LinkedIn" data-tip="LinkedIn" style="--b:#0A66C2;--g:#0A66C2"><i class="ic" style="--src:url(img/icons/si-linkedin.svg)"></i></a>
         <a class="soc" href="https://github.com/theoithinkk" target="_blank" rel="noopener" aria-label="GitHub" data-tip="GitHub" style="--b:#24292F;--g:#24292F"><i class="ic" style="--src:url(img/icons/si-github.svg)"></i></a>
         <a class="soc" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener" aria-label="Credly" data-tip="Credly" style="--b:#FF6B00;--g:#FF6B00"><i class="ic" style="--src:url(img/icons/si-credly.svg)"></i></a>
-        <a class="soc" href="https://www.facebook.com/theodore.rodolfo/" target="_blank" rel="noopener" aria-label="Facebook" data-tip="Facebook" style="--b:#0866FF;--g:#0866FF"><i class="ic" style="--src:url(img/icons/si-facebook.svg)"></i></a>
-        <a class="soc" href="https://www.instagram.com/theoithink/" target="_blank" rel="noopener" aria-label="Instagram, @theoithink" data-tip="@theoithink" style="--b:radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);--g:#d6249f"><i class="ic" style="--src:url(img/icons/si-instagram.svg)"></i></a>
         <!-- Discord has no public profile URL by username, so this copies it instead -->
         <button class="soc" type="button" data-copy="cianai" aria-label="Copy Discord username cianai" data-tip="Discord: cianai" style="--b:#5865F2;--g:#5865F2"><i class="ic" style="--src:url(img/icons/si-discord.svg)"></i></button>
       </div>
-      <p class="hero-meta">Manila, Philippines · Open to GRC and cloud security internships</p>
+      <p class="hero-meta">Las Piñas City, Philippines · <a href="mailto:garciatheodoreiii715@gmail.com">garciatheodoreiii715@gmail.com</a></p>
     </div>
 
     <div class="hand-wrap">
@@ -246,7 +238,7 @@
           <p class="node-type">CTF</p>
           <h3>Packet Capture CTF · 14th, top 9%</h3>
           <p class="org">CyberPH and MQ CyberSec Club</p>
-          <p class="meta">2026</p>
+          <p class="meta">Oct 2026</p>
           <p class="tags"><span>OSINT</span><span>Web</span><span>Forensics</span><span>Network</span><span>Stego</span></p>
           <ul>
             <li>Placed <strong>14th of 164 teams</strong> in Packet Capture: Beyond the Network, a network and security CTF.</li>
@@ -274,7 +266,7 @@
           <p class="node-type">CTF</p>
           <h3>ISO 2026 CTF · 2nd place</h3>
           <p class="org">Information Security Organization, DLSU</p>
-          <p class="meta">2026</p>
+          <p class="meta">Sep 2026</p>
           <p class="tags"><span>Crypto</span><span>Linux</span><span>Forensics</span><span>Web</span><span>OSINT</span><span>Stego</span></p>
           <ul>
             <li>Placed <strong>2nd</strong> in ISO 2026 CTF: Uncharted Knowledge.</li>
@@ -624,12 +616,12 @@
       <a class="solve" href="writeups/packet-capture-act-1/under-construction.html" style="--c:#4fc1a6" data-cat="osint" data-title="Under Construction" data-meta="OSINT · internet history · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="The description itself is the search query." aria-label="Under Construction, OSINT, Packet Capture CTF · Act I: The Signal"></a>
       <a class="solve" href="writeups/packet-capture-act-2/forgotten-router.html" style="--c:#e8b84a" data-cat="web-exploitation" data-title="Forgotten Router" data-meta="Web Exploitation · information disclosure / exposed file · 3 steps" data-event="Packet Capture CTF · Act II: The Breach" data-trick="The login/diagnostics CGI is a distraction." aria-label="Forgotten Router, Web Exploitation, Packet Capture CTF · Act II: The Breach"></a>
       <a class="solve" href="writeups/packet-capture-act-2/internal-trouble.html" style="--c:#e8b84a" data-cat="web-exploitation" data-title="Internal Trouble" data-meta="Web Exploitation · SSRF · 4 steps" data-event="Packet Capture CTF · Act II: The Breach" data-trick="The &quot;Is Website Down?&quot; checker is an SSRF primitive." aria-label="Internal Trouble, Web Exploitation, Packet Capture CTF · Act II: The Breach"></a>
-      <a class="solve" href="writeups/packet-capture-act-3/deleted-doesnt-mean-gone.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Deleted Doesn&#x27;t Mean Gone" data-meta="Digital Forensics · Disk / File Carving · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="deleting or wiping the file table doesn&#x27;t erase the data." aria-label="Deleted Doesn&#x27;t Mean Gone, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
-      <a class="solve" href="writeups/packet-capture-act-3/hidden-within.html" style="--c:#d77fb3" data-cat="steganography" data-title="Hidden Within" data-meta="Steganography · 2 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="test each colour channel&#x27;s LSB on its own as well as interleaved." aria-label="Hidden Within, Steganography, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/deleted-doesnt-mean-gone.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Deleted Doesn&#x27;t Mean Gone" data-meta="Digital Forensics · Disk / File Carving · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Deleting or wiping the file table doesn&#x27;t erase the data." aria-label="Deleted Doesn&#x27;t Mean Gone, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/hidden-within.html" style="--c:#d77fb3" data-cat="steganography" data-title="Hidden Within" data-meta="Steganography · 2 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Test each colour channel&#x27;s LSB on its own as well as interleaved." aria-label="Hidden Within, Steganography, Packet Capture CTF · Act III: The Echo"></a>
       <a class="solve" href="writeups/packet-capture-act-3/last-packet.html" style="--c:#3f7fc4" data-cat="network-forensics" data-title="Last Packet" data-meta="Network Forensics · 4 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="ICMP payloads are a common covert channel." aria-label="Last Packet, Network Forensics, Packet Capture CTF · Act III: The Echo"></a>
-      <a class="solve" href="writeups/packet-capture-act-3/memory-echoes.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Memory Echoes" data-meta="Digital Forensics · 4 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream." aria-label="Memory Echoes, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
-      <a class="solve" href="writeups/packet-capture-act-3/registry-secrets.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Registry Secrets" data-meta="Digital Forensics · Memory · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="tie the process list to network activity first." aria-label="Registry Secrets, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
-      <a class="solve" href="writeups/packet-capture-act-3/usb-secrets.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="USB Secrets" data-meta="Digital Forensics · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out." aria-label="USB Secrets, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/memory-echoes.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Memory Echoes" data-meta="Digital Forensics · 4 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="In a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream." aria-label="Memory Echoes, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/registry-secrets.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="Registry Secrets" data-meta="Digital Forensics · Memory · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Tie the process list to network activity first." aria-label="Registry Secrets, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/usb-secrets.html" style="--c:#5aa7dc" data-cat="digital-forensics" data-title="USB Secrets" data-meta="Digital Forensics · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out." aria-label="USB Secrets, Digital Forensics, Packet Capture CTF · Act III: The Echo"></a>
       <i class="solve empty" aria-hidden="true"></i>
       <i class="solve empty" aria-hidden="true"></i>
       <i class="solve empty" aria-hidden="true"></i>
@@ -680,11 +672,11 @@
           <summary>Read note</summary>
           <p>In DarkHole V2, an exposed <code>.git</code> directory was the first step to root. Here's how that one finding maps:</p>
           <ul>
-            <li><strong>OWASP Top 10 (2021):</strong> A05 Security Misconfiguration.</li>
+            <li><strong>OWASP Top 10 (2025):</strong> A02 Security Misconfiguration.</li>
             <li><strong>CIS Controls v8:</strong> Control 4, Secure Configuration of Enterprise Assets and Software.</li>
             <li><strong>NIST SP 800-53 Rev. 5:</strong> CM-6 Configuration Settings, CM-7 Least Functionality.</li>
             <li><strong>ISO/IEC 27001:2022 Annex A:</strong> 8.9 Configuration management, 8.4 Access to source code.</li>
-            <li><strong>PCI DSS v4.0:</strong> Requirement 2, apply secure configurations to all system components.</li>
+            <li><strong>PCI DSS v4.0.1:</strong> Requirement 2, apply secure configurations to all system components.</li>
           </ul>
           <p>Matching IDs is the easy part. What makes a mapping useful to an auditor is the <strong>why</strong>: the server shipped files it never needed to serve (least functionality), and source code with credentials was reachable by anyone (access to source code). That rationale is what AuditBridge stores next to every mapping.</p>
         </details>
@@ -727,7 +719,8 @@
   <section id="contact" class="sec">
     <header class="sec-head"><p class="act">The Boss</p><h2 tabindex="-1">Contact</h2></header>
     <div class="panel contact">
-      <p>Open to <strong>GRC</strong>, information security and <strong>cloud security</strong> internships. Based in Las Piñas City, Philippines.</p>
+      <p>Available now for <strong>GRC</strong>, information security and <strong>cloud security</strong> internships, part-time or remote. Based in Las Piñas City, Philippines.</p>
+      <p class="contact-email"><a href="mailto:garciatheodoreiii715@gmail.com">garciatheodoreiii715@gmail.com</a></p>
       <div class="contact-links">
         <a class="plate gold" href="files/Theodore-Garcia-CV.pdf" download data-file><span>Download CV</span></a>
         <a class="plate gold" href="files/Theodore-Garcia-Resume.pdf" download data-file><span>Download Résumé</span></a>
@@ -737,8 +730,6 @@
         <a class="soc" href="https://www.linkedin.com/in/theodore-garcia-179b24333/" target="_blank" rel="noopener" aria-label="LinkedIn" data-tip="LinkedIn" style="--b:#0A66C2;--g:#0A66C2"><i class="ic" style="--src:url(img/icons/si-linkedin.svg)"></i></a>
         <a class="soc" href="https://github.com/theoithinkk" target="_blank" rel="noopener" aria-label="GitHub" data-tip="GitHub" style="--b:#24292F;--g:#24292F"><i class="ic" style="--src:url(img/icons/si-github.svg)"></i></a>
         <a class="soc" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener" aria-label="Credly" data-tip="Credly" style="--b:#FF6B00;--g:#FF6B00"><i class="ic" style="--src:url(img/icons/si-credly.svg)"></i></a>
-        <a class="soc" href="https://www.facebook.com/theodore.rodolfo/" target="_blank" rel="noopener" aria-label="Facebook" data-tip="Facebook" style="--b:#0866FF;--g:#0866FF"><i class="ic" style="--src:url(img/icons/si-facebook.svg)"></i></a>
-        <a class="soc" href="https://www.instagram.com/theoithink/" target="_blank" rel="noopener" aria-label="Instagram, @theoithink" data-tip="@theoithink" style="--b:radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);--g:#d6249f"><i class="ic" style="--src:url(img/icons/si-instagram.svg)"></i></a>
         <!-- Discord has no public profile URL by username, so this copies it instead -->
         <button class="soc" type="button" data-copy="cianai" aria-label="Copy Discord username cianai" data-tip="Discord: cianai" style="--b:#5865F2;--g:#5865F2"><i class="ic" style="--src:url(img/icons/si-discord.svg)"></i></button>
       </div>
@@ -749,7 +740,7 @@
 <footer class="foot">
   <p>&copy; 2026 Theodore Garcia · <a href="privacy.html">Privacy &amp; security</a> · <a href=".well-known/security.txt">security.txt</a></p>
   <p>Fan-made design inspired by Slay the Spire. Not affiliated with Mega Crit.</p>
-  <p>Sound effects by Kenney (CC0). Music: "The Old Tower Inn" by RandomMind (CC0). Icons: Simple Icons (CC0), Tabler Icons (MIT), Microsoft Fluent Emoji (MIT). Map and header icons are original, drawn for this site. Badges and logos belong to their owners.</p>
+  <p>Sound effects by Kenney (CC0). Music: "The Old Tower Inn" by RandomMind (CC0). Icons: Simple Icons (CC0), Tabler Icons (MIT), Microsoft Fluent Emoji (MIT). Fonts: Fraunces and Inter (SIL Open Font License). Map and header icons are original, drawn for this site. Badges and logos belong to their owners.</p>
 </footer>
 
 <button class="plate arrow proceed" type="button" id="proceed"><span>Proceed</span></button>

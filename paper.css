@@ -77,7 +77,6 @@ body::before { opacity: 1; background-image: var(--grain); background-size: 192p
   text-shadow: 0 1px 0 #0009;
 }
 .card .type { background: #211d18; border: 0; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--edge) 70%, transparent); }
-.card.target { border-style: dashed; }
 
 /* ---------- Logos and badges as printed stickers (real marks, never redrawn) ---------- */
 .token img, .token.halo img { filter: var(--cut) drop-shadow(2px 4px 2px #0a0805a0); }
@@ -114,7 +113,6 @@ body::before { opacity: 1; background-image: var(--grain); background-size: 192p
 .stop .node img.paper, .card .art img.paper { filter: drop-shadow(1.5px 3px 1.5px #0b0805a6); }
 .map.compact .stop .node { background: none; }
 .card .art img:not(.paper) { filter: var(--cut) drop-shadow(1.5px 3px 1px #0009); }
-.soon { box-shadow: 0 0 0 1.5px var(--edge), 1px 2px 0 #0008; }
 /* The same sticker edge where older, more specific rules set their own filter. */
 .btile.goal .btile-img img { filter: saturate(.55) brightness(.85) var(--cut) drop-shadow(1.5px 3px 1.5px #0a080590); }
 .map.compact .stop .node img:not(.paper), .map.compact .stop:hover .node img:not(.paper),

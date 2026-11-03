@@ -182,7 +182,7 @@
           "strings",
           "Python"
         ],
-        "insight": "deleting or wiping the file table doesn't erase the data. Signature-based carving (PK, %PDF, JPEG FFD8, etc.) finds intact files in unallocated space without any filesystem metadata.",
+        "insight": "Deleting or wiping the file table doesn't erase the data. Signature-based carving (PK, %PDF, JPEG FFD8, etc.) finds intact files in unallocated space without any filesystem metadata.",
         "minutes": 1,
         "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Deleted%20Doesn%27t%20Mean%20Gone/writeup.md",
         "steps": 3
@@ -195,7 +195,7 @@
         "tools": [
           "Python"
         ],
-        "insight": "test each colour channel's LSB on its own as well as interleaved. Here the message was only in red, so the common \"RGB interleaved\" extraction gives garbage.",
+        "insight": "Test each colour channel's LSB on its own as well as interleaved. Here the message was only in red, so the common \"RGB interleaved\" extraction gives garbage.",
         "minutes": 1,
         "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Hidden%20Within/writeup.md",
         "steps": 2
@@ -222,7 +222,7 @@
           "Python",
           "strings"
         ],
-        "insight": "in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text (\"echo in the registry\") matches the challenge story.",
+        "insight": "In a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text (\"echo in the registry\") matches the challenge story.",
         "minutes": 2,
         "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Memory%20Echoes/writeup.md",
         "steps": 4
@@ -236,7 +236,7 @@
           "strings",
           "Python"
         ],
-        "insight": "tie the process list to network activity first. The process talking to a known-bad port is the one whose data matters, and the key is sitting in the dump as a config value. Read \"90\" as decimal (0x5A), not hex.",
+        "insight": "Tie the process list to network activity first. The process talking to a known-bad port is the one whose data matters, and the key is sitting in the dump as a config value. Read \"90\" as decimal (0x5A), not hex.",
         "minutes": 1,
         "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Registry%20Secrets/writeup.md",
         "steps": 3
@@ -250,7 +250,7 @@
           "text editor",
           "Python"
         ],
-        "insight": "know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out. Hex that starts with 50 61 63 6B is \"Pack\", the start of the flag format.",
+        "insight": "Know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out. Hex that starts with 50 61 63 6B is \"Pack\", the start of the flag format.",
         "minutes": 1,
         "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20USB%20Secrets/writeup.md",
         "steps": 3

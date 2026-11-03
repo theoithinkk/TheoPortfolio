@@ -6,7 +6,7 @@ const contact = [
   "garciatheodoreiii715@gmail.com",
   "linkedin.com/in/theodore-garcia-179b24333",
   "github.com/theoithinkk",
-  "theoithinkk.github.io/TheoPortfolio",
+  "theoith.ink",
 ];
 
 const dlsu = {
@@ -112,12 +112,12 @@ const k17 = {
 };
 const isoctf = {
   org: "ISO 2026 CTF: Uncharted Knowledge, Information Security Organization, DLSU", where: "Manila, Philippines",
-  role: "2nd place", when: "2026",
+  role: "2nd place", when: "Sep 2026",
   bullets: ["Solved cryptography, OS and Linux, digital forensics, web, metadata analysis, OSINT and steganography challenges."],
 };
 const packet = {
   org: "Packet Capture: Beyond the Network CTF, CyberPH and MQ CyberSec Club", where: "",
-  role: "14th of 164 teams (top 9%)", when: "2026",
+  role: "14th of 164 teams (top 9%)", when: "Oct 2026",
   bullets: ["Solved OSINT, web exploitation, digital and network forensics and steganography challenges; published 16 step-by-step writeups (github.com/theoithinkk/CTFwriteups)."],
 };
 

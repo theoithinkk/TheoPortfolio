@@ -35,7 +35,8 @@ from PIL import Image
 
 SITE = Path(__file__).resolve().parent.parent
 OUT = SITE / "writeups"
-VERSION = "20261029e"   # cache tag for style.css / prefs.js on the generated pages
+# Cache tag for style.css / prefs.js on the generated pages: read from index.html so the two never drift.
+VERSION = re.search(r"style\.css\?v=(\w+)", (SITE / "index.html").read_text(encoding="utf-8")).group(1)
 MAX_IMG_W = 1600
 CATEGORY_COLORS = {"osint": "#4fc1a6", "crypto": "#a27fe0", "forensics": "#5aa7dc", "web": "#e8b84a",
                    "pwn": "#e0573f", "rev": "#f08a4b", "reverse engineering": "#f08a4b", "misc": "#9aa0a6",
@@ -144,14 +145,11 @@ PAGE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>{title} ({category} writeup) | Theodore Garcia</title>
 <meta name="description" content="{desc}">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../style.css?v={v}">
 <link rel="stylesheet" href="../../paper.css?v={v}">
 <script src="../../prefs.js?v={v}" data-static></script>
@@ -267,6 +265,7 @@ def build_event(src_dir, event_slug, event_title, done_only=False):
                     b["file"] = Path(b["fig"]).with_suffix(".webp").name
                     b["w"], b["h"] = convert_image(src, OUT / "img" / event_slug / slug / b["file"])
         insight = next((c["text"] for c in callouts if c["label"].lower().startswith("key")), "")
+        insight = insight[:1].upper() + insight[1:]   # some writeups start the insight lowercase
         tools = [re.sub(r"\s*\(.*?\)", "", t).strip() for t in head.get("tools used", "").split(",") if t.strip()]
         words = len((d / "writeup.md").read_text(encoding="utf-8").split())
         source = f"{src_url}/{quote(d.name)}/writeup.md" if src_url else ""

@@ -3,17 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Memory Echoes (Digital Forensics writeup) | Theodore Garcia</title>
-<meta name="description" content="in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text (&quot;echo in the registry&quot;) matches the challenge story.">
+<meta name="description" content="In a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text (&quot;echo in the registry&quot;) matches the challenge story.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../style.css?v=20261029e">
-<link rel="stylesheet" href="../../paper.css?v=20261029e">
-<script src="../../prefs.js?v=20261029e" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261103a">
+<link rel="stylesheet" href="../../paper.css?v=20261103a">
+<script src="../../prefs.js?v=20261103a" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -25,7 +22,7 @@
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>in a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text ("echo in the registry") matches the challenge story.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>In a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream. Short opaque blobs are often single-byte XOR, so brute-forcing all 256 keys is quick to try. The flag text ("echo in the registry") matches the challenge story.</p></aside>
     <section class="wu-step" id="step-1">
       <h2><span class="wu-n">01</span><b>Start point:</b> MFT.dd (9 KB).</h2>
       <ul><li><b>What I found:</b> the file begins with "FILE" signatures, so it is a raw dump of NTFS Master File Table records. It holds 9 records: services.exe, notepad.exe, rundll32.exe, taskhostw.exe, winlogon.exe, cmd.exe, update_agent.dll, explorer.exe and svchost.exe.</li><li class="think"><b>Thinking:</b> every record's $DATA is the same filler text ("System file content holder."), so the real content had to be in whichever record didn't match the rest.</li></ul>
@@ -59,6 +56,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>MFT.dd</span></a></li><li><a href="#step-2"><b>2</b><span>Odd record, update_agent.dll</span></a></li><li><a href="#step-3"><b>3</b><span>Hidden stream&#x27;s bytes</span></a></li><li><a href="#step-4"><b>4</b><span>Decoding</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261029e" defer></script>
+<script src="../wu.js?v=20261103a" defer></script>
 </body>
 </html>

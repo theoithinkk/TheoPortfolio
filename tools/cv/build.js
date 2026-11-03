@@ -4,7 +4,8 @@
 //
 // Edit content.js, then from tools/cv:
 //   npm install docx@9.5.1          (once; node_modules is gitignored)
-//   node build.js out 10            (out/*.html and out/*.docx, 10pt)
+//   node build.js out 10            (out/*.html and out/*.docx, 10pt: use this for the résumé)
+//   node build.js out 9.5           (the CV is printed at 9.5pt so it stays on two pages)
 //   chrome --headless=new --no-pdf-header-footer --print-to-pdf=out/<name>.pdf out/<name>.html
 // and copy the PDFs and DOCX files into files/. Keep the résumé to one page (check with pdfinfo).
 const fs = require("fs");
