@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Theodore Garcia, GRC, Cloud and AI Security">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://theoith.ink/">
-<link rel="stylesheet" href="style.css?v=20261103b">
+<link rel="stylesheet" href="style.css?v=20261104a">
 <link rel="stylesheet" href="paper.css?v=20261103b">
 <!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
 <script src="prefs.js?v=20261103b"></script>
@@ -427,6 +427,44 @@
           <ul>
             <li>Validated scanner output by hand, then chained five weaknesses into full root access.</li>
             <li>Co-authored a 39-page findings report: 13 findings (2 Critical, 5 High) with CVSS 3.1 vectors and prioritized remediation.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="ai dev">
+        <div class="prow-media"><img src="img/proj-hulog.webp" alt="Hulog title card: a buyer who missed installment 16 of 48 sees the date their grace period ends" loading="lazy"></div>
+        <div class="prow-body">
+          <p class="prow-kicker">PayPal AI Hackathon 2026 · Next.js · Claude API</p>
+          <h3>Hulog</h3>
+          <p class="prow-sum">Property installments on PayPal that show Filipino homebuyers their grace period and refund rights under the Maceda Law (RA 6552) when a payment slips, in English or Filipino.</p>
+          <ul>
+            <li>Fixed rules calculate every legal date and amount, and Claude only explains them. An answer with a number that isn't in the buyer's facts is rewritten or replaced with fixed text.</li>
+            <li>Runs in the PayPal sandbox with signature-verified webhooks, plus a broker board that ranks who's behind and drafts follow-ups for a person to review and send.</li>
+          </ul>
+          <p class="prow-links">
+            <a href="https://github.com/theoithinkk/hulog" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a>
+            <a href="https://hulog.onrender.com" target="_blank" rel="noopener">Live demo <i class="ii ii-ext" aria-hidden="true"></i></a>
+          </p>
+        </div>
+      </article>
+
+      <article class="prow" data-tags="security dev">
+        <div class="prow-media">
+          <ol class="chain" aria-label="What the app keeps in one place">
+            <li>Property <b>listings</b></li>
+            <li>Client <b>inquiries</b></li>
+            <li><b>Viewings</b> and <b>referrals</b></li>
+            <li><b>Commissions</b></li>
+          </ol>
+        </div>
+        <div class="prow-body">
+          <p class="prow-kicker">Real client · In progress · TypeScript · Express · MySQL · React</p>
+          <h3>Project Sinag</h3>
+          <p class="prow-sum">A web app replacing a real estate brokerage's Excel files, built with a seven-person Scrum team for Filipino Sunshine Powerhouse Realty.</p>
+          <ul>
+            <li>Set up the architecture, MySQL migrations and the CI that runs the API tests on every pull request, and wrote the log-in, role checks, audit log and consent modules.</li>
+            <li>A lockout after 5 failed log-ins treats unknown e-mails the same, so no response reveals which accounts exist.</li>
+            <li>Built for the Data Privacy Act (RA 10173): versioned privacy notices, consent saved in the same transaction as each form, and e-mails kept only as SHA-256 fingerprints in events and audit logs.</li>
           </ul>
         </div>
       </article>
