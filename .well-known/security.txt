@@ -1,6 +1,6 @@
-# Security contact for theoith.ink (RFC 9116)
+# Security contact for sts.theoith.ink (RFC 9116)
 Contact: mailto:garciatheodoreiii715@gmail.com
 Expires: 2027-10-10T00:00:00.000Z
 Preferred-Languages: en, fil
-Canonical: https://theoith.ink/.well-known/security.txt
-Policy: https://theoith.ink/privacy.html
+Canonical: https://sts.theoith.ink/.well-known/security.txt
+Policy: https://sts.theoith.ink/privacy.html
