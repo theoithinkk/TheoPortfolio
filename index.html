@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Content Security Policy. GitHub Pages can't send HTTP headers, so it lives in a meta tag.
+<!-- Content Security Policy. The same policy is sent as a real HTTP header by /_headers; this meta
+     tag is the fallback for when the page is opened without that header (a local copy, another host).
      Scripts and fonts only from this site (no inline JS), no plugins, no forms.
      'unsafe-inline' for styles is needed for the per-element CSS variables (style="--x: ..."). -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
@@ -24,11 +25,30 @@
 <meta property="og:image:alt" content="Theodore Garcia, GRC, Cloud and AI Security">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://theoith.ink/">
+<!-- Structured data for search engines: ties this site to the same person's LinkedIn, GitHub and Credly.
+     It is data, not a script that runs, so the "no inline JS" policy above still holds. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Theodore Garcia",
+  "url": "https://theoith.ink/",
+  "image": "https://theoith.ink/img/theodore.webp",
+  "description": "Computer Science (Network & Information Security) student at De La Salle University focused on GRC, cloud security and AI security.",
+  "affiliation": { "@type": "CollegeOrUniversity", "name": "De La Salle University" },
+  "knowsAbout": ["Governance, risk and compliance", "Cloud security", "AI security"],
+  "sameAs": [
+    "https://www.linkedin.com/in/theodore-garcia-179b24333/",
+    "https://github.com/theoithinkk",
+    "https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly"
+  ]
+}
+</script>
 <link rel="stylesheet" href="style.css?v=20261104a">
 <link rel="stylesheet" href="paper.css?v=20261103b">
 <!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
 <script src="prefs.js?v=20261103b"></script>
-<script src="main.js?v=20261103b" defer></script>
+<script src="main.js?v=20261111a" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#about">Skip to content</a>

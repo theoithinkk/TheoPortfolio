@@ -28,7 +28,8 @@ function trapTab(dlg) {
    Off by default (visitors are often at work); the Settings toggle turns it on and is remembered.
    Browsers block audio until the first user gesture (a click, tap or key press), so the engine
    unlocks itself on that first gesture.
-   - Sample files download immediately, so they're ready by the first click.
+   - Sample files download only once sound is switched on. It starts off, so most visitors never
+     fetch them; until they finish decoding, the synth versions play.
    - Nothing is scheduled while audio is suspended, so sounds never pile up and burst out later.
    - Sounds are panned left/right to match where the element sits on screen, with slight
      random pitch, so repeated hovers don't sound robotic.
@@ -54,10 +55,16 @@ const sfx = (() => {
   // skipped the intro, which left SFX off for them forever.
   let ctx = null, noise = null, master = null, send = null, on = prefs.sfx ?? false;
   const names = [...new Set(Object.values(SAMPLES).flat())];
-  const raw = {}, buffers = {}, lastAt = {};
-  const fetched = Promise.all(names.map(async n => {
-    try { const r = await fetch(`audio/${n}.ogg`); if (r.ok) raw[n] = await r.arrayBuffer(); } catch {}
-  }));
+  const buffers = {}, lastAt = {};
+  let loading = null;
+  function loadSamples() {
+    loading ||= Promise.all(names.map(async n => {
+      try {
+        const r = await fetch(`audio/${n}.ogg`);
+        if (r.ok) buffers[n] = await ctx.decodeAudioData(await r.arrayBuffer());
+      } catch {}
+    }));
+  }
   function unlock() {
     if (!ctx) {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -80,10 +87,8 @@ const sfx = (() => {
       noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
       const d = noise.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-      fetched.then(() => names.forEach(n => {
-        if (raw[n]) ctx.decodeAudioData(raw[n]).then(b => { buffers[n] = b; }, () => {});
-      }));
     }
+    if (on) loadSamples();
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
   }
   // Any first gesture unlocks audio; kept on (cheap) because iOS can suspend it again later.

@@ -4,8 +4,9 @@ Personal portfolio of Theodore Garcia, a Computer Science (Network and Informati
 
 ## Security and privacy design
 
-- **Content Security Policy** in a `<meta>` tag, since GitHub Pages can't send custom headers. Scripts, fonts, images and audio load only from this site. There is no inline JavaScript, no plugins and no form submissions. `'unsafe-inline'` is allowed for styles only, because elements carry per-element CSS variables.
-- **No third parties on page load.** Fonts are self-hosted, so opening a page contacts GitHub Pages and nobody else. No cookies, analytics or trackers.
+- **Content Security Policy** sent as an HTTP header from [`_headers`](_headers), with the same policy in a `<meta>` tag as a fallback. Scripts, fonts, images and audio load only from this site. There is no inline JavaScript, no plugins and no form submissions. `'unsafe-inline'` is allowed for styles only, because elements carry per-element CSS variables.
+- **HSTS, no framing, no device access.** The same file sends `Strict-Transport-Security`, `frame-ancestors 'none'` with `X-Frame-Options: DENY` (a `<meta>` tag can't set either), and a `Permissions-Policy` that turns off camera, microphone and location.
+- **No third parties on page load.** Fonts are self-hosted, so opening a page contacts Cloudflare, the site's host, and nobody else. No cookies, analytics or trackers.
 - **One local preference key.** Display choices live in `localStorage` under `tg-prefs`, and every field is listed in [privacy.html](privacy.html).
 - **security.txt** ([RFC 9116](https://www.rfc-editor.org/rfc/rfc9116)) at [.well-known/security.txt](.well-known/security.txt).
 - External links use `rel="noopener"`, and the referrer policy is `strict-origin-when-cross-origin`.
@@ -19,6 +20,8 @@ Personal portfolio of Theodore Garcia, a Computer Science (Network and Informati
 | `style.css`, `paper.css` | Base styles, then the paper cut-out layer |
 | `prefs.js` | Applies saved theme before first paint (not deferred, so colors never flash) |
 | `main.js` | Intro, palettes, card hand, map, sound |
+| `_headers` | HTTP security headers, read by Cloudflare Pages at deploy time |
+| `404.html` | Served with a real 404 status for any missing path |
 | `writeups/` | Generated CTF writeup pages |
 | `files/` | CV and résumé (PDF and DOCX) |
 | `tools/` | Writeup and CV generators |

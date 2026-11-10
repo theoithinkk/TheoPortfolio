@@ -1,0 +1,13 @@
+# Response headers for Cloudflare Pages: https://developers.cloudflare.com/pages/configuration/headers/
+# Each page also carries the Content Security Policy in a <meta> tag, but a <meta> tag cannot set
+# frame-ancestors or HSTS, so the full policy is sent here.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# CV and resume downloads: drop the CSP so object-src 'none' cannot stop a browser's built-in PDF viewer.
+# X-Frame-Options above still applies, so these cannot be framed either.
+/files/*
+  ! Content-Security-Policy

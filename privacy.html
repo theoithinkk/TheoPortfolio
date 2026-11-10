@@ -38,8 +38,8 @@
   <div class="panel">
     <h2>Third parties</h2>
     <ul>
-      <li><strong>Hosting.</strong> The site is served by GitHub Pages. Like any web host, GitHub may log your IP address for security and abuse prevention, under GitHub's own privacy statement.</li>
-      <li><strong>Nothing else loads from elsewhere.</strong> Fonts, images, sounds and scripts are all served from this site, so opening a page contacts GitHub Pages and nobody else.</li>
+      <li><strong>Hosting.</strong> The site is served through Cloudflare. Like any web host, Cloudflare may log your IP address for security and abuse prevention, under Cloudflare's own privacy policy.</li>
+      <li><strong>Nothing else loads from elsewhere.</strong> Fonts, images, sounds and scripts are all served from this site, so opening a page contacts Cloudflare and nobody else.</li>
       <li><strong>Links out.</strong> LinkedIn, GitHub, Credly, YouTube, Google Drive, UiPath and Render links take you to those sites, which have their own policies.</li>
     </ul>
   </div>
@@ -48,6 +48,7 @@
     <h2>How the site protects you</h2>
     <ul>
       <li>A Content Security Policy only allows scripts from this site, blocks inline scripts, plugins and form submissions, and only allows fonts from this site.</li>
+      <li>The server tells your browser to always use HTTPS for this site (HSTS) and refuses to be shown inside a frame on another site, which blocks clickjacking.</li>
       <li>Every external link opens with <code>rel="noopener"</code>, so other sites can't control this tab.</li>
       <li>The referrer policy only shares the site's address, never the full page path, with other sites.</li>
     </ul>
