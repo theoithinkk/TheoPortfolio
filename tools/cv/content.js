@@ -94,17 +94,28 @@ const voip = {
     "Supported file, one-way and two-way call modes with clean teardown between calls.",
   ],
 };
-const catbot = {
-  org: "CatBot", where: "Course project",
-  role: "Python, reinforcement learning", when: "",
-  bullets: ["Built a tabular Q-learning agent that catches cats with different movement styles on an 8×8 grid, evaluated over 20 games against 5 graded cats plus unseen behaviors."],
-};
 const uipath = {
   org: "UiPath Automation", where: "Personal project",
   role: "Robotic process automation, UiPath Studio", when: "",
   bullets: ["Built an automation workflow in UiPath Studio, with a recorded demo of it running."],
 };
 
+const huawei = {
+  org: "Huawei Future Innovators Camp, Huawei Philippines", where: "Taguig City, Philippines",
+  role: "Best Trainee Award (one of five, one per group)", when: "Nov 2026",
+  bullets: ["Selected from 300+ applicants; pitched BuyBye, a connected checkout system for shoppers and store owners, in the Retail and Hospitality track."],
+};
+const csctf = {
+  org: "CSCTF 2026, Chronos Security", where: "Online",
+  role: "44th of 609 teams (top 8%)", when: "Nov 2026",
+  bullets: ["Solved web exploitation, pwn, ICS/OT, side-channel and miscellaneous challenges."],
+};
+// ponytail: no bullet until the solved categories are confirmed (only the steganography writeup is marked done)
+const pinkctf = {
+  org: "PINK+ CTF", where: "Online",
+  role: "66th of 589 teams (top 12%)", when: "Nov 2026",
+  bullets: [],
+};
 const k17 = {
   org: "K17 CTF 2026, UNSW Security Society", where: "Online",
   role: "Team SlayTheFlagII: 152nd of 682 teams (top 23%)", when: "Sep 2026",
@@ -203,14 +214,11 @@ module.exports = {
       { title: "Certifications", lines: [
         ["Certified", certs],
         ["Skill badges", "IBM SkillsBuild: GRC and Data Privacy; Vulnerability Management; System and Network Security; Cloud Security"],
-        ["Working toward", "CompTIA Security+; AWS Certified Security Specialty; ISO/IEC 27001 Lead Auditor or Lead Implementer (PECB); ISACA CISA or CRISC"],
       ] },
-      { title: "Projects", entries: [darkhole, auditbridge, sinag, galicious, pinoyflex, pablings, promptathon, voip, catbot, uipath] },
-      { title: "Competitions and Writeups", entries: [packet, k17, isoctf] },
+      // promptathon and voip are left out of the CV at Theo's request (2026-11-13); kept above as sourced facts.
+      { title: "Projects", entries: [darkhole, auditbridge, sinag, galicious, pinoyflex, pablings, uipath] },
+      { title: "Competitions and Awards", entries: [huawei, csctf, pinkctf, packet, k17, isoctf] },
       { title: "Leadership Experience", entries: [isoofficer, lscs, sprint, csg, acm] },
-      { title: "Research", lines: [
-        ["Senior high research", "Outstanding Research Award, Elizabeth Seton School; oral presenter, PAREF Southridge Research Congress"],
-      ] },
       { title: "Skills", lines: [["GRC and privacy", skills.grc], ["Cloud and AI", skills.cloud], ["Offensive security", skills.offsec], ["Languages", skills.code], ["Tools and frameworks", skills.tools]] },
     ],
   },
