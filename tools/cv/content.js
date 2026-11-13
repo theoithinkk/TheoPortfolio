@@ -177,10 +177,10 @@ const skills = {
 module.exports = {
   resume: {
     file: "Theodore-Garcia-Resume",
-    name: "Theodore Garcia", contact,
+    name: "Theodore Rodolfo III Garcia", contact,
     sections: [
       { title: "Education", entries: [dlsu] },
-      { title: "Certifications", lines: [["Certified", `${certs}. In progress: CompTIA Security+`]] },
+      { title: "Certifications", lines: [["Certified", certs]] },   // earned only; no in-progress items (Theo, 2026-11-13)
       // One page: the same facts as the CV, fewer bullets. Galicious and Pablings are in the CV only.
       { title: "Projects", entries: [
         { ...darkhole, bullets: [darkhole.bullets[0],
@@ -193,8 +193,11 @@ module.exports = {
         { ...sinag, bullets: ["Real-estate brokerage app with a seven-person Scrum team; set up the architecture and CI, and built log-in with a lockout that hides which accounts exist, hardened sessions, audit logging and RA 10173 consent."] },
         { ...pinoyflex, bullets: ["Five-person full-stack fitness community app; secured with bcrypt hashing, hardened session cookies, role-based access control, rate limiting and non-enumerating login errors."] },
       ] },
-      { title: "Competitions", lines: [
-        ["Packet Capture: Beyond the Network CTF (Oct 2026)", "14th of 164 teams (top 9%); 16 published writeups at github.com/theoithinkk/CTFwriteups"],
+      { title: "Competitions and Awards", lines: [
+        ["Huawei Future Innovators Camp (Nov 2026)", "Best Trainee Award, one of five; selected from 300+ applicants"],
+        ["CSCTF 2026, Chronos Security (Nov 2026)", "44th of 609 teams (top 8%)"],
+        ["PINK+ CTF (Nov 2026)", "66th of 589 teams (top 12%)"],
+        ["Packet Capture: Beyond the Network CTF (Oct 2026)", "14th of 164 teams (top 9%); 16 published writeups"],
         ["K17 CTF 2026, UNSW Security Society (Sep 2026)", "152nd of 682 teams (top 23%) with Team SlayTheFlagII"],
         ["ISO 2026 CTF: Uncharted Knowledge, DLSU (Sep 2026)", "2nd place"],
       ] },
@@ -208,7 +211,7 @@ module.exports = {
   },
   cv: {
     file: "Theodore-Garcia-CV",
-    name: "Theodore Garcia", contact,
+    name: "Theodore Rodolfo III Garcia", contact,
     sections: [
       { title: "Education", entries: [dlsu, seton] },
       { title: "Certifications", lines: [
