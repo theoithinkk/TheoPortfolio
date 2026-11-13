@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>CTF writeups | Theodore Garcia</title>
+<meta name="description" content="Step-by-step CTF writeups by Theodore Garcia: 16 flags · 3 events · 5 categories.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css?v=20261104a">
+<link rel="stylesheet" href="../paper.css?v=20261104a">
+<script src="../prefs.js?v=20261104a" data-static></script>
+<style>
+.wx-main { padding-top: 2.6rem; padding-bottom: 4rem; }
+.wx-event + .wx-event { margin-top: 3rem; }
+.wx-event h2 { margin: 0 0 .3rem; font-size: 1.5rem; }
+.wx-sub { margin: 0 0 1.1rem; font-size: .85rem; color: var(--muted); }
+.wx-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.wx-list a { display: flex; flex-direction: column; gap: .45rem; height: 100%; box-sizing: border-box; padding: 1rem 1.1rem; border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 6px; background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--text); text-decoration: none; transition: border-color .2s, translate .2s; }
+.wx-list a:hover, .wx-list a:focus-visible { border-color: var(--c); translate: 0 -2px; }
+.wx-cat { font: 700 .7rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--c); }
+.wx-list b { font-size: 1.1rem; }
+.wx-trick { font-size: .9rem; color: color-mix(in srgb, var(--text) 80%, transparent); }
+.wx-list small { margin-top: auto; font-size: .78rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .wx-list a { transition: none; } }
+</style>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <p class="wu-kicker"><span class="wu-cat">CTF writeups</span><span>16 flags · 3 events · 5 categories</span></p>
+    <h1>Theodore Garcia</h1>
+    <p class="wu-lede">How I captured each flag, step by step: what I tried, the dead ends, and the trick that cracked it. <a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups" target="_blank" rel="noopener">Source on GitHub</a></p>
+  </div>
+</header>
+<main class="wu-wrap wx-main">
+<section class="wx-event"><h2>Packet Capture CTF · Act I: The Signal</h2><p class="wx-sub">8 writeups</p><ul class="wx-list"><li><a href="packet-capture-act-1/digital-footprint.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT</span><b>Digital Footprint</b><span class="wx-trick">Bans and deletions remove content from the live site, not from the internet.</span><small>4 steps · 2 min read</small></a></li><li><a href="packet-capture-act-1/forgotten-repository.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT</span><b>Forgotten Repository</b><span class="wx-trick">Deleting a secret in a new commit doesn&#x27;t remove it from git history.</span><small>4 steps · 1 min read</small></a></li><li><a href="packet-capture-act-1/hidden-profile.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT</span><b>Hidden Profile</b><span class="wx-trick">Deleted or hidden posts can still exist in web archives.</span><small>5 steps · 2 min read</small></a></li><li><a href="packet-capture-act-1/last-breadcrumb.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT</span><b>Last Breadcrumb</b><span class="wx-trick">Each pivot reuses the latest clue on a site already visited (hash &gt; YouTube &gt; Mastodon &gt; paste &gt; PGP keyserver &gt; Mastodon &gt; YouTube).</span><small>9 steps · 4 min read</small></a></li><li><a href="packet-capture-act-1/scattered-identities.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT</span><b>Scattered Identities</b><span class="wx-trick">Every identity here is linked, not named.</span><small>6 steps · 3 min read</small></a></li><li><a href="packet-capture-act-1/silent-observer.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT · Medium</span><b>Silent Observer</b><span class="wx-trick">Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account&#x27;s food posts) were decoys.</span><small>6 steps · 3 min read</small></a></li><li><a href="packet-capture-act-1/treasure-hunt-time.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT</span><b>Treasure Hunt Time</b><span class="wx-trick">When the file says &quot;wrong hole&quot;, go back to the brief.</span><small>5 steps · 2 min read</small></a></li><li><a href="packet-capture-act-1/under-construction.html" style="--c:#4fc1a6"><span class="wx-cat">OSINT · internet history</span><b>Under Construction</b><span class="wx-trick">The description itself is the search query.</span><small>4 steps · 2 min read</small></a></li></ul></section>
+<section class="wx-event"><h2>Packet Capture CTF · Act II: The Breach</h2><p class="wx-sub">2 writeups</p><ul class="wx-list"><li><a href="packet-capture-act-2/forgotten-router.html" style="--c:#e8b84a"><span class="wx-cat">Web Exploitation · information disclosure / exposed file</span><b>Forgotten Router</b><span class="wx-trick">The login/diagnostics CGI is a distraction.</span><small>3 steps · 2 min read</small></a></li><li><a href="packet-capture-act-2/internal-trouble.html" style="--c:#e8b84a"><span class="wx-cat">Web Exploitation · SSRF</span><b>Internal Trouble</b><span class="wx-trick">The &quot;Is Website Down?&quot; checker is an SSRF primitive.</span><small>4 steps · 2 min read</small></a></li></ul></section>
+<section class="wx-event"><h2>Packet Capture CTF · Act III: The Echo</h2><p class="wx-sub">6 writeups</p><ul class="wx-list"><li><a href="packet-capture-act-3/deleted-doesnt-mean-gone.html" style="--c:#5aa7dc"><span class="wx-cat">Digital Forensics · Disk / File Carving</span><b>Deleted Doesn&#x27;t Mean Gone</b><span class="wx-trick">Deleting or wiping the file table doesn&#x27;t erase the data.</span><small>3 steps · 1 min read</small></a></li><li><a href="packet-capture-act-3/hidden-within.html" style="--c:#d77fb3"><span class="wx-cat">Steganography</span><b>Hidden Within</b><span class="wx-trick">Test each colour channel&#x27;s LSB on its own as well as interleaved.</span><small>2 steps · 1 min read</small></a></li><li><a href="packet-capture-act-3/last-packet.html" style="--c:#3f7fc4"><span class="wx-cat">Network Forensics</span><b>Last Packet</b><span class="wx-trick">ICMP payloads are a common covert channel.</span><small>4 steps · 2 min read</small></a></li><li><a href="packet-capture-act-3/memory-echoes.html" style="--c:#5aa7dc"><span class="wx-cat">Digital Forensics</span><b>Memory Echoes</b><span class="wx-trick">In a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream.</span><small>4 steps · 2 min read</small></a></li><li><a href="packet-capture-act-3/registry-secrets.html" style="--c:#5aa7dc"><span class="wx-cat">Digital Forensics · Memory</span><b>Registry Secrets</b><span class="wx-trick">Tie the process list to network activity first.</span><small>3 steps · 1 min read</small></a></li><li><a href="packet-capture-act-3/usb-secrets.html" style="--c:#5aa7dc"><span class="wx-cat">Digital Forensics</span><b>USB Secrets</b><span class="wx-trick">Know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out.</span><small>3 steps · 1 min read</small></a></li></ul></section>
+</main>
+</body>
+</html>

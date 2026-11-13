@@ -348,6 +348,76 @@ def render_index_block(manifest):
         "    </div>",
         "    <!-- writeups:end -->"])
 
+
+# writeups/index.html: a standalone list of every writeup. It is the home page of writeups.theoith.ink
+# (tools/build_writeups_site.sh), so it links to nothing else on the site. All links are relative,
+# so the same file works at theoith.ink/writeups/ and at the subdomain root.
+INDEX_PAGE = """<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>CTF writeups | Theodore Garcia</title>
+<meta name="description" content="Step-by-step CTF writeups by Theodore Garcia: {stats}.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css?v={v}">
+<link rel="stylesheet" href="../paper.css?v={v}">
+<script src="../prefs.js?v={v}" data-static></script>
+<style>
+.wx-main {{ padding-top: 2.6rem; padding-bottom: 4rem; }}
+.wx-event + .wx-event {{ margin-top: 3rem; }}
+.wx-event h2 {{ margin: 0 0 .3rem; font-size: 1.5rem; }}
+.wx-sub {{ margin: 0 0 1.1rem; font-size: .85rem; color: var(--muted); }}
+.wx-list {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }}
+.wx-list a {{ display: flex; flex-direction: column; gap: .45rem; height: 100%; box-sizing: border-box; padding: 1rem 1.1rem; border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 6px; background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--text); text-decoration: none; transition: border-color .2s, translate .2s; }}
+.wx-list a:hover, .wx-list a:focus-visible {{ border-color: var(--c); translate: 0 -2px; }}
+.wx-cat {{ font: 700 .7rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--c); }}
+.wx-list b {{ font-size: 1.1rem; }}
+.wx-trick {{ font-size: .9rem; color: color-mix(in srgb, var(--text) 80%, transparent); }}
+.wx-list small {{ margin-top: auto; font-size: .78rem; color: var(--muted); }}
+@media (prefers-reduced-motion: reduce) {{ .wx-list a {{ transition: none; }} }}
+</style>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <p class="wu-kicker"><span class="wu-cat">CTF writeups</span><span>{stats}</span></p>
+    <h1>Theodore Garcia</h1>
+    <p class="wu-lede">How I captured each flag, step by step: what I tried, the dead ends, and the trick that cracked it.{repos}</p>
+  </div>
+</header>
+<main class="wu-wrap wx-main">
+{events}
+</main>
+</body>
+</html>
+"""
+
+
+def render_writeups_index(manifest):
+    seen, cats, sections = {}, set(), []
+    for ev_slug, ev in manifest.items():
+        cards = []
+        for it in ev["items"]:
+            cats.add(it["category"])
+            level = f' · {it["note"]}' if it.get("note") else ""
+            cards.append(f'<li><a href="{ev_slug}/{it["slug"]}.html" style="--c:{cat_color(it["category"], seen)}">'
+                         f'<span class="wx-cat">{html.escape(it["category"] + level)}</span><b>{html.escape(it["title"])}</b>'
+                         f'<span class="wx-trick">{html.escape(first_sentence(it["insight"]))}</span>'
+                         f'<small>{it.get("steps", 1)} steps · {it["minutes"]} min read</small></a></li>')
+        n = len(ev["items"])
+        sections.append(f'<section class="wx-event"><h2>{html.escape(ev["title"])}</h2>'
+                        f'<p class="wx-sub">{n} writeup{"s" if n != 1 else ""}</p><ul class="wx-list">{"".join(cards)}</ul></section>')
+    total, n_ev = sum(len(ev["items"]) for ev in manifest.values()), len(manifest)
+    stats = (f'{total} flag{"s" if total != 1 else ""} · {n_ev} event{"s" if n_ev != 1 else ""} · '
+             f'{len(cats)} categor{"ies" if len(cats) != 1 else "y"}')
+    repos = "".join(f' <a class="wu-source" href="{html.escape(r)}" target="_blank" rel="noopener">Source on GitHub</a>'
+                    for r in sorted({ev["repo"] for ev in manifest.values() if ev.get("repo")}))
+    return INDEX_PAGE.format(stats=stats, repos=repos, events="\n".join(sections), v=VERSION)
+
+
 def main():
     if sys.argv[1] == "--all":
         events = json.loads((SITE / "tools" / "writeup_events.json").read_text(encoding="utf-8"))
@@ -365,6 +435,7 @@ def main():
         manifest[event_slug] = {"title": event_title, "repo": repo, "items": items}
         print(f"built {len(items)} writeups for {event_slug}")
     mf.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    (OUT / "index.html").write_text(render_writeups_index(manifest), encoding="utf-8")
     idx = SITE / "index.html"
     t = idx.read_text(encoding="utf-8")
     t, n = re.subn(r"    <!-- writeups:start.*?<!-- writeups:end -->", lambda _: render_index_block(manifest), t, flags=re.S)
