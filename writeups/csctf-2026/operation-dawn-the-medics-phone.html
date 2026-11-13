@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Operation Dawn - The Medic&#x27;s Phone (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="The app-level withdrawal only changed the live row. The SQLite write-ahead log kept an older copy of the page, so the withdrawn message survived in the backup and could be recovered by parsing the WAL and inflating the message bodies.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">Android SQLite WAL recovery</span><span>3 steps · 2 min read</span></p>
+    <h1>Operation Dawn - The Medic&#x27;s Phone</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The app-level withdrawal only changed the live row. The SQLite write-ahead log kept an older copy of the page, so the withdrawn message survived in the backup and could be recovered by parsing the WAL and inflating the message bodies.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> unpack the Android backup</h2>
+      <ul><li><b>What I did / What I found:</b> xxd showed ANDROID BACKUP / version 5 / compressed / encryption none. Skipped the four header lines, ran zlib decompress on the remainder, and extracted the resulting tar.</li><li class="result"><b>Result:</b> Three apps in the backup: org.unit43.courier (messages.db plus a messages.db-wal), org.unit43.fieldnotes and org.unit43.radioset.</li><li class="think"><b>Thinking:</b> The brief says the app now shows only a notice, so the courier app's message store is the place to look. The leftover -wal file next to it is the most interesting item. _(No reproduction capture: the challenge input files are not in this repo.)_</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> decode the live message database</h2>
+      <ul><li><b>What I did / What I found:</b> Opened messages.db. Each row stores a protobuf blob; field 5 is the message body, compressed with raw deflate. Wrote a small protobuf walker and inflated every body.</li><li class="result"><b>Result:</b> Message 14 (from signals) reads: "This message was withdrawn by the sender and is no longer available." This is the notice the brief describes. The original text is not in the live database.</li><li class="think"><b>Thinking:</b> Withdrawing a message overwrote the row. SQLite keeps older page images in the write-ahead log, so the original may still be in messages.db-wal.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> recover the original message from the WAL</h2>
+      <ul><li><b>What I did / What I found:</b> Parsed messages.db-wal frame by frame (one 4096-byte page, page 4) and searched the page for protobuf field-5 values that inflate to ASCII.</li><li class="result"><b>Result:</b> The WAL page holds the earlier version of the messages, including the original message 14: "Movement order. Board the hospital train. Assignment follows: <span class="flag" tabindex="0">CSCTF{03_at_platform_two_6f57d7}</span> Acknowledge on receipt and destroy this message." The frame appears not to be a committed transaction frame (commit field is 0), so SQLite would not apply it, which is why the live database shows only the notice.</li><li class="think"><b>Thinking:</b> Deleting or editing a row in an app does not scrub the log. The assignment (annex entry 03, platform two) was still sitting in the log, readable once decompressed.</li></ul>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="last-commit.html"><small>Previous</small>Last Commit</a><a class="next" href="ortelia-vdr-carving.html"><small>Next</small>Ortelia VDR Carving</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · Android SQLite WAL recovery</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>xxd</li><li>Python (zlib</li><li>tarfile</li><li>sqlite3</li><li>struct)</li><li>sqlite3</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{03_at_platform_two_6f57d7}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Operation%20Dawn%20-%20The%20Medic%27s%20Phone/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Unpack the Android backup</span></a></li><li><a href="#step-2"><b>2</b><span>Decode the live message database</span></a></li><li><a href="#step-3"><b>3</b><span>Recover the original message from the WAL</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

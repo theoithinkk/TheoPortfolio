@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Suspicious Numbers (Steganography writeup) | Theodore Garcia</title>
+<meta name="description" content="The numbers are 1337 times an atomic number. Dividing by 1337 exposes the atomic numbers, and converting those numbers to periodic-table symbols reveals the hidden message.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Pink CTF</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Steganography</span><span class="wu-lvl">atomic number encoding</span><span>4 steps · 2 min read</span></p>
+    <h1>Suspicious Numbers</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The numbers are 1337 times an atomic number. Dividing by 1337 exposes the atomic numbers, and converting those numbers to periodic-table symbols reveals the hidden message.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> inspect the number sequence</h2>
+      <ul><li><b>What I found:</b> every value is divisible by 1337 with no remainder. For example 120330 / 1337 = 90, 70861 / 1337 = 53 and 21392 / 1337 = 16.</li><li class="think"><b>Thinking:</b> 1337 is "leet", and a shared exact factor across all 30 values suggests it is a multiplier hiding another sequence.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> treat the quotients as atomic numbers</h2>
+      <ul><li><b>What I did:</b> divided every value by 1337, which gives 90 53 16 53 16 47 75 85 6 1 13 4 20 92 34 39 8 92 19 102 74 10 74 90 53 7 106 7 8 74.</li><li><b>What I found:</b> each quotient is a valid atomic number (all between 1 and 106).</li><li class="think"><b>Thinking:</b> small integers that all fit the range of the periodic table are more likely element numbers than random data.</li><li class="result"><b>Result:</b> looking each atomic number up in order gives the element symbols Th I S I S Ag Re At C H Al Be Ca U Se Y O U K No W Ne W Th I N Sg N O W.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> read the element symbols as letters</h2>
+      <ul><li><b>What I did:</b> concatenated the symbols to get ThISISAgReAtCHAlBeCaUSeYOUKNoWNeWThINSgNOW, then regrouped them as letters.</li><li class="result"><b>Result:</b> the sentence THIS IS A GREAT CHALLENGE BECAUSE YOU KNOW NEW THINGS NOW.</li><li class="think"><b>Thinking:</b> the symbols only look like noise when read as chemistry. Read as letter groups they spell English words.</li></ul>
+      <figure><a href="../img/pink-ctf/suspicious-numbers/01_solve_output.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/suspicious-numbers/01_solve_output.webp" alt="Solver output with the recovered flag" width="1196" height="248" loading="lazy"></a><figcaption>Solver output with the recovered flag</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Result:</b> recover the flag</h2>
+      <ul><li><b>What I did:</b> converted the sentence to lowercase and replaced spaces with underscores to match the challenge's flag convention.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">PINK{this_is_a_great_challenge_because_you_know_new_things_now}</span></li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Note</h2><p>the screenshot is real output from solve.py, and rerunning it against the sequence verifies the result.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="cluck-cluck.html"><small>Previous</small>Cluck Cluck</a><a class="next" href="tns2.html"><small>Next</small>TNS2</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Pink CTF</dd>
+      <dt>Category</dt><dd>Steganography · atomic number encoding</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li><li>periodic table lookup</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PINK{this_is_a_great_challenge_because_you_know_new_things_now}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Steganography/Suspicious%20Numbers/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Inspect the number sequence</span></a></li><li><a href="#step-2"><b>2</b><span>Treat the quotients as atomic numbers</span></a></li><li><a href="#step-3"><b>3</b><span>Read the element symbols as letters</span></a></li><li><a href="#step-4"><b>4</b><span>Recover the flag</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

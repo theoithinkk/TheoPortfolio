@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Cluck Cluck (Steganography writeup) | Theodore Garcia</title>
+<meta name="description" content="The flag was in the one place a normal run never reaches, the code the program always jumps over. It sat behind three layers of misdirection: audible clucks that look like a cipher but are a formula, an LSB payload that looks like a meaningless repeating pattern but is source code, and a program whose output says &quot;nothing suspicious&quot;.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Pink CTF</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Steganography</span><span class="wu-lvl">WAV LSB and Chicken esolang</span><span>6 steps · 4 min read</span></p>
+    <h1>Cluck Cluck</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The flag was in the one place a normal run never reaches, the code the program always jumps over. It sat behind three layers of misdirection: audible clucks that look like a cipher but are a formula, an LSB payload that looks like a meaningless repeating pattern but is source code, and a program whose output says "nothing suspicious".</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> chicken.wav (10.5 MB, 60 s)</h2>
+      <ul><li><b>What I found:</b> a plain RIFF/WAVE file, 16-bit PCM, stereo, 44.1 kHz. The data chunk fills the whole file, so nothing is appended after the audio and there are no extra metadata chunks.</li><li class="think"><b>Thinking:</b> no container tricks means the data is hidden inside the samples themselves.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Dead end:</b> the spectrogram</h2>
+      <ul><li><b>What I found:</b> a steady A-major chord (220 / 277 / 330 / 440 Hz) with a slow tremolo, plus 21 short "clucks" (a decaying tone, one every ~2.75 s) at pitches that jump around between 1 kHz and 21 kHz.</li><li class="dead"><b>Dead end:</b> the cluck pitches looked like they could spell something, but they rise by a constant ~4,950 Hz each time and fold back at the Nyquist limit (22,050 Hz). They follow a formula, so they carry no data. The tones' amplitude and frequency also demodulate to smooth curves with no data, and the left/right difference is just a slow pan.</li><li class="think"><b>Thinking:</b> the audible layer is a decoy.</li></ul>
+      <figure><a href="../img/pink-ctf/cluck-cluck/01_spectrogram_clucks.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/cluck-cluck/01_spectrogram_clucks.webp" alt="Spectrogram with the clucks" width="1260" height="450" loading="lazy"></a><figcaption>Spectrogram with the clucks</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the low bit planes</h2>
+      <ul><li><b>What I did:</b> split every sample into bit planes and checked each plane for repetition over time.</li><li class="result"><b>Result:</b> bits 0 and 1 repeat on a short cycle for the first 52.77 s, then turn random. Bits 2 and up are random throughout.</li><li class="think"><b>Thinking:</b> real recorded or synthesized noise never repeats in its lowest bits. A clean edge where the pattern stops is where a written payload ends, and the untouched original noise starts. Two modified bits per sample matches common LSB tools (for example WavSteg's default of 2 LSBs).</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> decoding the payload</h2>
+      <ul><li><b>What I did:</b> took the 2 LSBs of every sample (bit 0 then bit 1) and packed them into bytes little-endian. I tried the four combinations of bit order, and only this one gave readable output.</li><li class="result"><b>Result:</b> magic "CHKN", a 4-byte length (0x0011C133 = 1,163,571 bytes), then "chicken chicken chicken ..." over 2,276 lines.</li><li class="think"><b>Thinking:</b> "chicken" repeated on separate lines is the Chicken esoteric language: each line is one instruction, and the opcode is the number of times the word "chicken" appears on it. The short repeating LSB cycle was the word "chicken " over and over, and the occasional breaks in it were the newlines.</li></ul>
+      <figure><a href="../img/pink-ctf/cluck-cluck/02_lsb_chkn_header.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/cluck-cluck/02_lsb_chkn_header.webp" alt="CHKN header and payload start" width="1260" height="234" loading="lazy"></a><figcaption>CHKN header and payload start</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Pivot:</b> running the Chicken program</h2>
+      <ul><li><b>What I did:</b> wrote a ~40-line interpreter (opcodes: 0 axe, 1 chicken, 2 add, 3 fox, 4 rooster, 5 compare, 6 pick, 7 peck, 8 fr, 9 BBQ, n&gt;=10 push n-10) and ran it.</li><li class="result"><b>Result:</b> a "POULTRY COMPUTATION ENGINE v3.1" banner that runs five arithmetic self-tests and ends with "Nothing suspicious detected." No flag.</li><li class="think"><b>Thinking:</b> the output is another decoy, but the program contains jumps. I logged which instructions actually executed and found eleven blocks that never run.</li></ul>
+    </section>
+    <section class="wu-step" id="step-6">
+      <h2><span class="wu-n">06</span><b>Pivot:</b> the code that never runs</h2>
+      <ul><li><b>What I found:</b> five of the dead blocks are guarded by a conditional jump and just build the string "FAIL" (the self-test failure path). The other six sit behind an always-true jump (push 1, push offset, fr), so they can never execute. Their opcodes look like random junk, but the push literals among them are printable ASCII.</li><li class="result"><b>Result:</b> block by block, "PINK{Cl" + "uck_Clu" + "ck_you_" + "are_a_d" + "uck!}" gives <span class="flag" tabindex="0">PINK{Cluck_Cluck_you_are_a_duck!}</span></li><li class="dead"><b>Dead end:</b> inside dead code, a "pick" does not consume the line after it, so that line has to be read as a literal too. Skipping it dropped the "k" and gave "Cluc_you".</li><li class="think"><b>Thinking:</b> a program that ends with "nothing suspicious" while carrying unreachable code with printable literals is hiding the real payload in the unreachable part.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>run python -I solve.py chicken.wav. It extracts the payload, runs the program, and prints the hidden text.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="journey.html"><small>Previous</small>Journey</a><a class="next" href="suspicious-numbers.html"><small>Next</small>Suspicious Numbers</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Pink CTF</dd>
+      <dt>Category</dt><dd>Steganography · WAV LSB and Chicken esolang</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (wave</li><li>numpy</li><li>matplotlib)</li><li>a small Chicken esolang interpreter</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PINK{Cluck_Cluck_you_are_a_duck!}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Steganography/Cluck%20Cluck/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>chicken.wav</span></a></li><li><a href="#step-2"><b>2</b><span>Spectrogram</span></a></li><li><a href="#step-3"><b>3</b><span>Low bit planes</span></a></li><li><a href="#step-4"><b>4</b><span>Decoding the payload</span></a></li><li><a href="#step-5"><b>5</b><span>Running the Chicken program</span></a></li><li><a href="#step-6"><b>6</b><span>Code that never runs</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

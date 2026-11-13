@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Soeder Swim (OSINT writeup) | Theodore Garcia</title>
+<meta name="description" content="Geolocation OSINT is chaining small clues. The caption plus one reverse image search gave the exact venue in a single hop, because the pool&#x27;s own Instagram had reposted the photo. The flag even nods to it: &quot;Sweet Caroline&quot; is 1. FC Nürnberg&#x27;s stadium anthem. Ignore the decoy panorama and spend the effort on the real-world location.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Pink CTF</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">reverse image geolocation</span><span>4 steps · 2 min read</span></p>
+    <h1>Soeder Swim</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Geolocation OSINT is chaining small clues. The caption plus one reverse image search gave the exact venue in a single hop, because the pool's own Instagram had reposted the photo. The flag even nods to it: "Sweet Caroline" is 1. FC Nürnberg's stadium anthem. Ignore the decoy panorama and spend the effort on the real-world location.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> identify the page</h2>
+      <ul><li><b>What I found:</b> a Leaflet map with a "Select a location" and "Submit location" flow. Clicking a point POSTs lat and lon to ?check=1, and the server replies {"ok":true,"message":"<span class="flag" tabindex="0">PINK{...}</span>"} only for the right spot.</li><li><b>What I found:</b> the server gives no distance hint (just "Try harder!") and rate-limits, so guessing is out.</li><li class="dead"><b>Dead end:</b> the embedded pannellum panorama pano.jpg is a decoy. It renders the CTF logo, and the 1.6 MB appended to it is high-entropy filler with no key.</li><li class="think"><b>Thinking:</b> when the server check is the win condition, the coordinates have to come from real-world research, not from the handout's noise.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> identify the politician and the post</h2>
+      <ul><li><b>What I did:</b> matched "Bavarian politician who posts himself eating, dancing, playing football, swimming" to Markus Söder (CSU), famous for exactly these Instagram posts.</li><li class="result"><b>Result:</b> his early-August swim post is a selfie in an outdoor pool with the caption "Urlaubszeit in Bayern: Sommer, Sonne, Schwimmen. Macht den Kopf frei, erfrischt und hält fit."</li><li class="think"><b>Thinking:</b> the caption and the August date matched the challenge text, so this was the photo to geolocate.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> geolocate the pool</h2>
+      <ul><li><b>What I found:</b> the photo shows an outdoor lane pool with red and white lane ropes, a tall conifer forest right behind it, and sun umbrellas.</li><li><b>What I did:</b> ran a reverse image search (Google Lens) on the selfie. It returned an exact match from the Instagram account @1.fcn_clubbad, the "Clubbad", the swimming pool of 1. FC Nürnberg (Söder is a well-known FCN fan).</li><li><b>What I did:</b> looked it up in Google Maps: "1. FCN Freibad Clubbad", Valznerweiherstraße 200, 90480 Nürnberg-Ost. The Maps photos match the selfie (same pool, lane ropes, forest backdrop).</li><li class="result"><b>Result:</b> coordinates 49.4339899, 11.1318245.</li></ul>
+      <figure><a href="../img/pink-ctf/soeder-swim/01_clubbad_location.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/soeder-swim/01_clubbad_location.webp" alt="The located pool: 1. FC Nürnberg Freibad Clubbad, Nürnberg-Ost" width="768" height="768" loading="lazy"></a><figcaption>The located pool: 1. FC Nürnberg Freibad Clubbad, Nürnberg-Ost</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> submit</h2>
+      <ul><li><b>What I did:</b> POSTed lat=49.4339899 and lon=11.1318245 to ?check=1.</li><li class="result"><b>Result:</b> the server answered {"ok":true, "message":"<span class="flag" tabindex="0">PINK{Söd3r_Sw33t_C4r0l1ne_0h_0h_0h}</span>"}.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>run curl -s 'https://osint.pink.bayern/2/?check=1' --data 'lat=49.4339899&amp;lon=11.1318245'</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>there is no reproduction capture, because the challenge input files are not in this repo.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="99.html"><small>Previous</small>99</a><a class="next" href="journey.html"><small>Next</small>Journey</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Pink CTF</dd>
+      <dt>Category</dt><dd>OSINT · reverse image geolocation</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>browser</li><li>Google reverse image search</li><li>Google Maps</li><li>curl</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PINK{Söd3r_Sw33t_C4r0l1ne_0h_0h_0h}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/OSINT/Soeder%20Swim/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Identify the page</span></a></li><li><a href="#step-2"><b>2</b><span>Identify the politician and the post</span></a></li><li><a href="#step-3"><b>3</b><span>Geolocate the pool</span></a></li><li><a href="#step-4"><b>4</b><span>Submit</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

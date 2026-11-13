@@ -41,8 +41,24 @@ MAX_IMG_W = 1600
 CATEGORY_COLORS = {"osint": "#4fc1a6", "crypto": "#a27fe0", "forensics": "#5aa7dc", "web": "#e8b84a",
                    "pwn": "#e0573f", "rev": "#f08a4b", "reverse engineering": "#f08a4b", "misc": "#9aa0a6",
                    "web exploitation": "#e8b84a", "digital forensics": "#5aa7dc", "network forensics": "#3f7fc4",
-                   "steganography": "#d77fb3"}
+                   "steganography": "#d77fb3", "network": "#3f7fc4", "ai security": "#7fc06a"}
 FALLBACK_COLORS = ["#d77fb3", "#7fc06a", "#c9b458", "#6fb3c9"]
+
+
+# Writeups label categories freely ("Cryptography", "Web / API", "Forensics / ICS protocol"). The grid's legend
+# and colours need one name per category, so fold the label into one of these; the rest becomes the detail note.
+CATEGORY_ALIASES = {"cryptography": "Crypto", "side-channel": "Crypto", "web exploitation": "Web",
+                    "digital forensics": "Forensics", "mobile forensics": "Forensics", "container forensics": "Forensics",
+                    "cloud": "Forensics", "ics": "Forensics", "network forensics": "Network", "reversing": "Reverse Engineering",
+                    "reverse engineering": "Reverse Engineering", "pwn": "Pwn", "ai security": "AI Security", "osint": "OSINT"}
+
+
+def canonical_category(cat, note):
+    """'Web / API', 'x' -> ('Web', 'API, x'); unknown labels pass through unchanged."""
+    head, _, rest = cat.strip().partition(" / ")
+    name = CATEGORY_ALIASES.get(head.lower(), head[:1].upper() + head[1:])
+    extra = ", ".join(x for x in (rest, note) if x and x.lower() != name.lower())
+    return name, extra
 
 
 def slugify(s):
@@ -71,7 +87,7 @@ def github_source(src_dir):
 def inline(text):
     """Escape, then mark up flags (as click-to-reveal spoilers) and leading 'Label:' words."""
     t = html.escape(text, quote=False)
-    t = re.sub(r"PacketCapture\{[^}\s]*\}", lambda m: f'<span class="flag" tabindex="0">{m.group(0)}</span>', t)
+    t = re.sub(r"\b(?:PacketCapture|CSCTF|PINK)\{[^}\s]*\}", lambda m: f'<span class="flag" tabindex="0">{m.group(0)}</span>', t)
     t = re.sub(r"^([A-Z][\w /'-]{1,30}):(?=\s)", r"<b>\1:</b>", t)
     return t
 
@@ -250,12 +266,16 @@ def build_event(src_dir, event_slug, event_title, done_only=False):
     """done_only: publish only challenge folders marked "(DONE)", so a draft writeup.md never goes live."""
     items = []
     repo, src_url = github_source(src_dir)
-    for d in sorted((p for p in Path(src_dir).iterdir() if (p / "writeup.md").is_file()
-                     and (not done_only or p.name.upper().startswith("(DONE)"))),
-                    key=lambda p: re.sub(r"^\(.*?\)\s*", "", p.name)):
+    # A challenge folder sits right under the event (Packet Capture acts) or one level down in a
+    # category folder (CSCTF/Web/Apogee), so look two levels deep.
+    found = [f.parent for f in [*Path(src_dir).glob("*/writeup.md"), *Path(src_dir).glob("*/*/writeup.md")]]
+    for d in sorted((p for p in found if not done_only or p.name.upper().startswith("(DONE)")),
+                    key=lambda p: [re.sub(r"^\(.*?\)\s*", "", x) for x in p.relative_to(src_dir).parts]):
         head, steps, callouts = parse((d / "writeup.md").read_text(encoding="utf-8"))
         cat_raw = head.get("category", "Misc")
-        cat, note = (re.match(r"([^(]+?)\s*(?:\((.*)\))?$", cat_raw).groups())
+        m = re.match(r"([^(]+?)\s*(?:\((.*)\))?$", cat_raw)
+        cat, note = m.groups() if m else (cat_raw.split("(")[0], "")
+        cat, note = canonical_category(cat, note or "")
         title = re.sub(r"^\(.*?\)\s*", "", d.name)   # "(DONE) Digital Footprint" -> "Digital Footprint"
         slug = slugify(title)
         for st in steps:   # copy screenshots in, as webp
@@ -268,7 +288,12 @@ def build_event(src_dir, event_slug, event_title, done_only=False):
         insight = insight[:1].upper() + insight[1:]   # some writeups start the insight lowercase
         tools = [re.sub(r"\s*\(.*?\)", "", t).strip() for t in head.get("tools used", "").split(",") if t.strip()]
         words = len((d / "writeup.md").read_text(encoding="utf-8").split())
-        source = f"{src_url}/{quote(d.name)}/writeup.md" if src_url else ""
+        source = f"{src_url}/{quote(d.relative_to(src_dir).as_posix())}/writeup.md" if src_url else ""
+        if len(steps) < 2 or not insight:   # the page would come out empty or without its "trick" box
+            print(f"  warning: {d.relative_to(src_dir)}: {len(steps)} steps, {'no ' if not insight else ''}Key insight")
+        if len(steps) < 2:
+            print(f"  skipped: {d.relative_to(src_dir)} (fix its Steps: section to publish it)")
+            continue
         items.append({"slug": slug, "title": title, "category": cat.strip(), "note": note or "", "flag": head.get("flag", ""),
                       "tools": tools, "insight": insight, "steps": steps, "callouts": callouts,
                       "minutes": max(1, round(words / 200)), "source": source})
@@ -295,7 +320,7 @@ def cat_color(cat, seen):
     return seen[key]
 
 
-def render_index_block(manifest):
+def render_index_block(manifest, base="writeups/"):
     """Solve grid: one square per writeup, coloured by category. Hover/focus fills the info
     panel (main.js reads the data-* attributes); clicking opens the writeup."""
     seen, cats, squares = {}, {}, []
@@ -305,7 +330,7 @@ def render_index_block(manifest):
         cats.setdefault(it["category"], [c, 0])[1] += 1
         level = f' · {it["note"]}' if it.get("note") else ""
         squares.append(
-            f'      <a class="solve" href="writeups/{ev_slug}/{it["slug"]}.html" style="--c:{c}" data-cat="{slugify(it["category"])}"'
+            f'      <a class="solve" href="{base}{ev_slug}/{it["slug"]}.html" style="--c:{c}" data-cat="{slugify(it["category"])}"'
             f' data-title="{html.escape(it["title"])}" data-meta="{html.escape(it["category"] + level)} · {it.get("steps", 1)} steps"'
             f' data-event="{html.escape(ev_title)}" data-trick="{html.escape(first_sentence(it["insight"]))}"'
             f' aria-label="{html.escape(it["title"])}, {html.escape(it["category"])}, {html.escape(ev_title)}"></a>')
@@ -320,7 +345,7 @@ def render_index_block(manifest):
         info = (f'<p class="solve-kicker">Toughest solve</p><h4>{html.escape(hard["title"])}</h4>'
                 f'<p class="solve-meta">{html.escape(hard["category"])} · {hard.get("steps", 1)} steps · {html.escape(ev_title)}</p>'
                 f'<p>{html.escape(first_sentence(hard["insight"]))}</p>'
-                f'<a class="solve-read" href="writeups/{ev_slug}/{hard["slug"]}.html">Read the writeup <i class="ii ii-go" aria-hidden="true"></i></a>')
+                f'<a class="solve-read" href="{base}{ev_slug}/{hard["slug"]}.html">Read the writeup <i class="ii ii-go" aria-hidden="true"></i></a>')
     n_events = len(manifest)
     repos = sorted({ev["repo"] for ev in manifest.values() if ev.get("repo")})
     repo_links = "".join(f'<a class="solve-read solve-repo" href="{html.escape(r)}" target="_blank" rel="noopener">'
@@ -329,7 +354,7 @@ def render_index_block(manifest):
     # Top five by steps, as a ranked list under the panel; hovering a row previews it like its square.
     ranked = sorted(items, key=lambda x: -x[2].get("steps", 0))[:5]
     rows = "".join(
-        f'<li><a href="writeups/{s}/{it["slug"]}.html" style="--c:{cat_color(it["category"], seen)}">'
+        f'<li><a href="{base}{s}/{it["slug"]}.html" style="--c:{cat_color(it["category"], seen)}">'
         f'<span class="solve-rank">{i}</span><span class="solve-row-title">{html.escape(it["title"])}</span>'
         f'<span class="solve-row-cat">{html.escape(it["category"])}</span><span class="solve-row-steps">{it.get("steps", 1)} steps</span></a></li>'
         for i, (s, _, it) in enumerate(ranked, 1))
@@ -349,9 +374,9 @@ def render_index_block(manifest):
         "    <!-- writeups:end -->"])
 
 
-# writeups/index.html: a standalone list of every writeup. It is the home page of writeups.theoith.ink
-# (tools/build_writeups_site.sh), so it links to nothing else on the site. All links are relative,
-# so the same file works at theoith.ink/writeups/ and at the subdomain root.
+# writeups/index.html: the homepage's "CTF solves" block on a page of its own. It is the home page of
+# writeups.theoith.ink (tools/build_writeups_site.sh), so it links to nothing else on the site. All links are
+# relative, so the same file works at theoith.ink/writeups/ and at the subdomain root.
 INDEX_PAGE = """<!doctype html>
 <html lang="en" data-mode="dark">
 <head>
@@ -365,57 +390,25 @@ INDEX_PAGE = """<!doctype html>
 <link rel="stylesheet" href="../style.css?v={v}">
 <link rel="stylesheet" href="../paper.css?v={v}">
 <script src="../prefs.js?v={v}" data-static></script>
-<style>
-.wx-main {{ padding-top: 2.6rem; padding-bottom: 4rem; }}
-.wx-event + .wx-event {{ margin-top: 3rem; }}
-.wx-event h2 {{ margin: 0 0 .3rem; font-size: 1.5rem; }}
-.wx-sub {{ margin: 0 0 1.1rem; font-size: .85rem; color: var(--muted); }}
-.wx-list {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }}
-.wx-list a {{ display: flex; flex-direction: column; gap: .45rem; height: 100%; box-sizing: border-box; padding: 1rem 1.1rem; border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 6px; background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--text); text-decoration: none; transition: border-color .2s, translate .2s; }}
-.wx-list a:hover, .wx-list a:focus-visible {{ border-color: var(--c); translate: 0 -2px; }}
-.wx-cat {{ font: 700 .7rem var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--c); }}
-.wx-list b {{ font-size: 1.1rem; }}
-.wx-trick {{ font-size: .9rem; color: color-mix(in srgb, var(--text) 80%, transparent); }}
-.wx-list small {{ margin-top: auto; font-size: .78rem; color: var(--muted); }}
-@media (prefers-reduced-motion: reduce) {{ .wx-list a {{ transition: none; }} }}
-</style>
 </head>
-<body class="wu-body">
-<header class="wu-hero">
-  <div class="wu-wrap">
-    <p class="wu-kicker"><span class="wu-cat">CTF writeups</span><span>{stats}</span></p>
-    <h1>Theodore Garcia</h1>
-    <p class="wu-lede">How I captured each flag, step by step: what I tried, the dead ends, and the trick that cracked it.{repos}</p>
-  </div>
-</header>
-<main class="wu-wrap wx-main">
-{events}
+<body>
+<main>
+  <section id="writeups" class="sec sec-wide">
+    <header class="sec-head"><p class="act">Theodore Garcia</p><h2>CTF Writeups</h2></header>
+    <p class="sub-note">Every square is a challenge I solved and wrote up. Hover one to see how, click to read it.</p>
+{block}
+  </section>
 </main>
+<script src="solves.js?v={v}" defer></script>
 </body>
 </html>
 """
 
 
 def render_writeups_index(manifest):
-    seen, cats, sections = {}, set(), []
-    for ev_slug, ev in manifest.items():
-        cards = []
-        for it in ev["items"]:
-            cats.add(it["category"])
-            level = f' · {it["note"]}' if it.get("note") else ""
-            cards.append(f'<li><a href="{ev_slug}/{it["slug"]}.html" style="--c:{cat_color(it["category"], seen)}">'
-                         f'<span class="wx-cat">{html.escape(it["category"] + level)}</span><b>{html.escape(it["title"])}</b>'
-                         f'<span class="wx-trick">{html.escape(first_sentence(it["insight"]))}</span>'
-                         f'<small>{it.get("steps", 1)} steps · {it["minutes"]} min read</small></a></li>')
-        n = len(ev["items"])
-        sections.append(f'<section class="wx-event"><h2>{html.escape(ev["title"])}</h2>'
-                        f'<p class="wx-sub">{n} writeup{"s" if n != 1 else ""}</p><ul class="wx-list">{"".join(cards)}</ul></section>')
     total, n_ev = sum(len(ev["items"]) for ev in manifest.values()), len(manifest)
-    stats = (f'{total} flag{"s" if total != 1 else ""} · {n_ev} event{"s" if n_ev != 1 else ""} · '
-             f'{len(cats)} categor{"ies" if len(cats) != 1 else "y"}')
-    repos = "".join(f' <a class="wu-source" href="{html.escape(r)}" target="_blank" rel="noopener">Source on GitHub</a>'
-                    for r in sorted({ev["repo"] for ev in manifest.values() if ev.get("repo")}))
-    return INDEX_PAGE.format(stats=stats, repos=repos, events="\n".join(sections), v=VERSION)
+    stats = f'{total} flag{"s" if total != 1 else ""} across {n_ev} event{"s" if n_ev != 1 else ""}'
+    return INDEX_PAGE.format(stats=stats, block=render_index_block(manifest, base=""), v=VERSION)
 
 
 def main():

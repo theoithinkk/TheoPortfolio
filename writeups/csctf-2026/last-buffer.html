@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Last Buffer (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="Two files that both restore cleanly cannot be told apart by content alone, because the drill revision looks equally plausible. The identity of the writer (PID, tty and time from the swap header plus the process and audit logs) and the base-file hash anchored to what the shell itself printed are what decide it.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">Vim swap file correlation</span><span>4 steps · 3 min read</span></p>
+    <h1>Last Buffer</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Two files that both restore cleanly cannot be told apart by content alone, because the drill revision looks equally plausible. The identity of the writer (PID, tty and time from the swap header plus the process and audit logs) and the base-file hash anchored to what the shell itself printed are what decide it.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the case context</h2>
+      <ul><li><b>What I found:</b> case-context.json gives the crash window 2026-10-07T02:19:30Z to 02:20:00Z and the target tty pts/4. The saved note has revision R17 and "status: SAVED".</li><li class="think"><b>Thinking:</b> the window and tty are the two facts that decide which shell died at the right time, so I needed the logs to match them against.</li><li class="result"><b>Result:</b> crash window and tty known.</li></ul>
+      <figure><a href="../img/csctf-2026/last-buffer/01-shell-journal-audit-timeline.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/last-buffer/01-shell-journal-audit-timeline.webp" alt="Shell journal and audit timeline" width="1303" height="465" loading="lazy"></a><figcaption>Shell journal and audit timeline</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> correlate the timelines</h2>
+      <ul><li><b>What I found:</b> PID 8124 on pts/7 started vim at 02:10:03Z, had a periodic EDR snapshot at 02:11:51Z and exited successfully at 02:12:18Z.</li><li><b>What I found:</b> PID 8442 on pts/4 started vim at 02:18:04Z, ran sha256sum incident-2026-10-07.md at 02:18:31Z (output 01c2a034...c849), did a swap write at 02:19:38Z, got an ANOM_ABEND SIGHUP at 02:19:46Z (upstream-link-reset) and a disconnect-capture snapshot at 02:19:47Z. That is inside the crash window and on the target tty.</li><li class="think"><b>Thinking:</b> the two swap files have the same name in the collector (dot removed), so the filename cannot tell them apart. The PID stored inside each swap file is what ties a file to a process.</li><li class="result"><b>Result:</b> PID 8442 is the shell that matters.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Exploit:</b> parse the swap files by hand</h2>
+      <ul><li><b>What I did:</b> parsed block 0 (starts with b0, page size at +12, PID at +24, user at +28, path at +108) and the data blocks (start with ad, line count at +16, four-byte line offsets from +24).</li><li><b>What I found:</b> the .swp has PID 8442, revision INC-4471/R18, status UNSAVED-AT-DISCONNECT, base_file_sha256 01c2a034f1a47e4cb5536d66394c4774a1f1c568ff4e34c0de7f654aa42bc849.</li><li><b>What I found:</b> the .swo has PID 8124, revision INC-4471/R16-DRILL, status PERIODIC-SNAPSHOT, base_file_sha256 a5bcac6de8153876627fd1928b9f32060714d7280a07598f2f8ef70535f07d19.</li><li class="think"><b>Thinking:</b> the saved file hashes to 01c2a034...c849, which matches only the .swp's base hash and the hash printed by PID 8442's own sha256sum, so two independent sources agree on the .swp.</li><li class="result"><b>Result:</b> the .swp is from the shell that died in the window.</li></ul>
+      <figure><a href="../img/csctf-2026/last-buffer/02-swap-files-parsed-and-decision.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/last-buffer/02-swap-files-parsed-and-decision.webp" alt="Swap files parsed and the decision" width="1600" height="685" loading="lazy"></a><figcaption>Swap files parsed and the decision</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Decrypt:</b> decode the read-back proof</h2>
+      <ul><li><b>What I found:</b> the .swp line authorization_b64 is Q1NDVEZ7bGFzdF9idWZmZXJfNDA1MWM5ZjZiMGQ5NjIyNDc5Nzg1ZjYxM2IwNjM5MTZ9 and authorization_encoding says base64url.</li><li><b>What I did:</b> base64url-decoded it to <span class="flag" tabindex="0">CSCTF{last_buffer_4051c9f6b0d9622479785f613b063916}</span>. The decoy's value decodes to retired-training-readback-16.</li><li class="think"><b>Thinking:</b> the decoy decoding to a retired training string is what confirms I picked the real file.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">CSCTF{last_buffer_4051c9f6b0d9622479785f613b063916}</span></li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>run python3 solve.py with the handout folder as the argument.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="interlock-witness.html"><small>Previous</small>Interlock Witness</a><a class="next" href="last-commit.html"><small>Next</small>Last Commit</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · Vim swap file correlation</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python 3 (struct</li><li>json</li><li>base64</li><li>hashlib)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{last_buffer_4051c9f6b0d9622479785f613b063916}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Last%20Buffer/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the case context</span></a></li><li><a href="#step-2"><b>2</b><span>Correlate the timelines</span></a></li><li><a href="#step-3"><b>3</b><span>Parse the swap files by hand</span></a></li><li><a href="#step-4"><b>4</b><span>Decode the read-back proof</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

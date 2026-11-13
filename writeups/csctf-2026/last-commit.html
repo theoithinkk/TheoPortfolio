@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Last Commit (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="A WAL is a history, not just a current state. The database a tool shows you now is the newest committed view, so to answer what a job delivered you must replay committed transactions up to the job&#x27;s own commit. Respect transaction boundaries (only a non-zero db-size frame commits earlier page images) and stop at the right commit instead of at the end of the log.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">SQLite WAL reconstruction</span><span>4 steps · 4 min read</span></p>
+    <h1>Last Commit</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>A WAL is a history, not just a current state. The database a tool shows you now is the newest committed view, so to answer what a job delivered you must replay committed transactions up to the job's own commit. Respect transaction boundaries (only a non-zero db-size frame commits earlier page images) and stop at the right commit instead of at the end of the log.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the contract in export-profile.md</h2>
+      <ul><li><b>What I found:</b> it fixes the query, the manifest handling (delivery.csv loaded as a manifest table so rows follow delivery order, not DB order), the exact byte format (header, TAB and LF, no BOM, trailing LF) and the flag format CSCTF{last_commit_ followed by the sha256 hex and a closing brace}.</li><li><b>What I found:</b> it warns that the current view is not the answer, because the worker reads, stages, flips QUEUED to COMPLETED and commits in one transaction.</li><li class="think"><b>Thinking:</b> if the current view is not the answer, the answer lives in history, so the WAL is the place to look.</li><li class="result"><b>Result:</b> I know the query, the byte format and that I need the state at the job's own commit.</li></ul>
+      <figure><a href="../img/csctf-2026/last-commit/01-wal-frames-and-hashes.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/last-commit/01-wal-frames-and-hashes.webp" alt="WAL frames and hashes" width="1290" height="654" loading="lazy"></a><figcaption>WAL frames and hashes</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> parse the WAL by hand</h2>
+      <ul><li><b>What I did:</b> treated the evidence as read-only. The profile says not to open the original DB and WAL pair with SQLite, so I parsed the WAL by hand and only opened rebuilt copies.</li><li><b>What I found:</b> WAL header magic 0x377f0682, page size 4096, salts 0x9c01ce30 and 0xd0a30ea6, header checksum valid. 9 frames, every one with matching salts and a valid cumulative checksum (SQLite's checksum run over the 8 header bytes of each frame and its page image, chained from the previous frame).</li><li><b>What I found:</b> commit frames are the ones with a non-zero database size field: frames 0, 2, 4, 5, 7, 8. Frames 1, 3, 6 are non-commit page images belonging to the transaction that follows them.</li><li class="think"><b>Thinking:</b> I applied pages only when their commit frame was reached, because only a commit makes earlier page images part of the database. Pages not replaced by a committed frame come from the main DB file.</li><li class="result"><b>Result:</b> six commit points to rebuild.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Exploit:</b> rebuild after each commit and hash the export</h2>
+      <ul><li><b>What I did:</b> rebuilt the database as it stood after each commit, ran the profile's query against each (with delivery.csv loaded as manifest), and hashed the exact export bytes.</li><li><b>What I found:</b> frame 0 has no export_job row and hashes to 04a47a4f...bdb79. Frame 2 has no export_job row and hashes to 40f3b19d...ccf5f. Frame 4 has LR-731 as QUEUED and hashes to 40f3b19d...ccf5f. Frame 5 has LR-731 as COMPLETED and hashes to 40f3b19d...ccf5f, which is the job's commit. Frames 7 and 8 have LR-731 as COMPLETED and hash to 04a47a4f...bdb79.</li><li><b>What I found:</b> the registry content changed at frame 2 (before the job ran) and was changed back at frame 7 (after it completed). The later clean view (frames 7 and 8) hashes identically to the original state at frame 0.</li><li class="dead"><b>Dead end:</b> the clean later view cannot be used, because it does not show what the job delivered.</li><li class="result"><b>Result:</b> the hash that matters is the one at frame 5.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Result:</b> the export at the COMPLETED commit</h2>
+      <ul><li><b>What I found:</b> the first commit at which LR-731 is COMPLETED is frame 5. Its export has 13 rows for 12 parcels (one parcel has two holders, as the profile allows).</li><li><b>What I did:</b> took the SHA-256 of the complete export (header plus 13 rows, final LF included): 40f3b19d5a11601e9d5e5bf0c7a3bcb6248b5667764f25549b607c27396ccf5f.</li><li class="think"><b>Thinking:</b> stopping at the first COMPLETED commit, not the end of the log, is what the job's own transition means.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">CSCTF{last_commit_40f3b19d5a11601e9d5e5bf0c7a3bcb6248b5667764f25549b607c27396ccf5f}</span></li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>run python3 solve.py with the folder holding registry.sqlite, registry.sqlite-wal and delivery.csv as the argument. It prints the frame table, the per-commit hashes and the flag, and never touches the original pair.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="last-buffer.html"><small>Previous</small>Last Buffer</a><a class="next" href="operation-dawn-the-medics-phone.html"><small>Next</small>Operation Dawn - The Medic&#x27;s Phone</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · SQLite WAL reconstruction</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python 3 (struct</li><li>sqlite3</li><li>hashlib</li><li>csv)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{last_commit_40f3b19d5a11601e9d5e5bf0c7a3bcb6248b5667764f25549b607c27396ccf5f}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Last%20Commit/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the contract in export-profile.md</span></a></li><li><a href="#step-2"><b>2</b><span>Parse the WAL by hand</span></a></li><li><a href="#step-3"><b>3</b><span>Rebuild after each commit and hash the…</span></a></li><li><a href="#step-4"><b>4</b><span>Export at the COMPLETED commit</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

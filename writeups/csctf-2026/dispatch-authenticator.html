@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Dispatch Authenticator (AI Security writeup) | Theodore Garcia</title>
+<meta name="description" content="In federated learning, &quot;we only share gradients, not data&quot; is not a privacy guarantee. With a batch of one, a fully-connected first layer with a bias leaks its input exactly, since x = dW/db. Bigger models need an optimisation attack (Deep Leakage from Gradients, Zhu et al. 2019) instead of a division, but the leak is the same.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">AI Security</span><span class="wu-lvl">federated learning gradient leakage</span><span>4 steps · 3 min read</span></p>
+    <h1>Dispatch Authenticator</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>In federated learning, "we only share gradients, not data" is not a privacy guarantee. With a batch of one, a fully-connected first layer with a bias leaks its input exactly, since x = dW/db. Bigger models need an optimisation attack (Deep Leakage from Gradients, Zhu et al. 2019) instead of a division, but the leak is the same.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> what is in the archive</h2>
+      <ul><li><b>What I found:</b> I loaded it with allow_pickle=False so a malicious file can't run code on load. It is a 2-layer network, 50 inputs to 64 ReLU to 8 classes (global_W1, b1, W2, b2). The intercepted gradient has the same shapes (update_W1, b1, W2, b2), plus the logits and the label (0).</li><li class="think"><b>Thinking:</b> a 50-number input is small enough to be the dispatch text itself, one number per character.</li><li class="result"><b>Result:</b> the target is the input x of a one-sample network.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the math of the first layer's gradient</h2>
+      <ul><li><b>What I found:</b> for one training example x, the first layer computes z = W1 x + b1. Backpropagation gives dL/dW1 = delta * x^T and dL/db1 = delta, where delta is the error signal reaching each hidden unit. Every row i of the weight gradient is the input x scaled by delta_i, and the bias gradient is delta_i.</li><li class="think"><b>Thinking:</b> so x = update_W1[i] / update_b1[i] for any unit i whose bias gradient is non-zero. No optimisation is needed, just a division. The framing that neither the model nor the logits gives it up is a red herring, because the update alone leaks the input exactly.</li><li class="result"><b>Result:</b> a plan to recover x with one division per row.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> recover x</h2>
+      <ul><li><b>What I did:</b> divided each weight-gradient row by its bias gradient. 30 of the 64 hidden units had a zero gradient (dead ReLUs, which carry nothing). The other 34 rows all gave the same vector to 5e-17.</li><li class="think"><b>Thinking:</b> the values were multiples of 1/255, so multiplying by 255 should give ASCII codes.</li><li class="result"><b>Result:</b> the codes 67 83 67 84 70 123 ... 125 decode to <span class="flag" tabindex="0">CSCTF{17_hansoms_scald_not_aft_ay_gangling_1a7d12}</span>.</li></ul>
+      <figure><a href="../img/csctf-2026/dispatch-authenticator/01_solve_run.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/dispatch-authenticator/01_solve_run.webp" alt="solve.py recovering the dispatch from the intercepted update" width="1554" height="200" loading="lazy"></a><figcaption>solve.py recovering the dispatch from the intercepted update</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> prove it is the real dispatch</h2>
+      <ul><li><b>What I did:</b> ran two checks. First, the shared model on the recovered x. Second, the true cross-entropy gradient for label 0 at those logits.</li><li class="think"><b>Thinking:</b> a coincidence would not reproduce the intercepted numbers exactly.</li><li class="result"><b>Result:</b> the model reproduces the intercepted logits exactly, and the true gradient equals update_b2 with scale 1, so the update is a plain gradient with no noise or clipping.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>Use secure aggregation so the server only ever sees the sum of many units' updates, never one unit's raw gradient. Larger local batches and multiple local steps blur the per-example signal the attack relies on, and differential privacy (DP-SGD, with per-example gradient clipping plus calibrated noise) gives a provable bound on what any single update can reveal. This handout had none of these, which is why one division recovers the plaintext. From a GRC angle, treat model gradients and updates as sensitive data flows in a DPIA, not as harmless math.</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py dispatch-authenticator.npz prints the flag and runs both checks, and the --demo option runs a self-check of the gradient-leak identity.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="water-hammer-reconciliation.html"><small>Previous</small>Water Hammer Reconciliation</a><a class="next" href="lattice.html"><small>Next</small>Lattice</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>AI Security · federated learning gradient leakage</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li><li>NumPy</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{17_hansoms_scald_not_aft_ay_gangling_1a7d12}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/ML/Dispatch%20Authenticator/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>What is in the archive</span></a></li><li><a href="#step-2"><b>2</b><span>Math of the first layer&#x27;s gradient</span></a></li><li><a href="#step-3"><b>3</b><span>Recover x</span></a></li><li><a href="#step-4"><b>4</b><span>Prove it is the real dispatch</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

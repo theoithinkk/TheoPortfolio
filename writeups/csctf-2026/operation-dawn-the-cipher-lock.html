@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Operation Dawn - The Cipher Lock (Misc writeup) | Theodore Garcia</title>
+<meta name="description" content="A comparison that runs the secret through an S-box leaks the secret&#x27;s Hamming weight in power, one byte at a time. Because each code byte is checked independently, the search is 47 x 256 guesses, not 256^47. Known entered codes plus recorded traces are all an attacker needs, and the &quot;no hardware required&quot; note means the corpus already contains the leakage, so this is a pure data attack.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Misc</span><span class="wu-lvl">power analysis on AES S-box</span><span>4 steps · 3 min read</span></p>
+    <h1>Operation Dawn - The Cipher Lock</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>A comparison that runs the secret through an S-box leaks the secret's Hamming weight in power, one byte at a time. Because each code byte is checked independently, the search is 47 x 256 guesses, not 256^47. Known entered codes plus recorded traces are all an attacker needs, and the "no hardware required" note means the corpus already contains the leakage, so this is a pure data attack.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> what is in the archive</h2>
+      <ul><li><b>What I found:</b> I loaded traces.npz with allow_pickle=False, because a numpy archive can carry pickled objects that run code on load. It holds three arrays: traces (1500 x 87 floats, one power trace per guess attempt with 87 time samples each), plaintexts (1500 x 47 bytes, the known pass-code entered on each attempt) and sbox (256 bytes, where sbox[0] is 0x63, so it is the standard AES S-box).</li><li class="think"><b>Thinking:</b> 47 entered bytes per attempt means 47 bytes of stored code to find. This is a per-byte secret, so the attack is 47 independent single-byte CPAs, not a 128-bit key schedule.</li><li class="result"><b>Result:</b> the problem is 47 small searches of 256 candidates each.</li></ul>
+      <figure><a href="../img/csctf-2026/operation-dawn-the-cipher-lock/01_challenge_briefing.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/operation-dawn-the-cipher-lock/01_challenge_briefing.webp" alt="Operation Dawn - challenge briefing on the CSCTF 2026 scoreboard" width="1489" height="812" loading="lazy"></a><figcaption>Operation Dawn - challenge briefing on the CSCTF 2026 scoreboard</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the leakage model</h2>
+      <ul><li><b>What I did:</b> assumed the lock validates each position by computing sbox[entered_byte XOR stored_byte], the classic AES first-round target.</li><li class="think"><b>Thinking:</b> a CMOS circuit's power draw tracks the Hamming weight of the byte it handles, so one sample in each trace should correlate with HW(sbox[pt ^ stored]). Only the stored byte is unknown, which is 256 options per position.</li><li class="result"><b>Result:</b> a usable model for every position.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Exploit:</b> correlation power analysis, one byte at a time</h2>
+      <ul><li><b>What I did:</b> for position p and each candidate stored value g in 0..255, I built the model column HW(sbox[plaintexts[i,p] ^ g]) over all 1500 traces and computed the Pearson correlation against each of the 87 time samples. The guess with the highest absolute correlation is the real stored byte.</li><li class="think"><b>Thinking:</b> a wrong guess has no relation to the real leakage, so only the true byte should stand out from the noise.</li><li class="result"><b>Result:</b> the correct guess peaks at r of about 0.29 to 0.38 at the leaking sample, while every wrong guess stays near the noise floor (absolute r below about 0.1). The separation is clean on all 47 positions.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Result:</b> read the code</h2>
+      <ul><li><b>What I found:</b> the 47 recovered bytes are all printable ASCII and spell <span class="flag" tabindex="0">CSCTF{12_the_depot_is_unguarded_at_noon_7d3e90}</span>.</li><li class="think"><b>Thinking:</b> printable bytes forming a valid <span class="flag" tabindex="0">CSCTF{...}</span> string is the pass/fail check, since one wrong byte would show up as garbage at its position. The 12 also matches annex entry 12 in the briefing.</li><li class="result"><b>Result:</b> flag recovered.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>A cipher lock that compares secrets with data-dependent power draw is bypassable by anyone who can record traces under known inputs. Countermeasures are masking (randomise the intermediate so a single sample is independent of the secret), constant-power and constant-time comparison, and hiding (jitter, shuffling), but each must be evaluated against an attacker doing alignment plus higher-order CPA, not just the naive attack. A device that leaks per byte also enables incremental guessing, so the comparison must never short-circuit or vary with the secret.</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py path/to/traces.npz loads the arrays, runs a 256-candidate CPA per byte against the AES S-box Hamming-weight model, prints each recovered byte with its peak correlation, then the full code.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="lattice.html"><small>Previous</small>Lattice</a><a class="next" href="warden.html"><small>Next</small>Warden</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Misc · power analysis on AES S-box</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{12_the_depot_is_unguarded_at_noon_7d3e90}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Misc/Operation%20Dawn%20-%20The%20Cipher%20Lock/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>What is in the archive</span></a></li><li><a href="#step-2"><b>2</b><span>Leakage model</span></a></li><li><a href="#step-3"><b>3</b><span>Correlation power analysis</span></a></li><li><a href="#step-4"><b>4</b><span>Read the code</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

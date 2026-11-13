@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Warden (Misc writeup) | Theodore Garcia</title>
+<meta name="description" content="An audit hook is a deny-list over a fixed set of instrumented operations, not a capability sandbox. It hears opens, imports, execs and subprocess spawns, but it is deaf to operations that need no OS interaction, such as attribute access, reading the environment and writing to a file descriptor. The whole exploit lives in that blind spot: walk the class graph to the already-loaded os module and read the secret straight out of the environment. Emptying builtins and allowing only attribute reads looks locked down but leaves the whole silent-computation surface open.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Misc</span><span class="wu-lvl">CPython audit hook sandbox escape</span><span>4 steps · 4 min read</span></p>
+    <h1>Warden</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>An audit hook is a deny-list over a fixed set of instrumented operations, not a capability sandbox. It hears opens, imports, execs and subprocess spawns, but it is deaf to operations that need no OS interaction, such as attribute access, reading the environment and writing to a file descriptor. The whole exploit lives in that blind spot: walk the class graph to the already-loaded os module and read the secret straight out of the environment. Emptying builtins and allowing only attribute reads looks locked down but leaves the whole silent-computation surface open.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read jail.py and pin down what the monitor hears</h2>
+      <ul><li><b>What I found:</b> the line runs with empty builtins behind two gates. A static check requires one line, at most 4096 characters, that parses and contains no import statements. Then a CPython audit hook is installed that exits the process on any audit event except attribute reads and exactly one exec. The exit and write functions are captured by value in the closure, and audit hooks cannot be unregistered, so the sandboxed code has nothing to grab to remove it.</li><li class="think"><b>Thinking:</b> the one allowed exec is consumed by the jail's own exec call, which fires before my line runs, so I get no exec, eval, compile, import, open or subprocess of my own. The compile also happens before the hook is installed because compile is itself audited, a hint that the hook is the only real lock.</li><li class="result"><b>Result:</b> the hook is the lock, so the question is what it cannot hear.</li></ul>
+      <figure><a href="../img/csctf-2026/warden/01_challenge_briefing.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/warden/01_challenge_briefing.webp" alt="Warden - challenge briefing on the CSCTF 2026 scoreboard" width="1489" height="812" loading="lazy"></a><figcaption>Warden - challenge briefing on the CSCTF 2026 scoreboard</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the hook only runs when an audit event is raised</h2>
+      <ul><li><b>What I found:</b> CPython raises audit events only for a fixed set of interesting operations (open, import, compile, exec, os.system, subprocess, socket and similar). Pure Python computation raises nothing: attribute access, method calls, list, dict and string operations, formatting.</li><li class="think"><b>Thinking:</b> if an operation raises no event, the hook is never called and the operation just runs, so silent means allowed. A file open would be fatal, so the secret must be reachable without opening a file, meaning an environment variable or something already in memory.</li><li class="result"><b>Result:</b> the escape only has to stay off the audited operations.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> reach the already-loaded os module through the object graph</h2>
+      <ul><li><b>What I did:</b> with empty builtins there are no names to start from, only literals, so I walked from a plain object up to its base class and listed every loaded class, then picked a class from the os module that is always defined once os is imported. Its initializer's globals are the os module's namespace, so they already hold the environment and the write function.</li><li class="think"><b>Thinking:</b> this needs no import event and no open event, only attribute reads (which the warden allows) and ordinary dict and string operations (which raise nothing).</li><li class="result"><b>Result:</b> a path from literals to the environment and a write function without a single audited call.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Exploit:</b> dump the environment to the wire</h2>
+      <ul><li><b>What I did:</b> sent one line that formats the environment variables as text and writes them to stdout using that captured write function, with no builtins used anywhere. A local check against a copy of jail.py with a planted flag in the environment printed the whole environment with no warden message, so every operation was silent. The exact one-liner is in solve.py.</li><li class="result"><b>Result:</b> against the live console it worked on the first attempt, and the environment held the secret: FLAG=<span class="flag" tabindex="0">CSCTF{KsGjqClMT9Atn52ScQTFU1ha}</span>. The offline demo ends with "demo OK: gadget read the environment silently". Reproduction needs the live challenge server, which is now unavailable.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>Audit hooks are for detection and telemetry, not isolation, so confine untrusted code with an OS boundary (a separate process with seccomp or landlock, a container, or a WASM runtime) rather than an in-process hook that shares the interpreter with the code it contains. Do not keep secrets where sandboxed code can read them with zero audited calls, since environment variables, module globals and the object graph are all reachable without open, import or exec. Emptying builtins removes convenience, not reach, because the class graph still exposes every loaded class and its globals, and if a hook must be the control it has to treat reaching os, sys or subprocess through attribute access as the event to block.</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python solve.py w05.ctf.chronos-security.ro 33751 sends the line and prints the environment dump with the flag, and python solve.py --demo runs an offline in-process self-check against a planted environment variable.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="operation-dawn-the-cipher-lock.html"><small>Previous</small>Operation Dawn - The Cipher Lock</a><a class="next" href="ghost-signal.html"><small>Next</small>Ghost Signal</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Misc · CPython audit hook sandbox escape</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li><li>the provided jail.py source</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{KsGjqClMT9Atn52ScQTFU1ha}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Misc/Warden/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read jail.py and pin down what the…</span></a></li><li><a href="#step-2"><b>2</b><span>Hook only runs when an audit event is raised</span></a></li><li><a href="#step-3"><b>3</b><span>Reach the already-loaded os module…</span></a></li><li><a href="#step-4"><b>4</b><span>Dump the environment to the wire</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

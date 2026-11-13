@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Briefing for One (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="Everything the malware would do at runtime can be reproduced as pure data handling, with no execution. I parsed the hive for the one input that personalises the key (MachineGuid), recomputed the same HMAC the script computes, carved the exact object the script downloads (validated by the script&#x27;s own expected hash), and opened the archive. The DLL is never loaded and no captured host is contacted. The object hashes the shortcut embeds are what prove the reconstruction is byte-exact.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">LNK, WebDAV pcap, 7z recovery</span><span>4 steps · 3 min read</span></p>
+    <h1>Briefing for One</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Everything the malware would do at runtime can be reproduced as pure data handling, with no execution. I parsed the hive for the one input that personalises the key (MachineGuid), recomputed the same HMAC the script computes, carved the exact object the script downloads (validated by the script's own expected hash), and opened the archive. The DLL is never loaded and no captured host is contacted. The object hashes the shortcut embeds are what prove the reconstruction is byte-exact.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> verify and read the field guide</h2>
+      <ul><li><b>What I found:</b> the hash of the outer zip matches the challenge text, and SHA256SUMS verifies all five extracted members (briefing.lnk, machine-cryptography.hiv, egress.pcapng, field-guide.md, provenance.json).</li><li><b>What I found:</b> field-guide.md says to work on copies and never run the shortcut or DLL or contact any address. It also gives the exact HKDF byte layout as a self-check vector (verified against the real inputs), and says the saved hive presents the Cryptography subkey as its root.</li><li class="think"><b>Thinking:</b> the guide tells me what a safe, static reconstruction has to reproduce, so I checked hashes first and treated everything after as data handling only.</li><li class="result"><b>Result:</b> evidence is trusted and the rules are clear.</li></ul>
+      <figure><a href="../img/csctf-2026/briefing-for-one/01_briefing.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/briefing-for-one/01_briefing.webp" alt="Briefing screenshot" width="1150" height="864" loading="lazy"></a><figcaption>Briefing screenshot</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> read the shortcut as data</h2>
+      <ul><li><b>What I did:</b> pulled the UTF-16 command string out of briefing.lnk without executing it.</li><li><b>What I found:</b> it is a hidden powershell.exe -Command that reads MachineGuid from HKLM\SOFTWARE\Microsoft\Cryptography, then derives a password as HMAC-SHA256 (key = base64 of eyy//ntonkO5y+zE61CW4ddRSUWiWBgzwe3ra1tENd8=, message = "csctf26/briefing-for-one/v1" || 0x00 || lower-case guid) written as hex.</li><li><b>What I found:</b> it then copies \\briefing.rovenqara.test@80\DavWWWRoot\ops\route-update.7z over WebDAV (expected SHA-256 d29a0679...), 7z-extracts it with that password, checks route-update.dll and route-table.json hashes, and runs rundll32 ApplyRouteTable. The token lives in route-table.json.</li><li class="think"><b>Thinking:</b> the command line lists every input I need (MachineGuid, the HMAC recipe, the downloaded archive and its expected hash), so I could rebuild the whole chain offline.</li><li class="result"><b>Result:</b> three inputs to recover: MachineGuid, the password, and the 7z.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Exploit:</b> recover each input offline</h2>
+      <ul><li><b>What I did:</b> wrote a small regf parser (nk and vk cells) over machine-cryptography.hiv and got MachineGuid 080c7be1-f41c-446c-b961-93bd7bc4ea31.</li><li><b>What I did:</b> ran the HMAC above to get the password ee731407a271c8aa4b92f93d362591626421d32465aeba3f912ac09c576dc6c0. The field guide's example vector is asserted in solve.py, so the byte handling was proven before the real inputs were used.</li><li><b>What I found:</b> egress.pcapng is the host-only WebDAV exchange: 1 OPTIONS, 6 PROPFIND (the 207 XML bodies are decoys), and 1 GET for /ops/route-update.7z whose 5,359-byte body hashes to d29a0679..., matching the shortcut's own check.</li><li class="think"><b>Thinking:</b> the matching hash proves the reassembled TCP response body is byte-exact, so I carved that body from the stream.</li><li class="result"><b>Result:</b> I have the password and the exact archive.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Decrypt:</b> open the archive and read the token</h2>
+      <ul><li><b>What I did:</b> py7zr opened the 7z with the derived password, giving route-update.dll (230b2e64..., never run) and route-table.json (cc106579...).</li><li><b>What I found:</b> the JSON contains "briefing_token":"<span class="flag" tabindex="0">CSCTF{eab85b3bb8d309ec8f52a3f6271c55ff}</span>". The DLL's own strings show the same token-bearing JSON split around the value, which confirms it.</li><li><b>What I did:</b> ran python solve.py machine-cryptography.hiv egress.pcapng, which prints MachineGuid, the 7z password, the JSON (routes North Depot to School 4 open, West Depot to Hall 2 divert) and the flag.</li><li class="think"><b>Thinking:</b> two independent sources (the JSON and the DLL strings) agreeing on the token is enough to trust it.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">CSCTF{eab85b3bb8d309ec8f52a3f6271c55ff}</span></li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Note</h2><p>the handout triggers Windows Defender as Trojan:Script/Wacatac.H!ml, a generic ML detection on the inert shortcut and DLL fixture. Work on a copy in a Defender-excluded folder or a VM; nothing here is executed.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="watchword.html"><small>Previous</small>Watchword</a><a class="next" href="ghost-in-the-historian.html"><small>Next</small>Ghost in the Historian</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · LNK, WebDAV pcap, 7z recovery</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (struct</li><li>hmac</li><li>hashlib</li><li>base64</li><li>collections)</li><li>py7zr</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{eab85b3bb8d309ec8f52a3f6271c55ff}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Briefing%20for%20One/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Verify and read the field guide</span></a></li><li><a href="#step-2"><b>2</b><span>Read the shortcut as data</span></a></li><li><a href="#step-3"><b>3</b><span>Recover each input offline</span></a></li><li><a href="#step-4"><b>4</b><span>Open the archive and read the token</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

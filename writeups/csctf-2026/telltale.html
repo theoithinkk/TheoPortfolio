@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Telltale (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="A steady-looking status LED is not a quiet output. Keying it at 1 kHz is invisible to the eye and to anyone watching, but a photodiode sees it plainly. Mitigations: cover or remove status LEDs on air-gapped machines, or drive them from a fixed low-pass or lit-state signal that firmware on the host cannot modulate.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">optical LED covert channel</span><span>4 steps · 2 min read</span></p>
+    <h1>Telltale</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>A steady-looking status LED is not a quiet output. Keying it at 1 kHz is invisible to the eye and to anyone watching, but a photodiode sees it plainly. Mitigations: cover or remove status LEDs on air-gapped machines, or drive them from a fixed low-pass or lit-state signal that firmware on the host cannot modulate.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span>Recon.</h2>
+      <ul><li>Capture is unipolar photodiode data (all samples positive, mean ~10400) on a slowly drifting baseline. The spectrum is dominated by 1-5 Hz drift and 50 Hz mains, i.e. ambient light, not data.</li><li>Spectrum also shows strong lines at 500 Hz and 750 Hz and odd harmonics (1500/2500 Hz), which hints at a square-wave source rather than sine tones.</li><li>Screenshot 01.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span>Isolated the burst.</h2>
+      <ul><li>A 100 Hz high-pass removes the drift and mains. A clean burst appears from ~0.25 s to ~0.73 s (~0.47 s, samples 11960-34690); outside it there is only noise.</li><li>Spectrogram (screenshot 02): a pure 500 Hz tone with odd harmonics first, then a spread of 500-1250 Hz energy. That is what a bit stream looks like, not several tones.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span>Identified the line code.</h2>
+      <ul><li>Zero-crossing run lengths inside the burst are only ever 48 or 24 samples (1 ms or 0.5 ms at 48 kHz).</li><li>The first 64 runs are all 48 samples, a 500 Hz square wave. In Manchester coding, alternating bits 1,0,1,0 give exactly this, so it is a 32-bit clock-sync preamble.</li><li>After that, runs of 24 and 48 samples mix, which is Manchester at 1000 bit/s (0.5 ms half-bits).</li><li><b>Screenshot 03:</b> 03a is the preamble, 03b is payload with both run lengths.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span>Decoded.</h2>
+      <ul><li>Sampled the signal sign at the centre of every 24-sample half-bit, then paired half-bits (Manchester: one pair value is a 1, the other a 0).</li><li>The right alignment is the half-bit offset after the first edge (offset 1) with inverted polarity ("01" = 1, "10" = 0). Then, with a bit shift of 7, the bytes read as ASCII: <span class="flag" tabindex="0">CSCTF{telltale_05c3394a279a6cd9108388d5f1d45036}</span></li><li>The other three polarity/offset combinations give "X" (invalid Manchester pairs) or garbage, which is how I picked this one. Screenshot 04.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python3 solve.py telltale.wav (needs numpy and scipy).</p></aside>
+    <aside class="wu-callout"><h2>Screenshots</h2><p>screenshots/01_raw_and_burst.png, 02_spectrogram.png, 03_manchester_zoom.png, 04_decode.png</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="silent-breaker.html"><small>Previous</small>Silent Breaker</a><a class="next" href="the-capability-ghost.html"><small>Next</small>The Capability Ghost</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · optical LED covert channel</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (wave</li><li>numpy</li><li>scipy</li><li>matplotlib)</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{telltale_05c3394a279a6cd9108388d5f1d45036}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Telltale/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Recon</span></a></li><li><a href="#step-2"><b>2</b><span>Isolated the burst</span></a></li><li><a href="#step-3"><b>3</b><span>Identified the line code</span></a></li><li><a href="#step-4"><b>4</b><span>Decoded</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Relay Capture (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="Cropping changes what a viewer shows, not what the file contains. Overwriting a larger image with a smaller one without truncating leaves the old compressed data behind IEND, and because the deflate stream can be resynchronised at the bit level, much of the lost image can be rebuilt. The operator should rotate this key; the panel itself says so.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">cropped PNG recovery</span><span>5 steps · 2 min read</span></p>
+    <h1>Relay Capture</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Cropping changes what a viewer shows, not what the file contains. Overwriting a larger image with a smaller one without truncating leaves the old compressed data behind IEND, and because the deflate stream can be resynchronised at the bit level, much of the lost image can be rebuilt. The operator should rotate this key; the panel itself says so.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the visible capture</h2>
+      <ul><li><b>What I found:</b> the terminal capture ends with "recovery panel retained in prior frame".</li><li class="think"><b>Thinking:</b> that line is a hint that the removed content is still in the file.</li><li class="result"><b>Result:</b> worth walking the file structure.</li></ul>
+      <figure><a href="../img/csctf-2026/relay-capture/01-original-cropped-capture.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/relay-capture/01-original-cropped-capture.webp" alt="Original cropped capture" width="520" height="340" loading="lazy"></a><figcaption>Original cropped capture</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> walk the PNG chunks</h2>
+      <ul><li><b>What I found:</b> IEND is at byte 14,263 but the file is 26,174 bytes, so 11,911 bytes follow IEND. They contain twelve more IDAT chunk headers at a regular 1,036-byte spacing (1,024 data bytes plus 12 bytes of length, type and CRC).</li><li class="think"><b>Thinking:</b> that is the end of the ORIGINAL file: the editor saved the shorter cropped image over the original without truncating it.</li><li class="result"><b>Result:</b> the old compressed image data is still behind IEND.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Exploit:</b> rebuild one raw deflate stream</h2>
+      <ul><li><b>What I did:</b> joined the partial first chunk body with every later chunk body, with the 12-byte chunk framing removed (11,755 bytes; the last 4 are the old zlib Adler-32).</li><li><b>What I found:</b> the stream begins in the middle of a deflate block, so there is no valid zlib header.</li><li class="result"><b>Result:</b> a raw deflate stream with unknown start alignment.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> find the bit offset</h2>
+      <ul><li><b>What I did:</b> tried every bit offset (0 to 94,000), raw-inflating with a 32 KiB zero preset dictionary.</li><li class="dead"><b>Dead end:</b> almost every offset fails or produces only a few bytes.</li><li><b>What I found:</b> bit offset 25016 inflates cleanly to 312,200 bytes, which is exactly 200 rows x (1 filter byte + 520*3) with every filter byte 0.</li><li class="think"><b>Thinking:</b> that exact row arithmetic with all-zero filter bytes is the tell-tale of a correct sync.</li><li class="result"><b>Result:</b> the lost pixel data is recovered.</li></ul>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Result:</b> read the key</h2>
+      <ul><li><b>What I did:</b> reassembled the 200 scanlines into a 520x200 RGB image. It is the cropped-away panel: "RELAY RECOVERY KEY - ROTATE AFTER USE", the key line, and "relay BR-7 / emergency key custody".</li><li><b>What I did:</b> zoomed the key line to confirm every character: <span class="flag" tabindex="0">CSCTF{6f86acdd1d10e0d8a5a541bb}</span>.</li><li class="result"><b>Result:</b> the flag.</li></ul>
+      <figure><a href="../img/csctf-2026/relay-capture/02-recovered-cropped-panel.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/relay-capture/02-recovered-cropped-panel.webp" alt="Recovered cropped panel" width="520" height="200" loading="lazy"></a><figcaption>Recovered cropped panel</figcaption></figure>
+      <figure><a href="../img/csctf-2026/relay-capture/03-key-line-zoomed.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/relay-capture/03-key-line-zoomed.webp" alt="Key line zoomed 3x" width="1350" height="135" loading="lazy"></a><figcaption>Key line zoomed 3x</figcaption></figure>
+      <figure><a href="../img/csctf-2026/relay-capture/04-solver-output.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/relay-capture/04-solver-output.webp" alt="Solver output" width="1373" height="239" loading="lazy"></a><figcaption>Solver output</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>run python3 solve.py relay-capture.png recovered.png, then open recovered.png.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="redline.html"><small>Previous</small>Redline</a><a class="next" href="shadow-dispatch.html"><small>Next</small>Shadow-Dispatch</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · cropped PNG recovery</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python 3 (zlib</li><li>struct</li><li>Pillow)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{6f86acdd1d10e0d8a5a541bb}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Relay%20Capture/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the visible capture</span></a></li><li><a href="#step-2"><b>2</b><span>Walk the PNG chunks</span></a></li><li><a href="#step-3"><b>3</b><span>Rebuild one raw deflate stream</span></a></li><li><a href="#step-4"><b>4</b><span>Find the bit offset</span></a></li><li><a href="#step-5"><b>5</b><span>Read the key</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

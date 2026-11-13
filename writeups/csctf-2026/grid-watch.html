@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Grid-Watch (Network writeup) | Theodore Garcia</title>
+<meta name="description" content="The link refuses unsigned and replayed commands, but the note hands over the exact HKDF that builds the provisioning key, and every input to it is recoverable from the evidence: the serial from a STATUSTEXT, the epoch by calibrating the RTC ticks, and the nonce from the connect banner. Re-signing is legitimate per the protocol, so the only real work is getting the epoch byte-exact (hence the exact-arithmetic calibration) and keeping signing timestamps current so each frame is accepted.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Network</span><span class="wu-lvl">MAVLink 2 signing key re-provisioning</span><span>4 steps · 4 min read</span></p>
+    <h1>Grid-Watch</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The link refuses unsigned and replayed commands, but the note hands over the exact HKDF that builds the provisioning key, and every input to it is recoverable from the evidence: the serial from a STATUSTEXT, the epoch by calibrating the RTC ticks, and the nonce from the connect banner. Re-signing is legitimate per the protocol, so the only real work is getting the epoch byte-exact (hence the exact-arithmetic calibration) and keeping signing timestamps current so each frame is accepted.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the provisioning note and the capture</h2>
+      <ul><li><b>What I found:</b> the note says command and telemetry use MAVLink 2 signing, and the per-airframe session key is not on the link. Signing timestamps are 10 us ticks from the airframe RTC since the unit's commissioning epoch (not the 2015 MAVLink epoch), with a per-unit offset and ppm drift to calibrate. Keys may be re-provisioned in the field with a SETUP_SIGNING authenticated by the unit's provisioning key: prov_key = HKDF-SHA256(ikm = serial_ascii || commissioning_epoch as uint64 little-endian seconds, salt = session_nonce announced at connect, info = "CX-PROV/v1", L = 32). After re-provisioning the order is set GUIDED, arm, then command.</li><li class="think"><b>Thinking:</b> the note gives the whole recipe, so the question becomes whether every input to the HKDF can be recovered from the evidence. capture.tlog is one signed MAVLink 2 flow, and a STATUSTEXT in it gives the serial CX-FALCON-9951.</li><li class="result"><b>Result:</b> serial known, nonce comes at connect, epoch still missing.</li></ul>
+      <figure><a href="../img/csctf-2026/grid-watch/01_briefing.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/grid-watch/01_briefing.webp" alt="Grid-Watch - briefing" width="1150" height="864" loading="lazy"></a><figcaption>Grid-Watch - briefing</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> calibrate the RTC and recover the commissioning epoch</h2>
+      <ul><li><b>What I did:</b> each signed frame's trailer holds a 48-bit tick, so I paired every tick with the tlog's wall-clock time and fitted a line.</li><li class="dead"><b>Dead end:</b> a float least-squares fit over about 2.3e12 ticks loses precision and gave a wrong epoch at first.</li><li class="think"><b>Thinking:</b> the epoch has to be byte-exact for the HKDF, so I switched to exact arithmetic.</li><li class="result"><b>Result:</b> an exact two-point line fits all points to microseconds, with ppm of about -17 and epoch = 1733965123. As a cross-check, extrapolating the live tick with that epoch lands on the present day.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> derive the provisioning key and re-provision in one connection</h2>
+      <ul><li><b>What I did:</b> on connect the unit announces "PROV NONCE &lt;hex&gt;". I computed prov_key = HKDF-SHA256(serial || epoch as little-endian u64, salt = bytes.fromhex(nonce), info = "CX-PROV/v1") and sent the authenticated SETUP_SIGNING. The server confirmed "signing re-provisioned: new key active".</li><li class="dead"><b>Dead end:</b> pymavlink validates incoming frames against the signing key too, so the drone's own replies looked like BAD_DATA until I decoded them with a separate non-validating parser.</li><li class="think"><b>Thinking:</b> the signing timestamp must stay ahead of the drone's live tick or the signed frame is dropped as stale, so solve.py reads a live tick and adds a margin.</li><li class="result"><b>Result:</b> the new key is active and my frames are accepted as signed.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Exploit:</b> fly it</h2>
+      <ul><li><b>What I did:</b> signed with the newly installed key and sent DO_SET_MODE GUIDED(4), then COMPONENT_ARM_DISARM(1), then DO_REPOSITION. The drone only accepts DO_REPOSITION as a COMMAND_LONG, since COMMAND_INT and SET_POSITION_TARGET_GLOBAL_INT are refused.</li><li class="result"><b>Result:</b> the accepted reposition (COMMAND_ACK result 0) returns the flag over STATUSTEXT: <span class="flag" tabindex="0">CSCTF{0u8Tr4pMpvDktHKI2MiMNIOi}</span>. I ran it as python solve.py tcp:ASSIGNED_HOST:PORT. Reproduction needs the live challenge server, which is now unavailable.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>A provisioning key derived only from values that leak over the link or sit in logs (a serial number, a commissioning date, a nonce announced in the clear) is not a secret, so field re-keying needs a key that never appears in the capture, such as a per-unit random key loaded out of band or an authenticated key exchange. Treat recorded telemetry as containing the inputs to any key derivation, and monitor for unexpected SETUP_SIGNING messages and new signing keys appearing on an airframe.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="ghost-signal.html"><small>Previous</small>Ghost Signal</a><a class="next" href="severed-link.html"><small>Next</small>Severed Link</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Network · MAVLink 2 signing key re-provisioning</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>pymavlink</li><li>Python (stdlib: hmac</li><li>hashlib</li><li>fractions</li><li>socket)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{0u8Tr4pMpvDktHKI2MiMNIOi}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Network/Grid-Watch/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the provisioning note and the capture</span></a></li><li><a href="#step-2"><b>2</b><span>Calibrate the RTC and recover the…</span></a></li><li><a href="#step-3"><b>3</b><span>Derive the provisioning key and…</span></a></li><li><a href="#step-4"><b>4</b><span>Fly it</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

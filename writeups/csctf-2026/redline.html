@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Redline (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="Word keeps deleted text inside document.xml as w:del runs, so the approved authorization was never gone, just marked deleted, while a forged one was inserted in its place by s.kessler.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">DOCX tracked-change recovery</span><span>3 steps · 2 min read</span></p>
+    <h1>Redline</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Word keeps deleted text inside document.xml as w:del runs, so the approved authorization was never gone, just marked deleted, while a forged one was inserted in its place by s.kessler.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> a .docx is a ZIP of XML. Unzip it and read the parts.</h2>
+      <ul><li><b>What I found:</b> docProps/core.xml names the original author as "A. Reyes" (dc:creator) but cp:lastModifiedBy = "s.kessler", with cp:revision 4. So someone other than the author touched the file last.</li><li class="think"><b>Thinking:</b> a directive that "reads wrong" plus a different last editor points straight at tracked changes (Word revisions), which Word stores inline in word/document.xml as &lt;w:ins&gt; (insertions) and &lt;w:del&gt; (deletions), each stamped with w:author and w:date.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> pull every tracked insertion and deletion.</h2>
+      <ul><li><b>What I found:</b> all nine revisions are by s.kessler, stamped 2026-10-07T02:41Z. The deletions and insertions are a matched rewrite of the directive's meaning: deleted "temperature" -&gt; inserted "thermal"; deleted "30" -&gt; inserted "90" (loosening the excursion limit); deleted  "Vials that exceeded 8 C MUST be quarantined and MUST NOT be redistributed." inserted "Vials that exceeded 8 C may be returned to distribution at depot-supervisor discretion." word/comments.xml has s.kessler's note: "I am dropping the quarantine hold ... Re-issuing under a fresh authorization." So the safety hold was deliberately reversed.</li><li class="think"><b>Thinking:</b> the authorization token was part of that rewrite. The DELETED authorization is the original approved one; the INSERTED authorization is the forgery kessler substituted.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> separate the real authorization from the forged one.</h2>
+      <ul><li><b>What I found:</b> deleted (original) authorization = <span class="flag" tabindex="0">CSCTF{redline_21ee9b19d342e06432165fb2b6f64e06}</span> (split across two deletion runs in the XML, which I rejoin). Inserted (forged) authorization = <span class="flag" tabindex="0">CSCTF{dispatch_0f7c0c00aac69bbb86d6b96391f5d112}</span>, the decoy that went out to the crews.</li><li class="result"><b>Result:</b> the original excursion authorization is the deleted token.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Flag</h2><p><span class="flag" tabindex="0">CSCTF{redline_21ee9b19d342e06432165fb2b6f64e06}</span></p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python3 solve.py CC-11_excursion_directive.docx</p></aside>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>Distributing a .docx without flattening it leaves the full edit history, authors and timestamps embedded. For forensics that is a gift, but for anyone publishing a document it is a leak, so export to PDF or run Document Inspector before release. Safety-critical directives should also be signed or hashed at approval time, so a later unapproved rewrite (here: quarantine to redistribute, by a non-author) is detectable instead of silently shipping to crews.</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>the screenshot is a live re-run of solve.py against the challenge's own .docx; it reproduces the documented flag.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="recon-plate.html"><small>Previous</small>Recon Plate</a><a class="next" href="relay-capture.html"><small>Next</small>Relay Capture</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · DOCX tracked-change recovery</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python 3</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{redline_21ee9b19d342e06432165fb2b6f64e06}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Redline/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>.docx is a ZIP of XML. Unzip it and read…</span></a></li><li><a href="#step-2"><b>2</b><span>Pull every tracked insertion and deletion</span></a></li><li><a href="#step-3"><b>3</b><span>Separate the real authorization from the…</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

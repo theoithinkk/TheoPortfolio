@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>99 (Crypto writeup) | Theodore Garcia</title>
+<meta name="description" content="QWERTZ-98 &quot;encryption&quot; is multiplication by a number derived from the password, and multiplication leaks structure. The password&#x27;s factors survive inside the ciphertext, so factoring the ciphertext&#x27;s small primes reveals the password with no brute force. Real ciphers mix the key and data so that nothing about the key can be read back out of the output. Obscure formats and stacked encodings add effort, not security.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Pink CTF</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Crypto</span><span class="wu-lvl">QWERTZ-99 factoring</span><span>5 steps · 4 min read</span></p>
+    <h1>99</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>QWERTZ-98 "encryption" is multiplication by a number derived from the password, and multiplication leaks structure. The password's factors survive inside the ciphertext, so factoring the ciphertext's small primes reveals the password with no brute force. Real ciphers mix the key and data so that nothing about the key can be read back out of the output. Obscure formats and stacked encodings add effort, not security.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> the hint hex</h2>
+      <ul><li><b>What I found:</b> the first byte 0x97 XOR 0xFF is 0x68, which is "h". Flipping every bit (bitwise NOT) of every byte gives https://github.com/QWERTZexe/QWERTZ-99.</li><li class="think"><b>Thinking:</b> a URL that starts with "http" has a recognisable first byte. 0x97 is exactly the inverse of "h", so the whole string is just NOT-ed.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> reading the QWERTZ-99 source</h2>
+      <ul><li>What I found, the .qmap format: [QMAP]{c:3}{s:1}(ord|code)... Every character (stored as its ord) maps to a 3-digit code. c:3 is the code width and s:1 means "98 mode" is supported.</li><li>What I found, encoding ("99"): concatenate each character's code, then append "99" as a terminator.</li><li>What I found, salting ("98"): drop the "99" and multiply the number by a password number P = int(concatenated password codes) * (product of every password code). Then append "-98".</li><li>What I found, the image: one symbol per pixel (0-9, or 11 for "-"). Each pixel holds two masked copies of the symbol, (num+m1, m1) and (m2, num+m2), and which RGBA channel goes first rotates with the pixel index (idx % 4). Decoding means taking the two differences and keeping the pixel only when both agree.</li><li class="think"><b>Thinking:</b> this is security through obscurity. The masks are stored right next to the data they hide, so the image is an encoding, not encryption.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> decoding the image</h2>
+      <ul><li><b>What I did:</b> reimplemented the pixel decoder in Python.</li><li class="result"><b>Result:</b> a 620-digit number ending in "-98", so the message was salted with an unknown password: N = M * P.</li></ul>
+      <figure><a href="../img/pink-ctf/99/01_secure_png_noise.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/99/01_secure_png_noise.webp" alt="secure.png: the 25x25 pixel-noise handout (shown upscaled)" width="400" height="400" loading="lazy"></a><figcaption>secure.png: the 25x25 pixel-noise handout (shown upscaled)</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> recovering the password without a wordlist</h2>
+      <ul><li class="dead"><b>Dead end:</b> I tried common words (pink, qwertz, secure, 99...) and every printable password up to 3 characters. Nothing divided N exactly.</li><li class="think"><b>Thinking:</b> P is a product of the password's own codes, so its small prime factors have to appear in N. I factored N by trial division up to 100,000.</li><li><b>What I found:</b> N = 2^6 * 3^14 * 5 * 73 * 137 * 163^4 * 691^2 * 4241 * (589-digit cofactor).</li><li><b>What I found:</b> reading it against pink.qmap, "1" = 486 = 2*3^5, "3" = 978 = 2*3*163, "7" = 691. The password "13371337" has a code product of 2^6 * 3^14 * 163^4 * 691^2, which matches the exponents exactly. Its concatenated part 486978978691486978978691 = 486978978691 * (10^12 + 1), and 10^12 + 1 = 73 * 137 * 99990001. That explains the 73 and 137 as well.</li><li class="result"><b>Result:</b> N mod P = 0 for "13371337", and N / P decodes with no unknown codes: "Hey, thanks for trusting QWERTZ 99 with your most sensitive data! Here is your sensitive data in case you forgot it: 72756517940796217918417988128949817918417988139449732784728936932725112499"</li></ul>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Pivot:</b> the second layer</h2>
+      <ul><li><b>What I did:</b> the trailing digit string ends in "99", so it is another QWERTZ-99 string. I decoded it with the same pink.qmap.</li><li class="think"><b>Thinking:</b> the message said "your sensitive data", so the digits after the colon had to be the real payload, still encoded.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">PINK{NiNeTyNiNeQwErTzEs}</span>. My solve.py run printed both layers and the flag.</li></ul>
+      <figure><a href="../img/pink-ctf/99/02_solve_run.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/99/02_solve_run.webp" alt="Live solve run printing both layers and the flag" width="1554" height="195" loading="lazy"></a><figcaption>Live solve run printing both layers and the flag</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>run python solve.py secure.png pink.qmap. It prints both layers and asserts the flag.</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>pink.qmap is missing exactly one printable character, "_" (ord 95). That made me suspect underscores in the flag at first, so I relaxed my "decodes cleanly" check to tolerate one unknown code. In the end the flag has none.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><span></span><a class="next" href="soeder-swim.html"><small>Next</small>Soeder Swim</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Pink CTF</dd>
+      <dt>Category</dt><dd>Crypto · QWERTZ-99 factoring</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li><li>curl</li><li>trial-division factoring</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PINK{NiNeTyNiNeQwErTzEs}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Crypto/99/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Hint hex</span></a></li><li><a href="#step-2"><b>2</b><span>Reading the QWERTZ-99 source</span></a></li><li><a href="#step-3"><b>3</b><span>Decoding the image</span></a></li><li><a href="#step-4"><b>4</b><span>Recovering the password without a wordlist</span></a></li><li><a href="#step-5"><b>5</b><span>Second layer</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

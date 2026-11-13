@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Escaped (Web writeup) | Theodore Garcia</title>
+<meta name="description" content="Escaping characters is not the same as parameterizing a query, and the flag says it outright: 0x5C is not always a backslash. addslashes and mysqli_real_escape_string prepend 0x5C to a quote, but on a multibyte connection (GBK and similar) a lead byte can consume that 0x5C, so the quote survives.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Pink CTF</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Web</span><span class="wu-lvl">multibyte SQL injection</span><span>4 steps · 3 min read</span></p>
+    <h1>Escaped</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Escaping characters is not the same as parameterizing a query, and the flag says it outright: 0x5C is not always a backslash. addslashes and mysqli_real_escape_string prepend 0x5C to a quote, but on a multibyte connection (GBK and similar) a lead byte can consume that 0x5C, so the quote survives.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> recon</h2>
+      <ul><li><b>What I found:</b> a single POST form (username and password), no CSRF token, no input reflected back.</li><li><b>What I found:</b> every wrong attempt returns the same "Access denied" and the same 3903-byte page. No SQL errors leak.</li><li class="think"><b>Thinking:</b> with no error output, I needed a side channel to tell a true condition from a false one.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Dead end:</b> the easy bypasses</h2>
+      <ul><li><b>What I did:</b> tried raw quotes in username or password, the trailing-backslash two-field trick, array parameters (username[]=...), a JSON body, duplicate parameters, and LIKE wildcards (% and _).</li><li class="dead"><b>Dead end:</b> all of them still gave "Access denied" with no timing change. Raw quotes and the trailing backslash were escaped, so the escaper handles the backslash too, like mysqli_real_escape_string.</li><li class="think"><b>Thinking:</b> a working backslash escape plus the hint "escaped all special characters" points at the classic multibyte (GBK) bypass.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> find the injection with a time oracle</h2>
+      <ul><li><b>What I found:</b> the escaper turns a quote 0x27 into 0x5C 0x27. But if the DB connection charset is multibyte, the byte pair 0xBF 0x5C is a single character. Putting the raw byte 0xBF right before the quote makes the escaper's 0x5C get absorbed into one multibyte character, and my 0x27 quote stays live and breaks out of the string.</li><li><b>What I did:</b> sent username = 0xBF 0x27 followed by " OR SLEEP(3)-- -".</li><li class="result"><b>Result:</b> the response took about 3 s against a baseline of about 0.8 s. Lead bytes 0xBF, 0xAF, 0x81, 0x95 and 0xDF all worked, while 0xA1 and 0xFF did not (they do not form a valid multibyte pair with 0x5C). The injection works in both the username and password fields.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> log in and read the flag</h2>
+      <ul><li><b>What I did:</b> sent username (raw bytes) = 0xBF 0x27 followed by " OR 1=1-- -", with password = x.</li><li><b>What I found:</b> the query becomes WHERE username='&lt;multibyte-char&gt;' OR 1=1-- -' AND password='x', so the condition is always true.</li><li class="result"><b>Result:</b> the page returns "Access granted: <span class="flag" tabindex="0">PINK{0x5C_is_not_always_a_backslash}</span>".</li><li class="think"><b>Thinking:</b> OR 1=2-- - is still denied, which confirms it is the injection logging me in and not a lucky guess.</li></ul>
+      <figure><a href="../img/pink-ctf/escaped/01_solve_run.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/escaped/01_solve_run.webp" alt="Live solve run printing the flag" width="1554" height="195" loading="lazy"></a><figcaption>Live solve run printing the flag</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>Use prepared statements with bound parameters, so the data never re-enters the SQL text and byte-boundary tricks cannot help. Set the connection charset to utf8mb4 with mysqli_set_charset so the escaper and the server agree on boundaries. From a GRC angle, "input is escaped" is not a control you can tick. The control is parameterized queries, verified in code review.</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>run python -I solve.py https://sqli.pink.bayern/ (the --demo flag runs the offline byte-trick self-check). As a one-liner: curl -s https://sqli.pink.bayern/ --data-binary 'username=%BF%27%20OR%201=1--%20-&amp;password=x'</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>the screenshot is a live re-run against the real server, and a fresh run's flag matches the recorded one.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="tns2.html"><small>Previous</small>TNS2</a><a class="next" href="sql-injection.html"><small>Next</small>SQL Injection</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Pink CTF</dd>
+      <dt>Category</dt><dd>Web · multibyte SQL injection</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>Python</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PINK{0x5C_is_not_always_a_backslash}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Web/Escaped/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Recon</span></a></li><li><a href="#step-2"><b>2</b><span>Easy bypasses</span></a></li><li><a href="#step-3"><b>3</b><span>Find the injection with a time oracle</span></a></li><li><a href="#step-4"><b>4</b><span>Log in and read the flag</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

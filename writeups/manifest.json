@@ -143,7 +143,7 @@
       {
         "slug": "forgotten-router",
         "title": "Forgotten Router",
-        "category": "Web Exploitation",
+        "category": "Web",
         "note": "information disclosure / exposed file",
         "tools": [
           "curl"
@@ -156,13 +156,13 @@
       {
         "slug": "internal-trouble",
         "title": "Internal Trouble",
-        "category": "Web Exploitation",
+        "category": "Web",
         "note": "SSRF",
         "tools": [
           "Burp Suite / curl",
           "base64 decoder"
         ],
-        "insight": "The \"Is Website Down?\" checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as `http://[::1]:3001` (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.",
+        "insight": "The \"Is Website Down?\" checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as http://[::1]:3001 (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.",
         "minutes": 2,
         "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20II%20-%20The%20Breach/%28DONE%29%20Internal%20Trouble/writeup.md",
         "steps": 4
@@ -176,8 +176,8 @@
       {
         "slug": "deleted-doesnt-mean-gone",
         "title": "Deleted Doesn't Mean Gone",
-        "category": "Digital Forensics",
-        "note": "Disk / File Carving",
+        "category": "Forensics",
+        "note": "disk file carving",
         "tools": [
           "strings",
           "Python"
@@ -203,7 +203,7 @@
       {
         "slug": "last-packet",
         "title": "Last Packet",
-        "category": "Network Forensics",
+        "category": "Network",
         "note": "",
         "tools": [
           "Python"
@@ -216,7 +216,7 @@
       {
         "slug": "memory-echoes",
         "title": "Memory Echoes",
-        "category": "Digital Forensics",
+        "category": "Forensics",
         "note": "",
         "tools": [
           "Python",
@@ -230,7 +230,7 @@
       {
         "slug": "registry-secrets",
         "title": "Registry Secrets",
-        "category": "Digital Forensics",
+        "category": "Forensics",
         "note": "Memory",
         "tools": [
           "strings",
@@ -244,7 +244,7 @@
       {
         "slug": "usb-secrets",
         "title": "USB Secrets",
-        "category": "Digital Forensics",
+        "category": "Forensics",
         "note": "",
         "tools": [
           "text editor",
@@ -254,6 +254,787 @@
         "minutes": 1,
         "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20USB%20Secrets/writeup.md",
         "steps": 3
+      }
+    ]
+  },
+  "csctf-2026": {
+    "title": "CSCTF 2026",
+    "repo": "https://github.com/theoithinkk/CTFwriteups",
+    "items": [
+      {
+        "slug": "emanation",
+        "title": "Emanation",
+        "category": "Crypto",
+        "note": "",
+        "tools": [
+          "Python (numpy",
+          "cryptography)",
+          "solve.py"
+        ],
+        "insight": "Both countermeasures leaked their own secret. The random delay was visible as a marker spike, so alignment was trivial, and the mask was processed (and leaked) on its own, so combining its sample with each masked byte cancelled it out. A first-order mask only raises the attack to second order; it stops being cheap only when the shares are not separately observable, or with higher-order masking plus real jitter. Defensive takeaway (GRC angle): masking and random delays are \"hiding\" controls whose strength depends on implementation details. A side-channel evaluation should test against the attacker's best combination (alignment + higher-order CPA), not just first-order CPA, before claiming resistance.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Crypto/Emanation/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "the-keywheel",
+        "title": "The Keywheel",
+        "category": "Crypto",
+        "note": "PRNG state recovery / backward prediction",
+        "tools": [
+          "Python 3 (hand-written CBOR decoder",
+          "hashlib",
+          "struct)"
+        ],
+        "insight": "MT19937 is invertible. Any 624 consecutive outputs reveal the whole state, and the twist can be run backward as easily as forward, so \"earlier\" keys are as exposed as \"later\" ones. Deriving key material directly from a non-cryptographic PRNG breaks forward AND backward secrecy. Use a CSPRNG/KDF with independent per-message keys, e.g. HKDF from a secret with a per-message nonce. Screenshots: Real Windows Terminal captures of solve.py run on key-unit-journal.cbor, one per stage (output sliced with Select-Object).",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Crypto/The%20Keywheel/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "the-signet",
+        "title": "The Signet",
+        "category": "Crypto",
+        "note": "ECDSA nonce recovery — arithmetic-progression nonces on secp256k1",
+        "tools": [
+          "Python 3 (hand-written DER walk",
+          "stdlib hashlib/hmac)",
+          "cryptography",
+          "solve.py"
+        ],
+        "insight": "Nonces that step by a constant stride make each ECDSA signature a linear equation in (d, start, stride); three signatures are enough to solve for the private key, and the rest verify it. Defensive takeaways: - ECDSA security rests entirely on unpredictable, independent per-signature nonces (k). A biased or structured k — - Deriving a data-encryption key from the signing key ties two duties to one secret: cracking the signatures also Screenshots: - screenshots/01_solve_run.png   solve.py recovering d, verifying all six nonces, and decrypting the seal (live re-run)",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Crypto/The%20Signet/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "watchword",
+        "title": "Watchword",
+        "category": "Crypto",
+        "note": "AES-GCM nonce reuse / \"Forbidden Attack\"",
+        "tools": [
+          "Python 3 arithmetic)",
+          "pycryptodome"
+        ],
+        "insight": "Nonce reuse in AES-GCM doesn't just risk confidentiality (reused keystream) — it breaks the authenticator entirely. Two or more (ciphertext, tag) pairs under one reused nonce give enough algebraic structure (GHASH is linear in `H` once the AAD/ciphertext blocks are fixed) to solve for both the GHASH subkey `H` and the per-message tag mask `S` via polynomial GCD over GF(2^128), without ever touching the AES key itself. Once `S` is known, anything \"protected\" by that same per-nonce value — here, a second payload deliberately keyed off `E_K(J0)` — falls immediately.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Crypto/Watchword/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "briefing-for-one",
+        "title": "Briefing for One",
+        "category": "Forensics",
+        "note": "LNK, WebDAV pcap, 7z recovery",
+        "tools": [
+          "Python (struct",
+          "hmac",
+          "hashlib",
+          "base64",
+          "collections)",
+          "py7zr",
+          "solve.py"
+        ],
+        "insight": "Everything the malware would do at runtime can be reproduced as pure data handling, with no execution. I parsed the hive for the one input that personalises the key (MachineGuid), recomputed the same HMAC the script computes, carved the exact object the script downloads (validated by the script's own expected hash), and opened the archive. The DLL is never loaded and no captured host is contacted. The object hashes the shortcut embeds are what prove the reconstruction is byte-exact.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Briefing%20for%20One/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "ghost-in-the-historian",
+        "title": "Ghost in the Historian",
+        "category": "Forensics",
+        "note": "ext4 carving, xorshift decryptor",
+        "tools": [
+          "WSL debugfs",
+          "Python (struct",
+          "glob)",
+          "objdump",
+          "solve.py"
+        ],
+        "insight": "The cipher is a pure XOR keystream, so decryption is the same routine as encryption and the only unknowns are the seed inputs. The encryptor itself tells you where they come from: it stamps each .enc's mtime with the very time it seeds from, and the pid is printed in the log. The keystream state carrying between files is why the decrypt order has to be the encryptor's scandir order, not the order you happen to list them in.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Ghost%20in%20the%20Historian/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "interlock-witness",
+        "title": "Interlock Witness",
+        "category": "Forensics",
+        "note": "Modbus/TCP policy replay",
+        "tools": [
+          "Python (struct",
+          "hashlib",
+          "collections)",
+          "solve.py"
+        ],
+        "insight": "The policy judges each write on the state in the instant before its response, so the solver must replay state strictly in request-to-response order and apply an accepted write only after its response, never on the request. Validating each response against its request (matching transaction, protocol, unit, function, FC16 address and quantity echo, FC03 byte count) is what separates \"the controller accepted this\" from \"the client merely sent it\", the same split a real response-cell forensic tool makes. The policy states its own counts (8 ineligible writes, 5 of them prerequisite-state), and reproducing those exactly shows the classification is correct, not merely plausible, before the hash is taken.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Interlock%20Witness/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "last-buffer",
+        "title": "Last Buffer",
+        "category": "Forensics",
+        "note": "Vim swap file correlation",
+        "tools": [
+          "Python 3 (struct",
+          "json",
+          "base64",
+          "hashlib)",
+          "solve.py"
+        ],
+        "insight": "Two files that both restore cleanly cannot be told apart by content alone, because the drill revision looks equally plausible. The identity of the writer (PID, tty and time from the swap header plus the process and audit logs) and the base-file hash anchored to what the shell itself printed are what decide it.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Last%20Buffer/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "last-commit",
+        "title": "Last Commit",
+        "category": "Forensics",
+        "note": "SQLite WAL reconstruction",
+        "tools": [
+          "Python 3 (struct",
+          "sqlite3",
+          "hashlib",
+          "csv)",
+          "solve.py"
+        ],
+        "insight": "A WAL is a history, not just a current state. The database a tool shows you now is the newest committed view, so to answer what a job delivered you must replay committed transactions up to the job's own commit. Respect transaction boundaries (only a non-zero db-size frame commits earlier page images) and stop at the right commit instead of at the end of the log.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Last%20Commit/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "operation-dawn-the-medics-phone",
+        "title": "Operation Dawn - The Medic's Phone",
+        "category": "Forensics",
+        "note": "Android SQLite WAL recovery",
+        "tools": [
+          "xxd",
+          "Python (zlib",
+          "tarfile",
+          "sqlite3",
+          "struct)",
+          "sqlite3"
+        ],
+        "insight": "The app-level withdrawal only changed the live row. The SQLite write-ahead log kept an older copy of the page, so the withdrawn message survived in the backup and could be recovered by parsing the WAL and inflating the message bodies.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Operation%20Dawn%20-%20The%20Medic%27s%20Phone/writeup.md",
+        "steps": 3
+      },
+      {
+        "slug": "ortelia-vdr-carving",
+        "title": "Ortelia VDR Carving",
+        "category": "Forensics",
+        "note": "fragmented PNG carving",
+        "tools": [
+          "Python (re",
+          "struct",
+          "zlib",
+          "PIL)",
+          "xxd-style hex inspection"
+        ],
+        "insight": "Header and footer carving fails on fragmented files. When the flash is read raw, a file's sectors can be scattered, so \"header to next IEND\" or \"header to end of data\" gives a truncated or wrong file. Use the format's own integrity data (PNG chunk lengths and CRC32) to confirm reassembly, and count how many sectors the file should occupy to know how much is missing. The sector 21/34/42/43 zero gaps were the clue that the file was split. Screenshots:",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Ortelia%20VDR%20Carving/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "polyglot-requiem",
+        "title": "Polyglot Requiem",
+        "category": "Forensics",
+        "note": "git, PNG polyglot, SQLite carving",
+        "tools": [
+          "git (read-only",
+          "hooks disabled)",
+          "Python 3 (struct",
+          "zipfile",
+          "sqlite3",
+          "hashlib)",
+          "objdump",
+          "solve.py"
+        ],
+        "insight": "Three layers of innocent artifacts (an unreachable commit, a PNG with a ZIP behind IEND, a SQLite file with an unlinked cell) each hid the next piece, and the pieces only meet in the key derivation: provenance tag from the image, timestamp from git, ciphertext from a deleted row. Delete does not erase in SQLite or git, and the decoy curl-to-shell line is a reason to read the history, not to run it.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Polyglot%20Requiem/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "recon-plate",
+        "title": "Recon Plate",
+        "category": "Forensics",
+        "note": "bit-plane steganography",
+        "tools": [
+          "Python 3 (NumPy",
+          "Pillow",
+          "zlib",
+          "tarfile)",
+          "solve.py"
+        ],
+        "insight": "A naive \"extract the LSBs\" would have returned only the decoy, so always check the neighbouring bit planes. The hint that the plate was \"carried out\" was a second, deeper layer, and the telltale was that the two planes started identically but then diverged.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Recon%20Plate/writeup.md",
+        "steps": 6
+      },
+      {
+        "slug": "redline",
+        "title": "Redline",
+        "category": "Forensics",
+        "note": "DOCX tracked-change recovery",
+        "tools": [
+          "Python 3",
+          "solve.py"
+        ],
+        "insight": "Word keeps deleted text inside document.xml as w:del runs, so the approved authorization was never gone, just marked deleted, while a forged one was inserted in its place by s.kessler.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Redline/writeup.md",
+        "steps": 3
+      },
+      {
+        "slug": "relay-capture",
+        "title": "Relay Capture",
+        "category": "Forensics",
+        "note": "cropped PNG recovery",
+        "tools": [
+          "Python 3 (zlib",
+          "struct",
+          "Pillow)",
+          "solve.py"
+        ],
+        "insight": "Cropping changes what a viewer shows, not what the file contains. Overwriting a larger image with a smaller one without truncating leaves the old compressed data behind IEND, and because the deflate stream can be resynchronised at the bit level, much of the lost image can be rebuilt. The operator should rotate this key; the panel itself says so.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Relay%20Capture/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "shadow-dispatch",
+        "title": "Shadow-Dispatch",
+        "category": "Forensics",
+        "note": "Lambda layer pyc analysis",
+        "tools": [
+          "unzip",
+          "Python (marshal",
+          "dis",
+          "hashlib",
+          "re)",
+          "diff",
+          "manual review of Lambda function/layer/IAM/CloudWatch exports"
+        ],
+        "insight": "Nothing in the function code changed. A poisoned Lambda layer shipped a hash-based, unchecked .pyc that did not match its .py source. It read SSM secrets and leaked them 2 bytes at a time through the telemetry \"correlation\" field, encrypted with a key derived from the request ID. Remediation: treat all four SSM secrets as compromised and rotate them, remove layer versions 4, 6, 8 and 10, and note that $LATEST (version 10) is poisoned.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Shadow-Dispatch/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "silent-breaker",
+        "title": "Silent Breaker",
+        "category": "Forensics",
+        "note": "IEC-104 and SS7 correlation",
+        "tools": [
+          "curl",
+          "tshark",
+          "Python",
+          "solve.py"
+        ],
+        "insight": "No single source tells the whole story. The telecom feed gives the who (a rogue SS7 peer harvesting SMS routing for the one OT-VPN user), RADIUS gives the how (OTP passed 2 minutes later), the pcap gives the what (an unauthorised single command on the breaker IOA) and the historian gives the cover-up (a frozen value while the wire kept moving). Each step needed the previous step's output to be trusted.",
+        "minutes": 5,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Silent%20Breaker/writeup.md",
+        "steps": 6
+      },
+      {
+        "slug": "telltale",
+        "title": "Telltale",
+        "category": "Forensics",
+        "note": "optical LED covert channel",
+        "tools": [
+          "Python (wave",
+          "numpy",
+          "scipy",
+          "matplotlib)"
+        ],
+        "insight": "A steady-looking status LED is not a quiet output. Keying it at 1 kHz is invisible to the eye and to anyone watching, but a photodiode sees it plainly. Mitigations: cover or remove status LEDs on air-gapped machines, or drive them from a fixed low-pass or lit-state signal that firmware on the host cannot modulate.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Telltale/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "the-capability-ghost",
+        "title": "The Capability Ghost",
+        "category": "Forensics",
+        "note": "PAX xattrs and journal triage",
+        "tools": [
+          "Python 3",
+          "binary string triage",
+          "solve.py"
+        ],
+        "insight": "The marker's key was hiding in plain metadata, the TAG in a PAX user xattr and the EPOCH in a journal field, and the cipher was spelled out in the binary's own --help, so the whole thing unseals statically without root.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/The%20Capability%20Ghost/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "the-layer-that-wouldnt-die",
+        "title": "The Layer That Wouldn't Die",
+        "category": "Forensics",
+        "note": "OCI layer whiteout recovery",
+        "tools": [
+          "unzip",
+          "Python (json",
+          "tarfile",
+          "gzip",
+          "hmac",
+          "hashlib). Nothing from the image was executed; all layers were read as data."
+        ],
+        "insight": "A file deleted in a later layer is still stored in the layer that created it. The seal depends on the marker as of layer 3, so the rev-A marker from layer 2 is what unlocks it. The rev-B overwrite is a decoy, and the layer 5 whiteout only hides the file from the merged view.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/The%20Layer%20That%20Wouldn%27t%20Die/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "tone-burst",
+        "title": "Tone Burst",
+        "category": "Forensics",
+        "note": "audio FSK decoding",
+        "tools": [
+          "Python (wave",
+          "numpy",
+          "matplotlib)"
+        ],
+        "insight": "A repeating preamble plus an HDLC-style 0x7E flag tells you the frame boundary. Always look for the sync pattern before trying to guess byte alignment.",
+        "minutes": 1,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Tone%20Burst/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "water-hammer-reconciliation",
+        "title": "Water Hammer Reconciliation",
+        "category": "Forensics",
+        "note": "Modbus/TCP capture reconciliation",
+        "tools": [
+          "Python 3 standard library only. Capture parsed",
+          "never replayed."
+        ],
+        "insight": "An acknowledgement is not state. Only a write that is acknowledged and then read back with matching values tells you what the controller actually held, and the ordering rules (response before the immediately next request, unique matches, no reuse) separate real control history from decoys. Doing TCP reassembly first, then framing, keeps packet boundaries from creating false events.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Water%20Hammer%20Reconciliation/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "dispatch-authenticator",
+        "title": "Dispatch Authenticator",
+        "category": "AI Security",
+        "note": "federated learning gradient leakage",
+        "tools": [
+          "Python",
+          "NumPy"
+        ],
+        "insight": "In federated learning, \"we only share gradients, not data\" is not a privacy guarantee. With a batch of one, a fully-connected first layer with a bias leaks its input exactly, since x = dW/db. Bigger models need an optimisation attack (Deep Leakage from Gradients, Zhu et al. 2019) instead of a division, but the leak is the same.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/ML/Dispatch%20Authenticator/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "lattice",
+        "title": "Lattice",
+        "category": "Misc",
+        "note": "inverting a home-built block cipher",
+        "tools": [
+          "Python",
+          "solve.py"
+        ],
+        "insight": "Leaving out the decrypt routine is not a protection. A cipher built only from invertible primitives, with key material that can be reproduced from the published source and seeds, has zero confidentiality, because the inverse is a mechanical reversal of each round. The \"preimage\" framing is a red herring: this is a cipher keyed only on paper, so recovering SECRET is plain decryption, not a hash preimage.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Misc/Lattice/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "operation-dawn-the-cipher-lock",
+        "title": "Operation Dawn - The Cipher Lock",
+        "category": "Misc",
+        "note": "power analysis on AES S-box",
+        "tools": [
+          "Python",
+          "solve.py"
+        ],
+        "insight": "A comparison that runs the secret through an S-box leaks the secret's Hamming weight in power, one byte at a time. Because each code byte is checked independently, the search is 47 x 256 guesses, not 256^47. Known entered codes plus recorded traces are all an attacker needs, and the \"no hardware required\" note means the corpus already contains the leakage, so this is a pure data attack.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Misc/Operation%20Dawn%20-%20The%20Cipher%20Lock/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "warden",
+        "title": "Warden",
+        "category": "Misc",
+        "note": "CPython audit hook sandbox escape",
+        "tools": [
+          "Python",
+          "the provided jail.py source",
+          "solve.py"
+        ],
+        "insight": "An audit hook is a deny-list over a fixed set of instrumented operations, not a capability sandbox. It hears opens, imports, execs and subprocess spawns, but it is deaf to operations that need no OS interaction, such as attribute access, reading the environment and writing to a file descriptor. The whole exploit lives in that blind spot: walk the class graph to the already-loaded os module and read the secret straight out of the environment. Emptying builtins and allowing only attribute reads looks locked down but leaves the whole silent-computation surface open.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Misc/Warden/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "ghost-signal",
+        "title": "Ghost Signal",
+        "category": "Network",
+        "note": "SS7 Diameter billing correlation",
+        "tools": [
+          "Python (stdlib: json",
+          "re",
+          "hashlib",
+          "collections)",
+          "solve.py"
+        ],
+        "insight": "The whole case is a cross-reference exercise, because the attacker's IMSI is deliberately the only malformed 15-digit one and the single value present in all three artifacts. Confirming it in SS7 (TBCD-decoded) and Diameter before trusting the billing record proves the thread, and sorting the out-of-order billing events pins the first anomalous timestamp the marker depends on.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Network/Ghost%20Signal/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "grid-watch",
+        "title": "Grid-Watch",
+        "category": "Network",
+        "note": "MAVLink 2 signing key re-provisioning",
+        "tools": [
+          "pymavlink",
+          "Python (stdlib: hmac",
+          "hashlib",
+          "fractions",
+          "socket)",
+          "solve.py"
+        ],
+        "insight": "The link refuses unsigned and replayed commands, but the note hands over the exact HKDF that builds the provisioning key, and every input to it is recoverable from the evidence: the serial from a STATUSTEXT, the epoch by calibrating the RTC ticks, and the nonce from the connect banner. Re-signing is legitimate per the protocol, so the only real work is getting the epoch byte-exact (hence the exact-arithmetic calibration) and keeping signing timestamps current so each frame is accepted.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Network/Grid-Watch/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "severed-link",
+        "title": "Severed Link",
+        "category": "Network",
+        "note": "MAVLink 2 signing key leak",
+        "tools": [
+          "pymavlink",
+          "Python (stdlib: socket",
+          "hashlib)",
+          "solve.py"
+        ],
+        "insight": "Signing only buys authenticity while the key is secret, and the operator distributed the new key over the very channel it protects, where it was recorded. Capturing the key beats breaking the crypto, since no cryptographic weakness is needed, just the leaked 32 bytes. The gateway's replay protection (monotonic, current timestamps) and heartbeat-first handshake work correctly and are irrelevant once the key is in the attacker's hands, because they just sign fresh frames like the real operator.",
+        "minutes": 5,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Network/Severed%20Link/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "silent-orbit",
+        "title": "Silent Orbit",
+        "category": "Network",
+        "note": "CCSDS and CFDP NAK reconstruction",
+        "tools": [
+          "unzip",
+          "sha256sum",
+          "xxd",
+          "Python 3",
+          "custom parser solve.py"
+        ],
+        "insight": "The suppressed record is fully determined by the relay's published state machine. Strict adherence to the rules (APID and flag filtering, tuple match, Metadata before data, snapshot at the first valid EOF, and the CFDP header-length convention) yields the exact NAK PDU, and the decoy transaction and out-of-state PDUs are what make a naive parser get it wrong.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Network/Silent%20Orbit/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "operation-dawn-radio-recovery",
+        "title": "Operation Dawn - Radio Recovery",
+        "category": "Reverse Engineering",
+        "note": "custom firmware container -> zlib-preset-dictionary rootfs -> cpio -> U-Boot env XOR",
+        "tools": [
+          "Python (stdlib: struct",
+          "zlib",
+          "binascii)",
+          "solve.py"
+        ],
+        "insight": "",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Reverse%20Engineering/Operation%20Dawn%20-%20Radio%20Recovery/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "apogee",
+        "title": "Apogee",
+        "category": "Web",
+        "note": "Supply-chain, ZIP duplicate-name + symlink parser-differential writes into a write-protected store",
+        "tools": [
+          "curl",
+          "Python (stdlib: zipfile",
+          "hashlib",
+          "json",
+          "urllib)",
+          "solve.py"
+        ],
+        "insight": "A parser differential -- the verifier and the extractor disagreed about the same bytes. ZIP permits duplicate entry names and carries unix symlink modes; the verifier hashed the file resolved by name while extract-zip created a same-named symlink first and wrote the file through it, out of the sandbox and into the write-protected store. Validation on one interpretation, side effects on another = a confused-deputy write. \"Write-protected\" at the app layer is meaningless when a library writes as the trusted pipeline process. Defensive takeaways (supply-chain / GRC angle): - Validate and extract the EXACT same entry/bytes. Resolve names identically on both sides, reject archives with - Treat archive symlinks (and unix modes) as hostile. Extract with symlinks disabled / O_NOFOLLOW, resolve each - Constrain writers by the OS, not by convention: run extraction as an unprivileged user that cannot write the - Make the audit trail authoritative on content, not just on \"an accepted delivery occurred\": compare the written",
+        "minutes": 5,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Apogee/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "corridor-transit-gate",
+        "title": "Corridor Transit Gate",
+        "category": "Web",
+        "note": "API, API gateway broken access control",
+        "tools": [
+          "curl",
+          "Python",
+          "solve.py"
+        ],
+        "insight": "The gateway and the backend disagree on what a path means. The gateway's allow/deny ran on a slightly different normalization of the URL than the backend's router used to dispatch it. \"..%2f\" is the sweet spot: the gateway doesn't decode %2f (so it never sees the /internal/ segment and allows the request), but the backend does decode and collapse it (so it routes straight to the emergency-override handler). The front-end JS handed over the exact endpoint and body — the whole challenge was defeating that one boundary control. Defensive takeaways (API security / GRC angle): - Never enforce access control on the raw/formatted URL at a proxy while a separate component does the routing. - \"Internal only\" by network/path is not authentication. The emergency override should require a real identity - Don't ship privileged endpoints and payloads in client-side JS. The dispatch-admin chunk disclosed the exact - Reject ambiguous requests at the edge: normalize or 400 on \"..%2f\", mixed-encoded separators, and \"//\" before Reproduction: Run against a live instance (the clearance_token is minted per-instance): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33802 internal route : /internal/dispatch/emergency-clearance held consignment: CTLD-FR-8821 POST /api/v1/corridor/..%2finternal/dispatch/emergency-clearance -> 200 { }",
+        "minutes": 5,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Corridor%20Transit%20Gate/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "cutover",
+        "title": "Cutover",
+        "category": "Web",
+        "note": "Node.js — parser-differential prototype pollution + risk-screen number-grammar bypass",
+        "tools": [
+          "curl",
+          "Node",
+          "Python"
+        ],
+        "insight": "Two bugs stacked on one trust boundary. (1) A parser differential — flatted 3.4.1 treats a value string as an index into its own cell array, so \"__proto__\" yields a live reference to Array.prototype, and a shallow merge onto it becomes global prototype pollution even though the identical JSON is harmless. Storing authorization grants in an Array indexed by action name (`grants[action]`) is what turns that pollution into a privilege escalation. (2) A validator/parser mismatch — the risk gateway recognises only the bare-integer number grammar and \"defers\" anything else, while the engine parses full RFC 8259, so `3.11e7` means \"under review\" to the screen and \"31,100,000\" to the engine. Defences: parse the manifest with a format that has no reference-to-anything semantics (or freeze/null-prototype the parsed object before merging), guard merges with `Object.hasOwn` and reject `__proto__`/`constructor`/`prototype` keys, store grants in a Map or null-prototype object (never a bare Array whose chain reaches Object.prototype), and make the screen and the engine use ONE canonical number parse so a value cannot mean two things. \"Defer on undetermined\" should fail closed for values on the exposure path, not open. Live reproduction (fresh instance; solve.py discovers the planted batch from `/batches` — settled aggregate above both its declared figure and the exposure cap — then pollutes and recalls. Per-instance flag differs from the documented one above): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33798 [*] hostile batch: MRN-86C5E2 settled=41600000 (declared=38700000, cap=30000000) [*] pollute: (400, '{\"error\":\"manifest.invalid\",\"detail\":{\"field\":\"batch\"}}') [*] recall: 200 {\"receipt\":{\"id\":\"RCPT-C81E704462A5\",\"at\":\"2026-11-12T06:13:12.130Z\",\"type\":\"RECALL\", [+] FLAG: CSCTF{oy7mSSganuP0rF0IjxPmk2nd} ``` The `pollute` step returns the expected 400 (field:batch) because `normalise()` runs before `validate()`, so the Array.prototype pollution already landed; the recall then passes the OPERATOR tier gate and the risk screen defers on the non-integer value, so the engine reconciles 41,600,000 == the settled aggregate. Live-instance capture — both requests issued same-origin against a freshly-fetched instance (the recall splices the batch out of the queue, so this browser run is the authoritative per-instance capture). The panel shows the planted batch (settled above its declared figure and the exposure cap), the flatted prototype-pollution POST returning the expected 400 while landing `Array.prototype.RECALL = true`, and the RECALL whose value is sent in float grammar so the integer-only risk screen returns `screening: \"defer\"` — the genuine HTTP 200 receipt carries `operator: OPERATOR` (the un-escalated tier, now holding RECALL) and the `authorization` code (per-instance flag differs from the documented one above): ![Cutover — live prototype-pollution escalation and the number-grammar recall receipt with the authorization code](screenshots/01_pollution_recall_flag.jpg)",
+        "minutes": 6,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Cutover/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "interlock",
+        "title": "Interlock",
+        "category": "Web",
+        "note": "parser-confusion chain: path-authz bypass + Unicode normalization + host-parser mismatch",
+        "tools": [
+          "curl",
+          "Python 3 (hashlib",
+          "unicodedata)",
+          "the app's own /api/v1/schema"
+        ],
+        "insight": "Four components each parse the same bytes differently — fast-uri vs WHATWG for the host, NFKC vs plain casefold for the identity, raw vs normalized for the path. The attacker lives in every gap: a string that looks safe to the checker and dangerous to the executor. The fix is parser unanimity — authorize on, and act on, the exact same canonical value. Defensive takeaways: - Normalize once, at the edge, and route/authorize on that same canonical path; never let the proxy and the app - Use ONE Unicode normalization (NFKC+casefold) for both \"is this on the roster\" and \"is this a duplicate\"; identity - Extract the host with the very parser the outbound fetch uses (or reject backslashes and control chars outright) so",
+        "minutes": 5,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Interlock/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "key-custody",
+        "title": "Key Custody",
+        "category": "Web",
+        "note": "API, JWT HS256 `kid` key-injection — a public asset used as the signing key",
+        "tools": [
+          "curl",
+          "Python (stdlib: hmac",
+          "hashlib",
+          "base64",
+          "urllib)",
+          "solve.py"
+        ],
+        "insight": "Never let attacker-controlled token metadata select the verification key. `kid` picked the HMAC secret, and the secret was a publicly downloadable file — so the attacker holds the key and can mint any token. Two failures had to line up: a `kid` resolved as a filesystem path (with `..` traversal), and a key source that is not actually secret. Either alone is bad; together they are a full admin forge. Defensive takeaways (API security / GRC angle): - Pin the algorithm AND resolve `kid` against a strict allow-list of key IDs mapped to secrets you control. Never - Signing keys must be secret and stored outside any web-served directory. A key that can be fetched over /public - Sanitise every externally supplied identifier used for lookup — reject `..`, absolute paths, and separators — - Bind sessions to immutable, server-issued claims and verify them server-side; here the admin route's extra",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Key%20Custody/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "operation-dawn-the-dispatch-console",
+        "title": "Operation Dawn - The Dispatch Console",
+        "category": "Web",
+        "note": "second-order SQL injection + WAF bypass",
+        "tools": [
+          "curl",
+          "Python 3",
+          "solve.py"
+        ],
+        "insight": "The sanitiser and WAF only guarded the front door (the /post write and the /dispatches read). The /digest report re-used the stored callsign in a concatenated query, so a value that was stored safely became a SQL injection the second time it was read — classic second-order, invisible to the request-time WAF. Defensive takeaways: - A WAF that inspects inbound requests does nothing for second-order injection, where the dangerous query is built - Don't rely on denylisting `union`/`select`/`--`. The exploit used none of them; `' OR '1'='1` was enough. - The command \"lock\" was only a WHERE filter in one query path. Access control for sensitive rows must be enforced",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Operation%20Dawn%20-%20The%20Dispatch%20Console/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "operation-dawn-the-standing-order",
+        "title": "Operation Dawn - The Standing Order",
+        "category": "Web",
+        "note": "signed-cookie forgery via SHA-1 hash length extension -> privilege escalation, then SSRF filter bypass",
+        "tools": [
+          "curl",
+          "Python (pure-stdlib SHA-1 length-extension",
+          "no deps)",
+          "solve.py"
+        ],
+        "insight": "Two classic bugs chained. (1) A secret-prefix SHA-1 MAC (SHA1(secret||data)) is forgeable via length extension without the secret — you can append attacker data and still produce a valid tag; here that flips role=operator to role=admin. (2) The SSRF guard was a string blacklist of loopback spellings, so an alternate encoding of the same address (decimal 2130706433) reaches 127.0.0.1 anyway. Defensive takeaways (API security / GRC angle): - Sign cookies with HMAC-SHA-256, not SHA1(secret||data). HMAC is immune to length extension. Better still, sign a - Don't carry authorization state (role) in a client-held, string-concatenated blob; keep it server-side keyed by an - SSRF defense is not a string blacklist. Resolve the host to an IP, then allow/deny-list the PARSED address against",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Operation%20Dawn%20-%20The%20Standing%20Order/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "two-key-turn",
+        "title": "Two-Key Turn",
+        "category": "Web",
+        "note": "API, race condition — TOCTOU on a two-person approval rule",
+        "tools": [
+          "curl",
+          "Python (threading",
+          "stdlib only)",
+          "solve.py"
+        ],
+        "insight": "The two-person rule is an invariant (\"2 distinct officers\"), and the server enforced it with a read-check-write sequence that was not atomic. Under concurrency the gap between \"check the caller is a new officer\" and \"commit the approval record\" lets a single officer's parallel requests each pass the check before any of them writes, so one credential satisfies a rule that requires two. The 8-second pending window just made the race wide and comfortable. Defensive takeaways (API security / GRC angle): - Enforce the distinctness invariant in the data layer, atomically. A UNIQUE(order_id, officer_id) constraint plus a - Never gate a security invariant on an application-level \"have I seen this officer yet?\" read that is separate from - Idempotency keys per (officer, order, window) close the replay/duplicate path; a check-constraint on - Separation-of-duties controls (maker/checker, two-person release, four-eyes) are exactly the controls most often",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Two-Key%20Turn/writeup.md",
+        "steps": 3
+      },
+      {
+        "slug": "vesper-quay-board",
+        "title": "Vesper Quay Board",
+        "category": "Web",
+        "note": "API, parser-differential RCE + Ed25519 signing with the victim's own key",
+        "tools": [
+          "curl",
+          "Python",
+          "solve.py"
+        ],
+        "insight": "Two JSON parsers, one request. Go's encoding/json folds key case and takes the last duplicate; Python's json is exact and case-sensitive. The desk validated the UPPER-case keys while the quay executed the lower-case ones — a confused-deputy that turns a \"safe\" validation into attacker-chosen code on the box that holds the signing key. From there the signature is genuine, so the forged-warrant defense (requiring a station signature) is satisfied by the station itself. Defensive takeaways (API security / GRC angle): - One canonical parse. Never let a gateway/validator and the executor parse the same bytes with different libraries - Case-insensitive key matching (Go encoding/json default) is a footgun next to a case-sensitive consumer. Decode - Don't run an interpreter on request-controlled argv, even \"only for the legacy courier\". The courier check was the - Keep signing oracles off any box reachable by untrusted input. STATION_SIGN signs arbitrary stdin; code execution Live reproduction against a freshly-fetched instance. solve.py reads this case's couriers from `/v1/warrants/current`, sends the case-folded warrant whose quay loader signs the canonical bytes with STATION_SIGN and files the correction, then prints the clearance_code echoed in the quay's loader_stdout (per-instance flag differs from the documented one above): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33800 loader_stdout: {\"clearance_code\":\"CSCTF{oSijHownvUlrnHbA3Rw76QNo}\"}",
+        "minutes": 5,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Vesper%20Quay%20Board/writeup.md",
+        "steps": 5
+      }
+    ]
+  },
+  "pink-ctf": {
+    "title": "Pink CTF",
+    "repo": "https://github.com/theoithinkk/CTFwriteups",
+    "items": [
+      {
+        "slug": "99",
+        "title": "99",
+        "category": "Crypto",
+        "note": "QWERTZ-99 factoring",
+        "tools": [
+          "Python",
+          "curl",
+          "trial-division factoring"
+        ],
+        "insight": "QWERTZ-98 \"encryption\" is multiplication by a number derived from the password, and multiplication leaks structure. The password's factors survive inside the ciphertext, so factoring the ciphertext's small primes reveals the password with no brute force. Real ciphers mix the key and data so that nothing about the key can be read back out of the output. Obscure formats and stacked encodings add effort, not security.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Crypto/99/writeup.md",
+        "steps": 5
+      },
+      {
+        "slug": "soeder-swim",
+        "title": "Soeder Swim",
+        "category": "OSINT",
+        "note": "reverse image geolocation",
+        "tools": [
+          "browser",
+          "Google reverse image search",
+          "Google Maps",
+          "curl"
+        ],
+        "insight": "Geolocation OSINT is chaining small clues. The caption plus one reverse image search gave the exact venue in a single hop, because the pool's own Instagram had reposted the photo. The flag even nods to it: \"Sweet Caroline\" is 1. FC Nürnberg's stadium anthem. Ignore the decoy panorama and spend the effort on the real-world location.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/OSINT/Soeder%20Swim/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "journey",
+        "title": "Journey",
+        "category": "Reverse Engineering",
+        "note": "nine-language decoder chain",
+        "tools": [
+          "Python (NumPy",
+          "pycryptodome)",
+          "reading source in 9 languages"
+        ],
+        "insight": "Layered obfuscation only costs time, not security. Each layer is a fixed, keyless transform, or a key stored right next to the data, as in the Java AES layer. The skill this trains is reverse engineering: reading unfamiliar languages, separating the live code path from decoys, and reimplementing a decoder safely instead of running untrusted code. That is the same habit as triaging a malware dropper chain.",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Reversing/Journey/writeup.md",
+        "steps": 10
+      },
+      {
+        "slug": "cluck-cluck",
+        "title": "Cluck Cluck",
+        "category": "Steganography",
+        "note": "WAV LSB and Chicken esolang",
+        "tools": [
+          "Python (wave",
+          "numpy",
+          "matplotlib)",
+          "a small Chicken esolang interpreter"
+        ],
+        "insight": "The flag was in the one place a normal run never reaches, the code the program always jumps over. It sat behind three layers of misdirection: audible clucks that look like a cipher but are a formula, an LSB payload that looks like a meaningless repeating pattern but is source code, and a program whose output says \"nothing suspicious\".",
+        "minutes": 4,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Steganography/Cluck%20Cluck/writeup.md",
+        "steps": 6
+      },
+      {
+        "slug": "suspicious-numbers",
+        "title": "Suspicious Numbers",
+        "category": "Steganography",
+        "note": "atomic number encoding",
+        "tools": [
+          "Python",
+          "periodic table lookup"
+        ],
+        "insight": "The numbers are 1337 times an atomic number. Dividing by 1337 exposes the atomic numbers, and converting those numbers to periodic-table symbols reveals the hidden message.",
+        "minutes": 2,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Steganography/Suspicious%20Numbers/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "tns2",
+        "title": "TNS2",
+        "category": "Steganography",
+        "note": "TI-Nspire hidden in geometry",
+        "tools": [
+          "file",
+          "xxd",
+          "Python (struct",
+          "re",
+          "matplotlib)",
+          "TnsTools",
+          "Luna source"
+        ],
+        "insight": "The readable flag in the file is a decoy, and the real one is split between line segments drawn as letters and two text fragments that fill the gaps in them. It only appears when the figure is rendered and the gaps are matched to the text positions. If a platform rejects it, the likeliest alternate readings are fl or Fl for fL, and tns or TnS for tnS.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Steganography/TNS2/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "escaped",
+        "title": "Escaped",
+        "category": "Web",
+        "note": "multibyte SQL injection",
+        "tools": [
+          "curl",
+          "Python"
+        ],
+        "insight": "Escaping characters is not the same as parameterizing a query, and the flag says it outright: 0x5C is not always a backslash. addslashes and mysqli_real_escape_string prepend 0x5C to a quote, but on a multibyte connection (GBK and similar) a lead byte can consume that 0x5C, so the quote survives.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Web/Escaped/writeup.md",
+        "steps": 4
+      },
+      {
+        "slug": "sql-injection",
+        "title": "SQL Injection",
+        "category": "Web",
+        "note": "multibyte SQL injection",
+        "tools": [
+          "curl",
+          "Python"
+        ],
+        "insight": "Escaping characters is not the same as parameterizing a query, and the flag says it outright: 0x5C is not always a backslash. addslashes and mysqli_real_escape_string prepend 0x5C to a quote, but on a multibyte connection (GBK and similar) a lead byte can consume that 0x5C, so the quote survives.",
+        "minutes": 3,
+        "source": "https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Web/SQL%20Injection/writeup.md",
+        "steps": 4
       }
     ]
   }

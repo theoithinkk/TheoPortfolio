@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Two-Key Turn (Web writeup) | Theodore Garcia</title>
+<meta name="description" content="The two-person rule is an invariant (&quot;2 distinct officers&quot;), and the server enforced it with a read-check-write sequence that was not atomic. Under concurrency the gap between &quot;check the caller is a new officer&quot; and &quot;commit the approval record&quot; lets a single officer&#x27;s parallel requests each pass the check before any of them writes, so one credential satisfies a rule that requires two. The 8-second pending window just made the race wide and comfortable. Defensive takeaways (API security / GRC angle): - Enforce the distinctness invariant in the data layer, atomically. A UNIQUE(order_id, officer_id) constraint plus a - Never gate a security invariant on an application-level &quot;have I seen this officer yet?&quot; read that is separate from - Idempotency keys per (officer, order, window) close the replay/duplicate path; a check-constraint on - Separation-of-duties controls (maker/checker, two-person release, four-eyes) are exactly the controls most often">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Web</span><span class="wu-lvl">API, race condition — TOCTOU on a two-person approval rule</span><span>3 steps · 3 min read</span></p>
+    <h1>Two-Key Turn</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The two-person rule is an invariant ("2 distinct officers"), and the server enforced it with a read-check-write sequence that was not atomic. Under concurrency the gap between "check the caller is a new officer" and "commit the approval record" lets a single officer's parallel requests each pass the check before any of them writes, so one credential satisfies a rule that requires two. The 8-second pending window just made the race wide and comfortable. Defensive takeaways (API security / GRC angle): - Enforce the distinctness invariant in the data layer, atomically. A UNIQUE(order_id, officer_id) constraint plus a - Never gate a security invariant on an application-level "have I seen this officer yet?" read that is separate from - Idempotency keys per (officer, order, window) close the replay/duplicate path; a check-constraint on - Separation-of-duties controls (maker/checker, two-person release, four-eyes) are exactly the controls most often</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the self-describing schema.</h2>
+      <ul><li><b>What I did:</b> GET /schema with the bearer key.</li><li class="result"><b>Result:</b> the authorization model spelled out its own weakness: two_person_rule: "an order arms only when TWO DISTINCT officers have each cast APPROVE (required_approvals = 2)" approve:         "idempotent per officer while an approval window is pending" pending_ttl_seconds: 8.0 concurrent_action:  "an ordinary 6-8 separate-connection approval burst is supported" Routes: GET /orders, GET /orders/{id}, POST /orders/{id}/approve (Bearer required, empty body). arming_authorization appears on the order detail only AFTER it reaches ARMED.</li><li class="think"><b>Thinking:</b> "distinct officers" + "idempotent per officer" + an 8s pending window + an explicit hint that a 6-8 connection burst "is supported" screams a check-then-act race. The distinctness test is almost certainly non-atomic: read current approvals -&gt; verify the caller is a NEW officer -&gt; append. Fire enough approvals from the one credential simultaneously and two of them land inside the same window, each seeing 0 prior VEGA-7 approvals, each passing the distinctness test before either commits.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span>Find the target order.</h2>
+      <ul><li><b>What I did:</b> GET /orders.</li><li class="result"><b>Result:</b> AO-7D31C9 (Coastal Battery 3 / Saltmarsh) is PENDING_AUTH with approvals 0, required 2. The others are REJECTED / EXECUTED / DRAFT. AO-7D31C9 is the only one still awaiting authorization.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Exploit:</b> concurrent approval burst from the single credential.</h2>
+      <ul><li><b>What I did:</b> 8 threads, each holding its own connection, all released at once with a threading.Barrier, each POSTing /orders/AO-7D31C9/approve with the VEGA-7 bearer key. (solve.py.)</li><li class="result"><b>Result:</b> on the first burst the order armed. 7 of the 8 responses came back: status ARMED, approvals 2, approval_records = [ {officer:"VEGA-7",epoch:1}, {officer:"VEGA-7",epoch:1} ] i.e. TWO approval records BOTH belonging to VEGA-7, same epoch — the distinctness check was bypassed. The 8th thread lost the race (202, PENDING_AUTH, approvals 1, retry_after_ms 7869). The armed detail carried: arming_authorization: <span class="flag" tabindex="0">CSCTF{ZAO7IqUwGlXKuxr9mxR4uBkC}</span> (GETs /orders to find the PENDING_AUTH order if the id is omitted, fires an 8-way barrier-synced approve burst, and prints arming_authorization. Instances are per-launch; the run that captured the flag armed on the first burst.) single transactional INSERT-then-count, or a row lock (SELECT ... FOR UPDATE) around the count-and-insert, makes duplicate concurrent approvals from one officer collapse to one. the write. Check and commit in one atomic step. `count(distinct officer) &gt;= 2` makes the arm transition impossible to reach with one identity. defeated by races — test them explicitly under parallel load, not just sequentially.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py http://w01.ctf.chronos-security.ro:42296 opk_vega7_2f4b9c17e0a3 AO-7D31C9</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="operation-dawn-the-standing-order.html"><small>Previous</small>Operation Dawn - The Standing Order</a><a class="next" href="vesper-quay-board.html"><small>Next</small>Vesper Quay Board</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Web · API, race condition — TOCTOU on a two-person approval rule</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>Python (threading</li><li>stdlib only)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{ZAO7IqUwGlXKuxr9mxR4uBkC}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Two-Key%20Turn/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the self-describing schema</span></a></li><li><a href="#step-2"><b>2</b><span>Find the target order</span></a></li><li><a href="#step-3"><b>3</b><span>Concurrent approval burst from the single…</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

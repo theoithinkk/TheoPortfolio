@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Silent Breaker (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="No single source tells the whole story. The telecom feed gives the who (a rogue SS7 peer harvesting SMS routing for the one OT-VPN user), RADIUS gives the how (OTP passed 2 minutes later), the pcap gives the what (an unauthorised single command on the breaker IOA) and the historian gives the cover-up (a frozen value while the wire kept moving). Each step needed the previous step&#x27;s output to be trusted.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">IEC-104 and SS7 correlation</span><span>6 steps · 5 min read</span></p>
+    <h1>Silent Breaker</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>No single source tells the whole story. The telecom feed gives the who (a rogue SS7 peer harvesting SMS routing for the one OT-VPN user), RADIUS gives the how (OTP passed 2 minutes later), the pcap gives the what (an unauthorised single command on the breaker IOA) and the historian gives the cover-up (a frozen value while the wire kept moving). Each step needed the previous step's output to be trusted.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the case index and the report contract</h2>
+      <ul><li><b>What I did:</b> fetched GET /files/ (case index) and README.md.</li><li><b>What I found:</b> five files (README, description, roster.json, iec104_capture.pcap, hmi_monitoring.log) and the rules: /confirm-target has only 2 attempts, /submit has 5, and there is no per-field feedback.</li><li class="think"><b>Thinking:</b> with so few attempts and no feedback, every answer had to be justified from evidence before submitting, not guessed.</li><li class="result"><b>Result:</b> the plan is to build each field from evidence first.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> who was targeted (signalling feed and roster)</h2>
+      <ul><li><b>What I found:</b> all 8 events in GET /events come from GT-1288-Q78, outside the legitimate range GT-0000 to GT-0999. That rogue peer sent SendRoutingInfoForSM (SRI-SM) for every roster MSISDN, which is mass reconnaissance.</li><li class="think"><b>Thinking:</b> SRI-SM is the SS7 query that returns the serving MSC and IMSI for SMS delivery. It is the first step of SMS interception, which is how an attacker steals SMS one-time passwords. Only one person on the roster has ot_vpn_access=true: Mara Petrescu (VLK-4558-PET). The others are noise (one decoy shares her surname).</li><li><b>What I did:</b> /query/subscriber confirmed her MSISDN was known and watchlisted, then /confirm-target accepted her.</li><li class="result"><b>Result:</b> target is Mara Petrescu, VLK-4558-PET.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the VPN session (GET /query/vpn-window, unlocked by step 2)</h2>
+      <ul><li><b>What I found:</b> VPN-277455 for VLK-4558-PET from 203.0.113.166. RADIUS shows Access-Request 04:28:46, "Enter OTP" challenge 04:28:47, Access-Accept 04:28:52.</li><li class="think"><b>Thinking:</b> the SRI-SM for her number was at 04:26:32. Two minutes later the OTP challenge passed in 5 seconds. That timing fits an intercepted SMS OTP: the attacker had her password and read the code off the hijacked SMS.</li><li class="result"><b>Result:</b> session VPN-277455.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> the breaker command (pcap)</h2>
+      <ul><li><b>What I found:</b> one TCP session 192.0.2.10:51000 to 198.51.100.10:2404 (2404 is IEC-104). The RTU sends M_ME_NC_1 (type 13, short float) every 10 s for IOA 11453 = 0x2cbd, steady around 430 A. At 05:02:51.000 the master side sends type 45 C_SC_NA_1 (single command), cause 6 (activation), IOA 0x2cbd, SCO=0x01, and the RTU answers with cause 7 (activation confirmation) 15 ms later.</li><li class="think"><b>Thinking:</b> the contract asks for the wire time, not the VPN start time (04:28), which is the trap in that field.</li><li class="result"><b>Result:</b> IOA 0x2cbd, qualifier ON (SCO bit 0 = 1), wire time 05:02 UTC.</li></ul>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Pivot:</b> the forged telemetry (historian vs pcap)</h2>
+      <ul><li><b>What I found:</b> the historian shows 312.3 A from 05:02:00 to 05:04:50, flagged QUALITY=SUSPECT from the third identical reading. Over the same window the pcap shows the RTU still reporting about 430 A, with a normal 1.5 A jitter either way.</li><li class="think"><b>Thinking:</b> a real RTU value never repeats exactly 18 times, and the wire disagrees with the historian by about 118 A (more than the 5 A review threshold, and inside the 150 to 550 A range). So the operator screen was fed a held or replayed value around the moment of the command, hiding the change from the operator.</li><li class="result"><b>Result:</b> telemetry_status 312.3.</li></ul>
+    </section>
+    <section class="wu-step" id="step-6">
+      <h2><span class="wu-n">06</span><b>Result:</b> submit the containment report</h2>
+      <ul><li><b>What I did:</b> submitted {"ioa_address":"0x2cbd","command_qualifier":"ON","command_time_utc":"05:02","telemetry_status":"312.3","vpn_session_id":"VPN-277455"}.</li><li><b>What I found:</b> status correct, clearance_code <span class="flag" tabindex="0">CSCTF{kRhITdO1yxQx7IUYgLrlUWF6}</span>.</li><li class="think"><b>Thinking:</b> solve.py automates this for a fresh case: it picks the target, confirms, reads the VPN window, parses the pcap with a small stdlib IEC-104 parser, cross-checks the historian against live RTU values and submits. A built-in check feeds the parser a synthetic C_SC_NA_1 packet first. Command: python -I solve.py http://HOST:PORT</li><li class="result"><b>Result:</b> solve.py correlates the four evidence sources, submits the containment report, and receives the clearance code.</li></ul>
+      <figure><a href="../img/csctf-2026/silent-breaker/01_flag_capture.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/silent-breaker/01_flag_capture.webp" alt="solve.py correlates the four evidence sources, submits the containment report, and receives the clearance code" width="1554" height="290" loading="lazy"></a><figcaption>solve.py correlates the four evidence sources, submits the containment report, and receives the clearance code</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>SMS OTP is not a strong second factor for OT remote access, because SS7 SRI-SM and location abuse can redirect it, so use FIDO2 or app-based push with number matching for anything that reaches control networks (IEC 62443 SR 1.1 RE 2, and NIST SP 800-63B classes SMS OTP as restricted). Telcos should filter SS7 at the interconnect (GSMA FS.11 category 1 and 2 filtering), since a foreign GT sending SRI-SM for a whole subscriber list is a textbook signature. IEC-104 has no authentication, so allow-list which master IPs may send command ASDUs (types 45 to 64), alert on any command activation outside a change window, or deploy IEC 62351-5 secure authentication. Finally, do not trust a single telemetry path: compare historian and HMI values against raw wire data (passive OT IDS) and alert on flatlined analog values, since real sensors always jitter.</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>the screenshot is a live reproduction on a freshly fetched instance. Each launch is a new case, so the clearance code shown differs from the flag recorded at the top.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="shadow-dispatch.html"><small>Previous</small>Shadow-Dispatch</a><a class="next" href="telltale.html"><small>Next</small>Telltale</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · IEC-104 and SS7 correlation</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>tshark</li><li>Python</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{kRhITdO1yxQx7IUYgLrlUWF6}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Silent%20Breaker/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the case index and the report contract</span></a></li><li><a href="#step-2"><b>2</b><span>Who was targeted</span></a></li><li><a href="#step-3"><b>3</b><span>VPN session</span></a></li><li><a href="#step-4"><b>4</b><span>Breaker command</span></a></li><li><a href="#step-5"><b>5</b><span>Forged telemetry</span></a></li><li><a href="#step-6"><b>6</b><span>Submit the containment report</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

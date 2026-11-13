@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Tone Burst (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="A repeating preamble plus an HDLC-style 0x7E flag tells you the frame boundary. Always look for the sync pattern before trying to guess byte alignment.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">audio FSK decoding</span><span>4 steps · 1 min read</span></p>
+    <h1>Tone Burst</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>A repeating preamble plus an HDLC-style 0x7E flag tells you the frame boundary. Always look for the sync pattern before trying to guess byte alignment.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span>Recon.</h2>
+      <ul><li>FFT shows exactly two strong tones, 1000 Hz and 2000 Hz. Two tones plus bursts of signal in time means binary FSK.</li><li>Screenshot 01.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span>Found the framing.</h2>
+      <ul><li>Signal starts at sample 1921 (~0.24 s). Alternating tone changes every 20 ms (160 samples), i.e. 50 baud. Screenshot 03 (spectrogram) shows the 1 kHz / 2 kHz alternation.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span>Demodulated.</h2>
+      <ul><li>For each 160-sample window compare the energy at 2000 Hz vs 1000 Hz (a single-bin DFT per tone). 2 kHz = 1, 1 kHz = 0.</li><li>Bit stream starts with 32 bits of 10101010 (clock-sync preamble), then the frame flag 01111110 (0x7E), then the payload.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span>Decoded.</h2>
+      <ul><li>Reading the payload after 0x7E as 8-bit ASCII, MSB first: <span class="flag" tabindex="0">CSCTF{tone_burst_4481dda445a0a227c3a8eb90fda4fd92}</span></li><li>Screenshot 04.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python3 solve.py tone-burst.wav</p></aside>
+    <aside class="wu-callout"><h2>Screenshots</h2><p>screenshots/01_waveform_spectrum.png, 03_spectrogram.png, 04_decode.png</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="the-layer-that-wouldnt-die.html"><small>Previous</small>The Layer That Wouldn&#x27;t Die</a><a class="next" href="water-hammer-reconciliation.html"><small>Next</small>Water Hammer Reconciliation</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · audio FSK decoding</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (wave</li><li>numpy</li><li>matplotlib)</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{tone_burst_4481dda445a0a227c3a8eb90fda4fd92}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Tone%20Burst/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Recon</span></a></li><li><a href="#step-2"><b>2</b><span>Found the framing</span></a></li><li><a href="#step-3"><b>3</b><span>Demodulated</span></a></li><li><a href="#step-4"><b>4</b><span>Decoded</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

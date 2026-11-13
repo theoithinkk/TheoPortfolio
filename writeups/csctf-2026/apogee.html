@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Apogee (Web writeup) | Theodore Garcia</title>
+<meta name="description" content="A parser differential -- the verifier and the extractor disagreed about the same bytes. ZIP permits duplicate entry names and carries unix symlink modes; the verifier hashed the file resolved by name while extract-zip created a same-named symlink first and wrote the file through it, out of the sandbox and into the write-protected store. Validation on one interpretation, side effects on another = a confused-deputy write. &quot;Write-protected&quot; at the app layer is meaningless when a library writes as the trusted pipeline process. Defensive takeaways (supply-chain / GRC angle): - Validate and extract the EXACT same entry/bytes. Resolve names identically on both sides, reject archives with - Treat archive symlinks (and unix modes) as hostile. Extract with symlinks disabled / O_NOFOLLOW, resolve each - Constrain writers by the OS, not by convention: run extraction as an unprivileged user that cannot write the - Make the audit trail authoritative on content, not just on &quot;an accepted delivery occurred&quot;: compare the written">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Web</span><span class="wu-lvl">Supply-chain, ZIP duplicate-name + symlink parser-differential writes into a write-protected store</span><span>5 steps · 5 min read</span></p>
+    <h1>Apogee</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>A parser differential -- the verifier and the extractor disagreed about the same bytes. ZIP permits duplicate entry names and carries unix symlink modes; the verifier hashed the file resolved by name while extract-zip created a same-named symlink first and wrote the file through it, out of the sandbox and into the write-protected store. Validation on one interpretation, side effects on another = a confused-deputy write. "Write-protected" at the app layer is meaningless when a library writes as the trusted pipeline process. Defensive takeaways (supply-chain / GRC angle): - Validate and extract the EXACT same entry/bytes. Resolve names identically on both sides, reject archives with - Treat archive symlinks (and unix modes) as hostile. Extract with symlinks disabled / O_NOFOLLOW, resolve each - Constrain writers by the OS, not by convention: run extraction as an unprivileged user that cannot write the - Make the audit trail authoritative on content, not just on "an accepted delivery occurred": compare the written</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the schema and the journal; understand the verifier vs extractor split.</h2>
+      <ul><li><b>Schema:</b> extractor is extract-zip 2.0.1 and "symbolic links and unix modes declared in the archive are honoured." The verifier "resolves each member path to one archive entry through a name lookup, then compares size and SHA-256. The manifest is the declaration; the verifier reads nothing else." A pointed note: "ZIP archives may contain more than one central-directory entry bearing the same name; APPNOTE.TXT imposes no uniqueness constraint." The trusted store is /tmp/apogee/trusted/&lt;layout&gt;/&lt;table&gt;, "write-protected; only the delivery pipeline writes here, and only through an accepted delivery."</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> reconstruct Greywater's accepted delivery from the journal.</h2>
+      <ul><li>The accepted hostile delivery PKG-7043 has archive_entries=7 but validation.entries_validated=6, and its entry_names list shows `tables/orrin3-mvr.tbl` TWICE. The journal's links map records `tables/orrin3-mvr.tbl` as a SYMLINK: target `../../../trusted/nav/orrin3-mvr.tbl`, resolved to /tmp/apogee/trusted/nav/orrin3-mvr.tbl, sha256 = the hostile table's.</li><li>Mechanism (parser differential across the same ZIP): * Two central-directory entries share the name `tables/orrin3-mvr.tbl`: one a regular FILE (the table bytes), one a SYMLINK whose content is `../../../trusted/nav/orrin3-mvr.tbl` (from the staging dir /tmp/apogee/staging/&lt;id&gt;/tables/, `../../../` climbs to /tmp/apogee/ then into trusted/nav/). * The verifier's by-name lookup resolves the name to ONE entry (last-wins = the FILE), hashes it, matches the manifest -&gt; accepted. It never notices the extra symlink entry. * extract-zip extracts entries in order: it creates the SYMLINK first, then writes the FILE to the same path -- following the symlink straight into the write-protected trusted store. So an "accepted delivery" wrote the trusted table, exactly as the schema promised was the only writer.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> pull the validated original to restore.</h2>
+      <ul><li>GET /reference/validated returns the rev-47 table bytes. sha256 = 620f0a2c...3785121, size 839. The current trusted table is the hostile rev-48 (sha dc7c04...). The receipt conditions: trusted matches validated; the restoration arrives through the pipeline; done before the next pass.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Exploit:</b> replay the same trick from the sandboxed analyst route to restore.</h2>
+      <ul><li>Built a ZIP with two entries both named `tables/orrin3-mvr.tbl`, in order: (1) a SYMLINK -&gt; `../../../trusted/nav/orrin3-mvr.tbl`  (unix mode S_IFLNK|0777), (2) a FILE carrying the validated rev-47 bytes. Manifest declares just the file member {path, size=839, sha256=620f0a2c...}. The symlink is an undeclared extra entry the verifier ignores.</li><li>POST /api/v1/submissions (multipart manifest + package). Result: validation passed (entries_validated=1, archive_entries=2); extraction created the symlink and wrote the file through it; trusted sha flipped to 620f0a2c... == validated. Journal records it as an analyst-resubmission arriving through the pipeline.</li></ul>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span>Collect the receipt (unlock gate).</h2>
+      <ul><li>GET /api/v1/pass/receipt shows unlock_context and seals the token behind sha256("apogee|&lt;spacecraft&gt;|&lt;validated_sha256&gt;|&lt;restore_package_id&gt;"). With spacecraft=ORRIN-3, validated_sha256=620f0a2c..., restore_package_id=RESTORE-REV47: GET /api/v1/pass/receipt?unlock=&lt;digest&gt; -&gt; status: verified, "release_token":"<span class="flag" tabindex="0">CSCTF{hLHZnRRH7pOPYMbFNXyJMlPd}</span>".</li><li>Live reproduction against a freshly-fetched instance. solve.py reconstructs this instance's member name / symlink target / table id from the `/journal` accepted-delivery record, then replays the dup-name symlink+file ZIP (per-instance flag differs from the documented one above): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33797 [*] journal replay: name=tables/orrin3.ctab target=../../../trusted/gpc/orrin3.ctab table=orrin3.ctab [*] validated rev-47 sha256=4d1df729fc5690e9779a2ef68f16e36b6046162aba9c99b6dbc178d0edc6c277 size=840 [*] submission: {"ok":true,"submission_id":"sub_mwd5f1oo430afe8","validation":{"entries_validated":1, "archive_entries":2,"status":"passed","errors":[]},"extraction":{"entries_extracted":2, "entry_names":["tables/orrin3.ctab","tables/orrin3.ctab"],"status":"ok", ... }} [*] trusted sha256 now: 4d1df729fc5690e9779a2ef68f16e36b6046162aba9c99b6dbc178d0edc6c277 (== validated) [*] receipt status: verified [+] FLAG: <span class="flag" tabindex="0">CSCTF{uFUjrekC363TTU6zhYsDaJcd}</span> ``` Live-instance capture — genuine live responses after the dup-name symlink+file ZIP was replayed through the sandboxed analyst route (solve.py builds the archive; the pipeline writes it). The panel reads three live endpoints: `/journal` shows the accepted delivery recorded as a SYMLINK whose target resolves into `/tmp/apogee/trusted/` (the verifier hashed the file-by-name while extract-zip wrote the file through the symlink into the write-protected store); `/api/v1/status` shows the validated table back in the trusted store; and `/api/v1/pass/receipt` shows `trusted_sha256 == expected_sha256`, status verified, and the `release_token` (per-instance flag differs from the documented one above):</li></ul>
+      <figure><a href="../img/csctf-2026/apogee/01_zip_symlink_restore_flag.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/apogee/01_zip_symlink_restore_flag.webp" alt="Apogee — live journal symlink record, restored trusted table, and the verified pass receipt release token" width="1030" height="574" loading="lazy"></a><figcaption>Apogee — live journal symlink record, restored trusted table, and the verified pass receipt release token</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python solve.py http://w01.ctf.chronos-security.ro:37257</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="operation-dawn-radio-recovery.html"><small>Previous</small>Operation Dawn - Radio Recovery</a><a class="next" href="corridor-transit-gate.html"><small>Next</small>Corridor Transit Gate</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Web · Supply-chain, ZIP duplicate-name + symlink parser-differential writes into a write-protected store</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>Python (stdlib: zipfile</li><li>hashlib</li><li>json</li><li>urllib)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{hLHZnRRH7pOPYMbFNXyJMlPd}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Apogee/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the schema and the journal;…</span></a></li><li><a href="#step-2"><b>2</b><span>Reconstruct Greywater&#x27;s accepted delivery…</span></a></li><li><a href="#step-3"><b>3</b><span>Pull the validated original to restore</span></a></li><li><a href="#step-4"><b>4</b><span>Replay the same trick from the sandboxed…</span></a></li><li><a href="#step-5"><b>5</b><span>Collect the receipt</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

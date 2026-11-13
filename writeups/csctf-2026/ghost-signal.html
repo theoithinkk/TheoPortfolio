@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Ghost Signal (Network writeup) | Theodore Garcia</title>
+<meta name="description" content="The whole case is a cross-reference exercise, because the attacker&#x27;s IMSI is deliberately the only malformed 15-digit one and the single value present in all three artifacts. Confirming it in SS7 (TBCD-decoded) and Diameter before trusting the billing record proves the thread, and sorting the out-of-order billing events pins the first anomalous timestamp the marker depends on.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Network</span><span class="wu-lvl">SS7 Diameter billing correlation</span><span>4 steps · 3 min read</span></p>
+    <h1>Ghost Signal</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The whole case is a cross-reference exercise, because the attacker's IMSI is deliberately the only malformed 15-digit one and the single value present in all three artifacts. Confirming it in SS7 (TBCD-decoded) and Diameter before trusting the billing record proves the thread, and sorting the out-of-order billing events pins the first anomalous timestamp the marker depends on.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> catalogue the three files</h2>
+      <ul><li><b>What I found:</b> ss7_capture.pcap holds SS7 MAP messages over M3UA (the 2G/3G roaming signalling layer). diameter_capture.pcap holds Diameter requests and answers between the CSCFs and the HSS (the LTE/IMS side). billing_events.json is the OCS billing export (provider eastern-tele.ro).</li><li class="think"><b>Thinking:</b> the flag needs an IMSI, a session ID and a timestamp, and three artifacts each probably hold one piece, so the plan is to find a value that appears in all three.</li><li class="result"><b>Result:</b> three sources to cross-reference.</li></ul>
+      <figure><a href="../img/csctf-2026/ghost-signal/01_briefing.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/ghost-signal/01_briefing.webp" alt="Ghost Signal - briefing" width="1150" height="864" loading="lazy"></a><figcaption>Ghost Signal - briefing</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> find the one hidden identity</h2>
+      <ul><li><b>What I found:</b> in the billing export every normal subscriber has a 16-digit IMSI (2260120140002xxx), but one IMSI is only 15 digits: 226012014000001. Every event carrying an anomaly field belongs to it, all within a single session hss.eastern-tele.ro;1723740150;49211 (zero_charge_on_roaming writes and an unusual_routing_path pivot).</li><li class="think"><b>Thinking:</b> the malformed IMSI is the odd one out, so it is the attacker's thread to pull.</li><li class="result"><b>Result:</b> candidate IMSI and session ID.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> trace the identity through both captures</h2>
+      <ul><li><b>What I did:</b> SS7 MAP stores the IMSI as TBCD (nibble-swapped, f-padded), so I decoded the length-8 IMSI fields. In Diameter I searched the same IMSI.</li><li class="think"><b>Thinking:</b> confirming the IMSI in both captures before trusting the billing record proves the thread.</li><li class="result"><b>Result:</b> 226012014000001 appears in 5 SS7 messages, so first contact is on the SS7 side. It appears in 4 Diameter messages in the same session 49211, where the request comes from cscf.rogue.evil-domain.net and the answer redirects to a pivot CSCF with diameter://intercept-49211.evil-domain.net.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Result:</b> build the marker</h2>
+      <ul><li><b>What I did:</b> the billing events are not stored in time order, so I sorted by timestamp. The first anomalous event is at 1723740150. I hashed 226012014000001:hss.eastern-tele.ro;1723740150;49211:1723740150 and took the first 8 hex, 28358943.</li><li class="think"><b>Thinking:</b> sorting matters because the marker depends on the earliest anomalous timestamp, not the first one in the file.</li><li class="result"><b>Result:</b> running python -I solve.py prints IMSI 226012014000001 (SS7 x5, Diameter x4), the session, the first anomalous timestamp 1723740150 and <span class="flag" tabindex="0">CSCTF{28358943}</span>.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>Fraud like this only shows up when signalling and billing data are correlated, so operators should join SS7, Diameter and charging records on subscriber identity and alert on malformed identifiers, zero-charge roaming writes and requests from unexpected CSCF domains. Filtering at the signalling edge for rogue peers and unusual routing paths would stop the pivot before billing is affected.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="warden.html"><small>Previous</small>Warden</a><a class="next" href="grid-watch.html"><small>Next</small>Grid-Watch</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Network · SS7 Diameter billing correlation</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (stdlib: json</li><li>re</li><li>hashlib</li><li>collections)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{28358943}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Network/Ghost%20Signal/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Catalogue the three files</span></a></li><li><a href="#step-2"><b>2</b><span>Find the one hidden identity</span></a></li><li><a href="#step-3"><b>3</b><span>Trace the identity through both captures</span></a></li><li><a href="#step-4"><b>4</b><span>Build the marker</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

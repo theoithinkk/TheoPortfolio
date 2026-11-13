@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>TNS2 (Steganography writeup) | Theodore Garcia</title>
+<meta name="description" content="The readable flag in the file is a decoy, and the real one is split between line segments drawn as letters and two text fragments that fill the gaps in them. It only appears when the figure is rendered and the gaps are matched to the text positions. If a platform rejects it, the likeliest alternate readings are fl or Fl for fL, and tns or TnS for tnS.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Pink CTF</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Steganography</span><span class="wu-lvl">TI-Nspire hidden in geometry</span><span>4 steps · 3 min read</span></p>
+    <h1>TNS2</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The readable flag in the file is a decoy, and the real one is split between line segments drawn as letters and two text fragments that fill the gaps in them. It only appears when the figure is rendered and the gaps are matched to the text positions. If a platform rejects it, the likeliest alternate readings are fl or Fl for fL, and tns or TnS for tnS.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> identify the container</h2>
+      <ul><li><b>What I did:</b> ran file and xxd on tns2_pink.tns. It starts with *TIMLP0500 followed by what looks like a ZIP local-file header. I parsed the entries by hand: Document.xml and Problem1.xml, both stored with compression method 13 (not a standard ZIP method), and a PK 01 02 central directory at the end.</li><li class="result"><b>Result:</b> the file is a TI-Nspire document (.tns, OS 3.x+ format). Its XML entries are encrypted and compressed with TI's proprietary method 13.</li><li class="think"><b>Thinking:</b> method 13 is not deflate, and brute-forcing DES and RC4 guesses against the data failed. A known format needs a known decoder, so I looked for the documented scheme instead of guessing.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> decrypt method 13 and decode the XML</h2>
+      <ul><li><b>What I did:</b> found the scheme in the Luna source: a 40-byte header, then a keystream made by 3DES-encrypting a counter block, XORed over the data, then raw deflate, then a TIXC0100 token stream. Rather than reimplement it, I ran the TnsTools decoder on the file.</li><li class="result"><b>Result:</b> Document.xml (1166 B) and Problem1.xml (57640 B) decoded with the stored sizes and CRCs both matching. A grep for the flag format immediately found <span class="flag" tabindex="0">PINK{th1s_15_4_f4k3_fl4g}</span> in Problem1.xml.</li><li class="dead"><b>Dead end:</b> the string literally says it is a fake flag, so I treated it as a decoy and kept looking in the same file.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> inspect the figure's objects</h2>
+      <ul><li><b>What I did:</b> Problem1.xml is a TI GeoGrapher figure. I listed every text, point and segment object with its coordinates.</li><li class="result"><b>Result:</b> the figure holds 63 points, 45 segments and several text objects: axis labels, the decoy <span class="flag" tabindex="0">PINK{...}</span> box, and two odd fragments, g_ and S_ca.</li><li class="think"><b>Thinking:</b> 63 points and 45 segments in a figure with no visible plot looked like letters drawn out of line segments, and the two short text fragments looked like pieces of a string that had to be slotted in somewhere.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> plot the segments and place the text fragments</h2>
+      <ul><li><b>What I did:</b> plotted all segments with matplotlib. My first plot had y inverted, which made the P look like a "b", and plotting y directly fixed it. Then I grouped segments into glyph clusters by x range and compared the gaps with the x positions of the text boxes.</li><li class="result"><b>Result:</b> the top row reads PINK{fL, and the bottom row reads A, gap, tn, gap, lc}. The gap between A (x 36.3-40.9) and t (42.9) matches the g_ box at x=41.66. The gap between n (ends 48.6) and l (53.1) matches the S_ca box at x=49.5. Reading top row then bottom row gives <span class="flag" tabindex="0">PINK{fLAg_tnS_calc}</span>.</li><li class="think"><b>Thinking:</b> the fragments g_ and S_ca landing exactly in the gaps confirms the segments and text are one message split across two kinds of objects.</li></ul>
+      <figure><a href="../img/pink-ctf/tns2/04_segments_plotted.webp" target="_blank" rel="noopener"><img src="../img/pink-ctf/tns2/04_segments_plotted.webp" alt="All 45 segments plotted: PINK{fL / A tn lc}" width="670" height="433" loading="lazy"></a><figcaption>All 45 segments plotted: PINK{fL / A tn lc}</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Note</h2><p>the flag is case-sensitive and read from stick-letter shapes by eye (lowercase t, n, l, c and f, uppercase L and A, uppercase S from the text box), which is the one ambiguity. There is no reproduction capture, because the challenge input files are not in this repo.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="suspicious-numbers.html"><small>Previous</small>Suspicious Numbers</a><a class="next" href="escaped.html"><small>Next</small>Escaped</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>Pink CTF</dd>
+      <dt>Category</dt><dd>Steganography · TI-Nspire hidden in geometry</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>file</li><li>xxd</li><li>Python (struct</li><li>re</li><li>matplotlib)</li><li>TnsTools</li><li>Luna source</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PINK{fLAg_tnS_calc}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Pink%20CTF/Steganography/TNS2/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Identify the container</span></a></li><li><a href="#step-2"><b>2</b><span>Decrypt method 13 and decode the XML</span></a></li><li><a href="#step-3"><b>3</b><span>Inspect the figure&#x27;s objects</span></a></li><li><a href="#step-4"><b>4</b><span>Plot the segments and place the text…</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Interlock Witness (Forensics writeup) | Theodore Garcia</title>
+<meta name="description" content="The policy judges each write on the state in the instant before its response, so the solver must replay state strictly in request-to-response order and apply an accepted write only after its response, never on the request. Validating each response against its request (matching transaction, protocol, unit, function, FC16 address and quantity echo, FC03 byte count) is what separates &quot;the controller accepted this&quot; from &quot;the client merely sent it&quot;, the same split a real response-cell forensic tool makes. The policy states its own counts (8 ineligible writes, 5 of them prerequisite-state), and reproducing those exactly shows the classification is correct, not merely plausible, before the hash is taken.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">Modbus/TCP policy replay</span><span>4 steps · 4 min read</span></p>
+    <h1>Interlock Witness</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The policy judges each write on the state in the instant before its response, so the solver must replay state strictly in request-to-response order and apply an accepted write only after its response, never on the request. Validating each response against its request (matching transaction, protocol, unit, function, FC16 address and quantity echo, FC03 byte count) is what separates "the controller accepted this" from "the client merely sent it", the same split a real response-cell forensic tool makes. The policy states its own counts (8 ineligible writes, 5 of them prerequisite-state), and reproducing those exactly shows the classification is correct, not merely plausible, before the hash is taken.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the four supplied docs</h2>
+      <ul><li><b>What I found:</b> register-map.md (zero-based PDU addresses): 0x000A maintenance_permit, 0x000B isolation_state, 0x000C protection_armed, 0x0013 trip_limit (0-10000), 0x0014 restore_delay (0-3600). All are u16 big-endian holding registers.</li><li><b>What I found:</b> interlock-policy.md says one maintenance client talks to the controller on TCP 502, MBAP protocol id 0x0000, unit id 0x01, one request/response at a time. An FC03 read is accepted only if its response matches the reversed-flow transaction/protocol/unit/function and byte count is 2*quantity; it updates every mapped word it covers. An FC16 write is accepted only if its normal response echoes start address and quantity (exception responses never change state), and the write is applied AFTER its normal response.</li><li><b>What I found:</b> a target transaction is FC16, quantity 1, start 0x0013 or 0x0014. A target is unsafe when, in the moment immediately before its normal response, any of permit==1, isolation==1, armed==1 is false.</li><li><b>What I found:</b> witness-format.md says for each unsafe accepted target, in normal-response order, append its request PDU (function code plus data, no MBAP) then its paired normal-response PDU to make T. P is the 20 bytes "INTERLOCK-WITNESS/1" plus a NUL. W = SHA-256(P || T) and the flag is CSCTF{lowercase hex W}. A non-incident vector is given to self-check byte handling (asserted in solve.py). SHA256SUMS verifies every extracted member before I trusted it.</li><li class="think"><b>Thinking:</b> the policy is not a controller feature, so the verdict depends entirely on replaying state in exact wire order.</li><li class="result"><b>Result:</b> I know exactly what to score and how to hash it.</li></ul>
+      <figure><a href="../img/csctf-2026/interlock-witness/01_briefing.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/interlock-witness/01_briefing.webp" alt="Briefing screenshot" width="1150" height="864" loading="lazy"></a><figcaption>Briefing screenshot</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> parse the capture with no tshark</h2>
+      <ul><li><b>What I did:</b> wrote a stdlib pcapng reader (Section Header byte-order, Interface Description link types, Enhanced/Simple Packet Blocks), then per-direction TCP reassembly by sequence number, then MBAP framing (u16 tid, u16 pid, u16 len, u8 uid, then the PDU).</li><li><b>What I found:</b> a single TCP flow 127.0.0.1:59818 to :502, 512 packets, no retransmits or gaps.</li><li class="think"><b>Thinking:</b> clean reassembly means any mistake later is in my policy logic, not the framing.</li><li class="result"><b>Result:</b> 124 FC03 reads (all accepted) and 128 FC16 writes (all with normal responses, no exceptions).</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Exploit:</b> replay the policy in strict wire order</h2>
+      <ul><li><b>What I did:</b> ordered requests and responses by the packet in which each frame's last byte arrives, so every request is scored against the state as it stood at its response.</li><li><b>What I did:</b> reads update permit, isolation, armed, trip and restore; each accepted write updates state only AFTER its response, never on the request.</li><li><b>What I did:</b> for each quantity-1 FC16 to 0x0013 or 0x0014, recorded whether (permit, isolation, armed) == (1,1,1) at that instant.</li><li class="think"><b>Thinking:</b> applying a write on the request instead of the response would shift state by one step and misclassify neighbours.</li><li class="result"><b>Result:</b> a list of target writes with their pre-state.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Result:</b> find unsafe writes and compute the witness</h2>
+      <ul><li><b>What I found:</b> 16 of the 120 target writes are unsafe, in two bursts. Tids 4-18 (even): permit=0, isolation=0, so trip_limit and restore_delay changed before the permit was ever granted. Tids 127-141 (odd): isolation=0, because tid 125 had set isolation back to 0 (reconnected) and writes continued until tid 142 isolated the station again.</li><li><b>What I found:</b> the other 8 accepted FC16 writes are exactly what the policy calls ineligible: 5 set the three prerequisite words (tids 2, 19, 20, 125, 142) and 3 are acknowledgement writes to 0x18, 0x19 and 0x1A (tids 248, 250, 252).</li><li class="think"><b>Thinking:</b> the policy states its own counts, so matching them is proof the pairing logic is right before hashing.</li><li><b>What I did:</b> concatenated the 16 unsafe writes' request and response PDUs into T, prepended P, took SHA-256. Command: python solve.py interlock.pcapng. It prints each unsafe write (for example tid=4 addr=0x0013 val=040d pre=(0,0,1) and tid=141 addr=0x0014 val=0a9a pre=(1,0,1)) and then the flag.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">CSCTF{1198b297c84064fab89d0f3e3e5308791165333c1b64da17185dd51493b6f339}</span></li></ul>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="ghost-in-the-historian.html"><small>Previous</small>Ghost in the Historian</a><a class="next" href="last-buffer.html"><small>Next</small>Last Buffer</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Forensics · Modbus/TCP policy replay</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (struct</li><li>hashlib</li><li>collections)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{1198b297c84064fab89d0f3e3e5308791165333c1b64da17185dd51493b6f339}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Interlock%20Witness/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the four supplied docs</span></a></li><li><a href="#step-2"><b>2</b><span>Parse the capture with no tshark</span></a></li><li><a href="#step-3"><b>3</b><span>Replay the policy in strict wire order</span></a></li><li><a href="#step-4"><b>4</b><span>Find unsafe writes and compute the witness</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

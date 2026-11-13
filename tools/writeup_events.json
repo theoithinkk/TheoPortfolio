@@ -13,5 +13,17 @@
     "path": "Packet Capture CTF/ACT III - The Echo",
     "slug": "packet-capture-act-3",
     "title": "Packet Capture CTF · Act III: The Echo"
+  },
+  {
+    "path": "CSCTF",
+    "slug": "csctf-2026",
+    "title": "CSCTF 2026",
+    "done_only": false
+  },
+  {
+    "path": "Pink CTF",
+    "slug": "pink-ctf",
+    "title": "Pink CTF",
+    "done_only": false
   }
 ]

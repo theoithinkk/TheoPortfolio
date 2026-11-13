@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Operation Dawn - The Standing Order (Web writeup) | Theodore Garcia</title>
+<meta name="description" content="Two classic bugs chained. (1) A secret-prefix SHA-1 MAC (SHA1(secret||data)) is forgeable via length extension without the secret — you can append attacker data and still produce a valid tag; here that flips role=operator to role=admin. (2) The SSRF guard was a string blacklist of loopback spellings, so an alternate encoding of the same address (decimal 2130706433) reaches 127.0.0.1 anyway. Defensive takeaways (API security / GRC angle): - Sign cookies with HMAC-SHA-256, not SHA1(secret||data). HMAC is immune to length extension. Better still, sign a - Don&#x27;t carry authorization state (role) in a client-held, string-concatenated blob; keep it server-side keyed by an - SSRF defense is not a string blacklist. Resolve the host to an IP, then allow/deny-list the PARSED address against">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Web</span><span class="wu-lvl">signed-cookie forgery via SHA-1 hash length extension -&gt; privilege escalation, then SSRF filter bypass</span><span>4 steps · 4 min read</span></p>
+    <h1>Operation Dawn - The Standing Order</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Two classic bugs chained. (1) A secret-prefix SHA-1 MAC (SHA1(secret||data)) is forgeable via length extension without the secret — you can append attacker data and still produce a valid tag; here that flips role=operator to role=admin. (2) The SSRF guard was a string blacklist of loopback spellings, so an alternate encoding of the same address (decimal 2130706433) reaches 127.0.0.1 anyway. Defensive takeaways (API security / GRC angle): - Sign cookies with HMAC-SHA-256, not SHA1(secret||data). HMAC is immune to length extension. Better still, sign a - Don't carry authorization state (role) in a client-held, string-concatenated blob; keep it server-side keyed by an - SSRF defense is not a string blacklist. Resolve the host to an IP, then allow/deny-list the PARSED address against</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> look at the session cookie.</h2>
+      <ul><li><b>What I did:</b> GET /; decode the Set-Cookie.</li><li class="result"><b>Result:</b> session = &lt;hexpayload&gt;.&lt;40-hex-sig&gt;. The hex decodes to `user=guest&amp;role=operator`; the 40-hex trailer is a SHA-1. /relay returns 403 for operator and says command relay control needs role=admin.</li><li class="think"><b>Thinking:</b> a 40-hex (SHA-1) tag over `user=guest&amp;role=operator`. It is not plain SHA-1 of the payload and not any guessable HMAC key, so it is a secret-PREFIX MAC: sig = SHA1(secret || "user=guest&amp;role=operator"). That construction is the textbook hash length-extension setup.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Escalate:</b> SHA-1 hash length extension to forge role=admin.</h2>
+      <ul><li><b>What I did:</b> without knowing the secret, append "&amp;role=admin" to the signed message using a length-extension attack, brute-forcing the unknown secret length 0..64. The payload is hex(original || glue-padding || "&amp;role=admin"); the new SHA-1 is computed by resuming the hash state from the known digest. (pure-Python SHA-1 in solve.py.) The query parser takes the LAST `role`, so `operator` -&gt; `admin`.</li><li class="result"><b>Result:</b> secret length = 16 bytes. The forged cookie opened /relay with HTTP 200 (Command Relay Control). Forged payload bytes: `user=guest&amp;role=operator` + 0x80 + zero pad + length(0x140 bits) + `&amp;role=admin`.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Enumerate:</b> the admin relay page.</h2>
+      <ul><li><b>What I did:</b> read /relay with the forged cookie.</li><li class="result"><b>Result:</b> an internal node map (node1-3.relay.internal), a provisioning service at http://127.0.0.1:9091/order, and a node-status probe: GET /relay/probe?target=&lt;node-url&gt;.</li><li class="think"><b>Thinking:</b> the "standing order on a node the console only reaches from the inside" is the provisioning service. The probe is a server-side fetcher -&gt; SSRF to 127.0.0.1:9091.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Exploit:</b> SSRF to the internal provisioning node, bypassing the IP filter.</h2>
+      <ul><li><b>What I did:</b> probe target=http://127.0.0.1:9091/order -&gt; "relay target refused: 127.0.0.1". The filter also refuses `localhost`, `0.0.0.0`, `[::1]`. I re-encoded 127.0.0.1 as its 32-bit integer: 2130706433.</li><li class="result"><b>Result:</b> target=http://2130706433:9091/order sailed past the string blacklist (the socket layer parses the integer back to 127.0.0.1), and the probe returned the standing order: <span class="flag" tabindex="0">CSCTF{8UPCyUsVYt2lA2gnNVwD2Wqd}</span> Live reproduction against a freshly-fetched instance (per-instance flag differs from the documented one above): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33806 [*] payload: b'user=guest&amp;role=operator' sig: 099e7a979ccf933c0965b0287bfef720f80bc3d5 [+] secret length = 16; /relay unlocked (admin) [+] flag: <span class="flag" tabindex="0">CSCTF{ChcexQIutFR2z7RLSlutlXjk}</span> ``` Live-instance evidence — the relay control gate the chain defeats. The console issues an `HttpOnly` operator session, so the forged `role=admin` cookie must be replayed by a raw HTTP client (solve.py above); a browser cannot overwrite an `HttpOnly` cookie, so the in-browser view shows the live command-only gate that the SHA-1 length-extension forgery bypasses before the decimal-encoded SSRF pulls the standing order:</li></ul>
+      <figure><a href="../img/csctf-2026/operation-dawn-the-standing-order/02_live_relay_gate.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/operation-dawn-the-standing-order/02_live_relay_gate.webp" alt="Operation Dawn: The Standing Order — live relay control gate (command-only), the access boundary the length-extension forgery defeats" width="1536" height="478" loading="lazy"></a><figcaption>Operation Dawn: The Standing Order — live relay control gate (command-only), the access boundary the length-extension forgery defeats</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py http://w01.ctf.chronos-security.ro:42300</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="operation-dawn-the-dispatch-console.html"><small>Previous</small>Operation Dawn - The Dispatch Console</a><a class="next" href="two-key-turn.html"><small>Next</small>Two-Key Turn</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Web · signed-cookie forgery via SHA-1 hash length extension -&gt; privilege escalation, then SSRF filter bypass</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>curl</li><li>Python (pure-stdlib SHA-1 length-extension</li><li>no deps)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{8UPCyUsVYt2lA2gnNVwD2Wqd}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Web/Operation%20Dawn%20-%20The%20Standing%20Order/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Look at the session cookie</span></a></li><li><a href="#step-2"><b>2</b><span>SHA-1 hash length extension to forge…</span></a></li><li><a href="#step-3"><b>3</b><span>Admin relay page</span></a></li><li><a href="#step-4"><b>4</b><span>SSRF to the internal provisioning node</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

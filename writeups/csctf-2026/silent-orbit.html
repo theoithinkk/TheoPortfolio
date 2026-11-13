@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Silent Orbit (Network writeup) | Theodore Garcia</title>
+<meta name="description" content="The suppressed record is fully determined by the relay&#x27;s published state machine. Strict adherence to the rules (APID and flag filtering, tuple match, Metadata before data, snapshot at the first valid EOF, and the CFDP header-length convention) yields the exact NAK PDU, and the decoy transaction and out-of-state PDUs are what make a naive parser get it wrong.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Network</span><span class="wu-lvl">CCSDS and CFDP NAK reconstruction</span><span>4 steps · 3 min read</span></p>
+    <h1>Silent Orbit</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>The suppressed record is fully determined by the relay's published state machine. Strict adherence to the rules (APID and flag filtering, tuple match, Metadata before data, snapshot at the first valid EOF, and the CFDP header-length convention) yields the exact NAK PDU, and the decoy transaction and out-of-state PDUs are what make a naive parser get it wrong.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> silent-orbit-cfdp.zip</h2>
+      <ul><li><b>What I did:</b> listed the archive (README.txt, mission-profile.txt, civil_downlink.bin, SHA256SUMS) and ran sha256sum -c SHA256SUMS. All three files verified OK. mission-profile.txt defines the filtering and state rules.</li><li class="think"><b>Thinking:</b> the profile is effectively a spec for the normal relay, so the answer is whatever that state machine outputs. No guessing, just implement every rule exactly.</li><li class="result"><b>Result:</b> task defined, replay the relay logic over civil_downlink.bin and serialize the NAK.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> split the raw recording into Space Packets and filter</h2>
+      <ul><li><b>What I did:</b> the recording is raw concatenated CCSDS Space Packets (6-byte primary header, then packet-data-length + 1 user-data bytes). I walked it with struct.unpack('&gt;HHH') and got 188 packets with no truncation. I kept only PVN 0, type 0 (telemetry), secondary-header flag 0, APID 0x321, sequence flags 11. The first packet (APID 0x012) is dropped by this filter.</li><li class="think"><b>Thinking:</b> packet sequence counts are explicitly diagnostic only, so they must not be used to infer missing file bytes.</li><li class="result"><b>Result:</b> candidate CFDP PDUs extracted from packet user data.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> isolate the target CFDP transaction</h2>
+      <ul><li><b>What I did:</b> parsed each CFDP PDU header: version 001, direction toward receiver, acknowledged, no CRC, small-file, 1-byte entity and sequence IDs, and tuple source/seq/dest = 0x01/0x07/0x02. A decoy transaction (for example 0x03/0x09/0x02) shares APID 0x321 and is ignored.</li><li class="dead"><b>Dead end:</b> CFDP's data-field length excludes the 4-byte fixed header and the ID fields, so total PDU length is 7 + length. Using 4 + length silently rejects everything.</li><li class="think"><b>Thinking:</b> anything before Metadata is permanently discarded, so ordering matters.</li><li class="result"><b>Result:</b> the first valid Metadata (packet at offset 0x4B) gives file size 0xC0 = 192 bytes and moves the state machine from WAIT_METADATA to COLLECT.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Exploit:</b> build coverage, snapshot at the first valid EOF, emit the NAK</h2>
+      <ul><li><b>What I did:</b> in COLLECT, target File Data (seg-control 0, metadata flag 0) adds [offset, offset+len) if it fits within 192, and overlaps merge. The first accepted EOF (directive 0x04, no-error, null checksum, size 192) snapshots coverage. The complement over [0,192) is twelve 1-byte holes at 5, 19, 35, 51, 68, 83, 101, 119, 138, 154, 171, 187. The NAK PDU is header 28 (ver 001, directive, toward sender, acknowledged), length 0069, 00 01 07 02, directive 08, scope [0,192), then 12 start/end pairs, 112 bytes in total (declared length 0x69 + 7 = 112, verified).</li><li class="think"><b>Thinking:</b> missing intervals must be maximal and ascending, and Metadata is never requested.</li><li class="result"><b>Result:</b> python -I solve.py reports 188 packets, meta size 192, EOF accepted, the twelve holes, and prints the hex PDU wrapped as the flag above.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>A relay that silently drops recovery records breaks the reliability guarantee of the file transfer without any visible error, so integrity monitoring should compare what a reference implementation would emit against what the relay actually sent. Publishing the state machine in a mission profile is good for auditability, and it also lets an independent party verify the relay's behaviour from a recording.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="severed-link.html"><small>Previous</small>Severed Link</a><a class="next" href="operation-dawn-radio-recovery.html"><small>Next</small>Operation Dawn - Radio Recovery</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Network · CCSDS and CFDP NAK reconstruction</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>unzip</li><li>sha256sum</li><li>xxd</li><li>Python 3</li><li>custom parser solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{280069000107020800000000000000C0000000050000000600000013000000140000002300000024000000330000003400000044000000450000005300000054000000650000006600000077000000780000008A0000008B0000009A0000009B000000AB000000AC000000BB000000BC}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Network/Silent%20Orbit/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>silent-orbit-cfdp.zip</span></a></li><li><a href="#step-2"><b>2</b><span>Split the raw recording into Space…</span></a></li><li><a href="#step-3"><b>3</b><span>Isolate the target CFDP transaction</span></a></li><li><a href="#step-4"><b>4</b><span>Build coverage</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

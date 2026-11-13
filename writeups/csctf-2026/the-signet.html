@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>The Signet (Crypto writeup) | Theodore Garcia</title>
+<meta name="description" content="Nonces that step by a constant stride make each ECDSA signature a linear equation in (d, start, stride); three signatures are enough to solve for the private key, and the rest verify it. Defensive takeaways: - ECDSA security rests entirely on unpredictable, independent per-signature nonces (k). A biased or structured k — - Deriving a data-encryption key from the signing key ties two duties to one secret: cracking the signatures also Screenshots: - screenshots/01_solve_run.png   solve.py recovering d, verifying all six nonces, and decrypting the seal (live re-run)">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Crypto</span><span class="wu-lvl">ECDSA nonce recovery — arithmetic-progression nonces on secp256k1</span><span>4 steps · 3 min read</span></p>
+    <h1>The Signet</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Nonces that step by a constant stride make each ECDSA signature a linear equation in (d, start, stride); three signatures are enough to solve for the private key, and the rest verify it. Defensive takeaways: - ECDSA security rests entirely on unpredictable, independent per-signature nonces (k). A biased or structured k — - Deriving a data-encryption key from the signing key ties two duties to one secret: cracking the signatures also Screenshots: - screenshots/01_solve_run.png   solve.py recovering d, verifying all six nonces, and decrypting the seal (live re-run)</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> read case-note.txt.</h2>
+      <ul><li><b>What I found:</b> the bundle is DER with six SignedOrder records (seq 0..5, each an exact message OCTET STRING plus an ECDSA r,s) and one SealedOrder (salt, nonce, ciphertext, tag). The curve is secp256k1, hash SHA-256, z_i = int_be(SHA256(message_i)) mod n. The sealed order is AES-256-GCM under key = HKDF-SHA256(IKM = the private key d as 32 big-endian bytes, salt = seal.salt, info = "CSCTF26/TheSignet/v1/standing-order", L = 32).</li><li class="think"><b>Thinking:</b> "same additive stride modulo the curve order" across consecutive signatures is the whole challenge. The nonces are an arithmetic progression k_i = a + i*b (mod n), with a (start) and b (stride) unknown and unlogged. That is a linear relation I can exploit without ever guessing a or b.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> turn each signature into a linear equation in the unknowns.</h2>
+      <ul><li>For each signature, s_i = k_i^-1 (z_i + r_i d), so k_i = s_i^-1 z_i + s_i^-1 r_i d. Writing A_i = s_i^-1 r_i and B_i = s_i^-1 z_i gives k_i = A_i d + B_i. Setting that equal to a + i*b: A_i d - a - i*b = -B_i   (mod n)</li><li>There are three unknowns (d, a, b), all mod n. The first three records (i = 0,1,2) give a 3x3 linear system I solve by Gaussian elimination modulo n (every division is a modular inverse).</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> recover d and verify it is really right.</h2>
+      <ul><li><b>What I did:</b> solved the system, then used the recovered (d, a, b) to recompute k_i = s_i^-1(z_i + r_i d) for ALL six records and checked each equals a + i*b (mod n). All six matched, which is a strong internal proof: three equations fixed the unknowns, the other three confirm the model is the true one, not a coincidence.</li><li class="result"><b>Result:</b> d = 0x79c7842bf8177446127be0061bfb456d8c99811601cf3f86187b1a3b45b59d8f.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> open the seal.</h2>
+      <ul><li>IKM = d as 32 unsigned big-endian bytes. HKDF-SHA256 with the note's salt and info (L = 32 is a single expand block, so HMAC(PRK, info || 0x01)). AES-256-GCM over seal.ciphertext with seal.tag, seal.nonce, empty AAD.</li><li class="result"><b>Result:</b> the plaintext is the flag, verbatim. reuse, a counter, an LCG, or here a fixed stride — leaks the long-term private key from a handful of signatures. Use deterministic nonces (RFC 6979) or an audited RNG, and never sign with a degraded entropy source. unsealed the data. Keep signing keys and encryption keys separate.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Flag</h2><p><span class="flag" tabindex="0">CSCTF{canal_signet_recovered_2f17026a4a9c032f4ba186ab}</span></p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>`python3 solve.py sealed-orders.der`</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>the screenshot is a live re-run of solve.py against the challenge's own sealed-orders.der; it reproduces the documented flag above.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="the-keywheel.html"><small>Previous</small>The Keywheel</a><a class="next" href="watchword.html"><small>Next</small>Watchword</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Crypto · ECDSA nonce recovery — arithmetic-progression nonces on secp256k1</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python 3 (hand-written DER walk</li><li>stdlib hashlib/hmac)</li><li>cryptography</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{canal_signet_recovered_2f17026a4a9c032f4ba186ab}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Crypto/The%20Signet/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read case-note.txt</span></a></li><li><a href="#step-2"><b>2</b><span>Turn each signature into a linear…</span></a></li><li><a href="#step-3"><b>3</b><span>Recover d and verify it is really right</span></a></li><li><a href="#step-4"><b>4</b><span>Open the seal</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>

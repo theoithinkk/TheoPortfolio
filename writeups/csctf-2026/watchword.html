@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Watchword (Crypto writeup) | Theodore Garcia</title>
+<meta name="description" content="Nonce reuse in AES-GCM doesn&#x27;t just risk confidentiality (reused keystream) — it breaks the authenticator entirely. Two or more (ciphertext, tag) pairs under one reused nonce give enough algebraic structure (GHASH is linear in `H` once the AAD/ciphertext blocks are fixed) to solve for both the GHASH subkey `H` and the per-message tag mask `S` via polynomial GCD over GF(2^128), without ever touching the AES key itself. Once `S` is known, anything &quot;protected&quot; by that same per-nonce value — here, a second payload deliberately keyed off `E_K(J0)` — falls immediately.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261104a">
+<link rel="stylesheet" href="../../paper.css?v=20261104a">
+<script src="../../prefs.js?v=20261104a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Crypto</span><span class="wu-lvl">AES-GCM nonce reuse / &quot;Forbidden Attack&quot;</span><span>5 steps · 4 min read</span></p>
+    <h1>Watchword</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Nonce reuse in AES-GCM doesn't just risk confidentiality (reused keystream) — it breaks the authenticator entirely. Two or more (ciphertext, tag) pairs under one reused nonce give enough algebraic structure (GHASH is linear in `H` once the AAD/ciphertext blocks are fixed) to solve for both the GHASH subkey `H` and the per-message tag mask `S` via polynomial GCD over GF(2^128), without ever touching the AES key itself. Once `S` is known, anything "protected" by that same per-nonce value — here, a second payload deliberately keyed off `E_K(J0)` — falls immediately.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> handout `watchword.zip`</h2>
+      <ul><li><b>What I did / What I found:</b> Unzipped the handout and read `README.txt` and `intercepts.json`. The README stated a SABRELINK unit reused one AES-128-GCM nonce across a run of dispatches due to a firmware fault, and that a "sealed master order" was encrypted separately with AES-128-CTR (IV = all-zero) under the link's per-nonce tag mask `E_K(J0)` — the same GCM internal value that produces a valid auth tag. `intercepts.json` held three authenticated dispatches (ciphertext + 16-byte GCM tag, all under the one reused nonce, empty AAD) plus the sealed master order ciphertext.</li><li class="result"><b>Result:</b> Identified this as a classic GCM nonce-reuse ("forbidden attack") scenario — reused nonce means a fixed, unknown GHASH key `H` and fixed tag mask `S = E_K(J0)` across all three messages.</li><li class="think"><b>Thinking:</b> With `H` and `S` unknown but constant, and all three (ciphertext, tag) pairs visible, the standard approach is to eliminate `S` by XORing pairs of tag equations, leaving polynomial equations in `H` alone that can be solved algebraically.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> build the algebra</h2>
+      <ul><li><b>What I did / What I found:</b> Each ciphertext was ≤16 bytes (one GHASH block + one length block), so `GHASH_H(C) = C·H² ⊕ L·H`, giving `tag = C·H² ⊕ L·H ⊕ S`. XORing two such equations cancels `S` and leaves a quadratic in `H` with known coefficients. With three dispatches I built two independent quadratics (dispatch 1 vs 2, and 1 vs 3).</li><li class="result"><b>Result:</b> The true `H` is a common root of both quadratics, i.e. the GCD of the two polynomials over GF(2^128).</li><li class="think"><b>Thinking:</b> Rather than solving each quadratic separately (messy in characteristic 2), computing the polynomial GCD directly isolates the shared linear factor `(x ⊕ H)`.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> implement GF(2^128) field arithmetic + polynomial GCD</h2>
+      <ul><li><b>What I did / What I found:</b> Implemented GHASH-style `gmul` (bit-reflected GF(2^128) multiplication with reduction polynomial `0xE1000...0`), field inversion via exponentiation, and polynomial long division / Euclidean GCD over that field. First run hung indefinitely — tracing it down, `gpow()`'s accumulator was seeded with the integer `1`, but in GCM's bit-reflected convention the multiplicative identity is `1 &lt;&lt; 127`, not `1`. That made every computed "inverse" wrong, so polynomial division never reduced the remainder's degree and looped forever.</li><li class="result"><b>Result:</b> Fixed the identity element (`GF_ONE = 1 &lt;&lt; 127`), verified `gmul(a, GF_ONE) == a` and `gmul(a, ginv(a)) == GF_ONE` held for random field elements, then reran.</li><li class="think"><b>Thinking:</b> Field-level correctness bugs are the thing to suspect first when a provably finite algorithm (GCD on degree-≤2 polynomials) doesn't terminate — the shape of the bug (infinite loop, not a crash) pointed straight at "remainder isn't actually shrinking," i.e. the division arithmetic itself.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Pivot:</b> solve for H and S</h2>
+      <ul><li><b>What I did / What I found:</b> Ran the fixed solver — the GCD of the two quadratics came back degree 1, giving `H = 0x730426f0d054fc7539d26145168be28a` directly from its root. Plugging `H` back into each dispatch's `tag = GHASH_H(C) ⊕ S` recovered `S = 0x66b18782c578d8b27ec249a6298dfeb2` from all three dispatches independently.</li><li class="result"><b>Result:</b> All three dispatches agreed on the same `S`, which is the confirmation that `H` (and therefore `S`) was recovered correctly.</li><li class="think"><b>Thinking:</b> Cross-checking `S` across every message is a free correctness proof — a wrong `H` would not reproduce a consistent tag mask across independent ciphertexts.</li></ul>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span><b>Pivot:</b> decrypt the sealed master order</h2>
+      <ul><li><b>What I did / What I found:</b> Per the README, the master order is AES-128-CTR encrypted (IV = all-zero) under `S` itself as the 16-byte key. Decrypted `sealed_master_order_ctr_hex` with `AES.new(S, AES.MODE_CTR, nonce=b'', initial_value=0)`.</li><li class="result"><b>Result:</b> Plaintext recovered: `<span class="flag" tabindex="0">CSCTF{watchword_2005b4d082c8f06019960d36c5131e783d4bc532}</span>`.</li><li class="think"><b>Thinking:</b> The challenge collapses the "find the hidden key" step and the "flag" step into one — the recovered plaintext *is* the flag, so no further decoding was needed. _(No reproduction capture: the challenge input files are not in this repo.)_</li></ul>
+    </section>
+
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="the-signet.html"><small>Previous</small>The Signet</a><a class="next" href="briefing-for-one.html"><small>Next</small>Briefing for One</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Crypto · AES-GCM nonce reuse / &quot;Forbidden Attack&quot;</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python 3 arithmetic)</li><li>pycryptodome</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{watchword_2005b4d082c8f06019960d36c5131e783d4bc532}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Crypto/Watchword/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Handout `watchword.zip`</span></a></li><li><a href="#step-2"><b>2</b><span>Build the algebra</span></a></li><li><a href="#step-3"><b>3</b><span>Implement GF field arithmetic +…</span></a></li><li><a href="#step-4"><b>4</b><span>Solve for H and S</span></a></li><li><a href="#step-5"><b>5</b><span>Decrypt the sealed master order</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261104a" defer></script>
+</body>
+</html>
