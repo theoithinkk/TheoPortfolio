@@ -1363,6 +1363,35 @@ a.solve:hover, a.solve:focus-visible, a.solve.on { scale: 1.18; box-shadow: 0 0 
 .codex .solve-info p:not([class]), .codex .solve-trick { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .codex .solve-read { margin-top: auto; }
 
+/* ---------- CTF writeups home page (writeups/index.html, .solves-page): the grid at full width ---------- */
+/* Squares fill their column with the info panel beside them, at one fixed height for the same reason as
+   above; the ranked list runs full width underneath, then every writeup grouped by event. */
+.solves-page .solves { max-width: 1100px; }
+.solves-page .solve-body { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1.4rem 2rem; }
+.solves-page .solve-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 7px; }
+.solves-page .solve { width: auto; height: auto; aspect-ratio: 1; border-radius: 6px; }
+.solves-page .solve-info { height: 16.5rem; display: flex; flex-direction: column; overflow: hidden; }
+.solves-page .solve-info > * { flex-shrink: 0; }
+.solves-page .solve-info h4, .solves-page .solve-info .solve-kicker, .solves-page .solve-info .solve-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.solves-page .solve-info p:not([class]), .solves-page .solve-trick { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.solves-page .solve-info .solve-read { margin-top: auto; }
+.solves-page .solve-ranked { grid-column: 1 / -1; margin-top: .4rem; }
+.solves-page .wu-all { max-width: 1100px; margin: 0 auto 4rem; }
+.solves-page .wu-all > .sub-head { margin: 3.5rem 0 1.6rem; }
+.wu-event + .wu-event { margin-top: 2rem; }
+.wu-event h3 { margin: 0 0 .7rem; font: 700 1.15rem "Fraunces", serif; }
+.wu-event h3 span { margin-left: .4em; font: 500 .8rem var(--sans); color: var(--muted); }
+.solves-page .wu-all .solve-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.solves-page .wu-all .solve-list a { grid-template-columns: minmax(0, 1fr) auto auto; }
+@media (max-width: 760px) {
+  .solves-page .solve-body { grid-template-columns: minmax(0, 1fr); }
+}
+/* Phones: 6 squares a row so each is a 44px+ tap target (the grid pads to rows of 12, so rows stay full). */
+@media (max-width: 680px) {
+  .solves-page .solve-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+}
+@media (max-width: 520px) { .solves-page .wu-all .solve-list a { grid-template-columns: minmax(0, 1fr) auto; } }
+
 /* ---------- CTF writeup pages: reading comfort ---------- */
 .wu-article { max-width: 760px; font-size: 1.04rem; line-height: 1.75; }
 .wu-step li + li { margin-top: .6rem; }

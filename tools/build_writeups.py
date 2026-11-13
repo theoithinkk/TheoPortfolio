@@ -3,6 +3,10 @@
 Usage (from the site folder):
     python -I tools/build_writeups.py "<folder of writeups>" <event-slug> "<Event title>"
     python -I tools/build_writeups.py --all "<CTFwriteups checkout>"
+    python -I tools/build_writeups.py --index
+
+--index only rewrites the two solve grids (index.html, writeups/index.html) from writeups/manifest.json,
+for a change to the grid markup that needs no writeup rebuilt.
 
 --all rebuilds every event listed in tools/writeup_events.json (the GitHub Action uses this); an
 event only goes on the site once it is listed there. A leading "(DONE)"-style tag on a challenge
@@ -393,10 +397,11 @@ INDEX_PAGE = """<!doctype html>
 </head>
 <body>
 <main>
-  <section id="writeups" class="sec sec-wide">
+  <section id="writeups" class="sec sec-wide solves-page">
     <header class="sec-head"><p class="act">Theodore Garcia</p><h2>CTF Writeups</h2></header>
-    <p class="sub-note">Every square is a challenge I solved and wrote up. Hover one to see how, click to read it.</p>
+    <p class="sub-note">Every square is a challenge I solved and wrote up. Hover or tap one to see the trick, click it to read the writeup, or browse them all by event below.</p>
 {block}
+{all}
   </section>
 </main>
 <script src="solves.js?v={v}" defer></script>
@@ -405,14 +410,33 @@ INDEX_PAGE = """<!doctype html>
 """
 
 
+def render_all_list(manifest):
+    """Every writeup as a plain link, grouped by event: browsable without hovering squares, and on touch.
+    Same item order as the grid, so a new category gets the same fallback colour here as its square."""
+    seen, groups = {}, []
+    for ev_slug, ev in manifest.items():
+        rows = "".join(
+            f'<li><a href="{ev_slug}/{it["slug"]}.html" style="--c:{cat_color(it["category"], seen)}">'
+            f'<span class="solve-row-title">{html.escape(it["title"])}</span>'
+            f'<span class="solve-row-cat">{html.escape(it["category"])}</span><span class="solve-row-steps">{it.get("steps", 1)} steps</span></a></li>'
+            for it in ev["items"])
+        n = len(ev["items"])
+        groups.append(f'      <div class="wu-event"><h3>{html.escape(ev["title"])} <span>{n} writeup{"s" if n != 1 else ""}</span></h3>'
+                      f'<ul class="solve-list">{rows}</ul></div>')
+    return "\n".join(['    <section class="wu-all" aria-labelledby="wu-all-head">',
+                      '      <h2 class="sub-head" id="wu-all-head">All writeups</h2>', *groups, "    </section>"])
+
+
 def render_writeups_index(manifest):
     total, n_ev = sum(len(ev["items"]) for ev in manifest.values()), len(manifest)
     stats = f'{total} flag{"s" if total != 1 else ""} across {n_ev} event{"s" if n_ev != 1 else ""}'
-    return INDEX_PAGE.format(stats=stats, block=render_index_block(manifest, base=""), v=VERSION)
+    return INDEX_PAGE.format(stats=stats, block=render_index_block(manifest, base=""), all=render_all_list(manifest), v=VERSION)
 
 
 def main():
-    if sys.argv[1] == "--all":
+    if sys.argv[1] == "--index":
+        jobs = []
+    elif sys.argv[1] == "--all":
         events = json.loads((SITE / "tools" / "writeup_events.json").read_text(encoding="utf-8"))
         jobs = [(Path(sys.argv[2]) / ev["path"], ev["slug"], ev["title"], ev.get("done_only", True)) for ev in events]
     else:

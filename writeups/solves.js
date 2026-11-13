@@ -15,18 +15,22 @@ function showSolve(s) {
   solveSquares.forEach(x => x.classList.toggle('on', x === s));
 }
 // Touch has no hover: the first tap on a square previews it, a second tap opens the writeup.
-let solvePointer = 'mouse';
+// "Already showing" is read at pointerdown: Chrome focuses a tapped link before its click, and focus
+// previews it, so checking at click time would open the writeup on the first tap. Keyboard clicks (detail 0) pass.
+let solvePointer = 'mouse', solveWasOn = false;
 solveSquares.forEach(s => {
   s.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') showSolve(s); });
   s.addEventListener('focus', () => showSolve(s));
-  s.addEventListener('pointerdown', e => { solvePointer = e.pointerType; });
+  s.addEventListener('pointerdown', e => { solvePointer = e.pointerType; solveWasOn = s.classList.contains('on'); });
   s.addEventListener('click', e => {
-    if (solvePointer === 'mouse' || s.classList.contains('on')) return;
+    if (solvePointer === 'mouse' || solveWasOn || !e.detail) return;
     e.preventDefault(); showSolve(s);
+    // On a phone the panel sits under a tall grid: bring it into view so the tap visibly did something.
+    solveInfo.scrollIntoView({ block: 'nearest', behavior: document.documentElement.matches('.reduced, .simple') ? 'auto' : 'smooth' });
   });
 });
 // Rows in the 'Hardest solves' list preview the same way as their squares.
-$$('.solve-list a').forEach(a => a.addEventListener('pointerenter', () => {
+$$('.solve-ranked a').forEach(a => a.addEventListener('pointerenter', () => {
   const sq = solveSquares.find(s => s.getAttribute('href') === a.getAttribute('href'));
   if (sq) showSolve(sq);
 }));
