@@ -37,7 +37,7 @@ jobs:
 
       - name: Commit changes
         run: |
-          git add writeups index.html
+          git add writeups index.html paper.html
           if git diff --cached --quiet; then
             echo "Writeups already up to date."
             exit 0

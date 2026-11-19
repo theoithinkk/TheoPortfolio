@@ -5,7 +5,7 @@ Usage (from the site folder):
     python -I tools/build_writeups.py --all "<CTFwriteups checkout>"
     python -I tools/build_writeups.py --index
 
---index only rewrites the two solve grids (index.html, writeups/index.html) from writeups/manifest.json,
+--index only rewrites the solve grids (index.html, paper.html, writeups/index.html) from writeups/manifest.json,
 for a change to the grid markup that needs no writeup rebuilt.
 
 --all rebuilds every event listed in tools/writeup_events.json (the GitHub Action uses this); an
@@ -22,7 +22,7 @@ Output:
     writeups/<event-slug>/<challenge>.html     one page per writeup
     writeups/img/<event-slug>/<challenge>/     screenshots, converted to .webp
     writeups/manifest.json                     every event built so far
-    index.html                                 the block between the writeups:start/end markers
+    index.html, paper.html                     the block between the writeups:start/end markers
 
 Running it again for the same event rebuilds that event; other events in the manifest are kept.
 A new category needs nothing special: its filter button appears from the "Category:" line.
@@ -453,11 +453,14 @@ def main():
         print(f"built {len(items)} writeups for {event_slug}")
     mf.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     (OUT / "index.html").write_text(render_writeups_index(manifest), encoding="utf-8")
-    idx = SITE / "index.html"
-    t = idx.read_text(encoding="utf-8")
-    t, n = re.subn(r"    <!-- writeups:start.*?<!-- writeups:end -->", lambda _: render_index_block(manifest), t, flags=re.S)
-    assert n == 1, "index.html needs the writeups:start / writeups:end markers"
-    idx.write_text(t, encoding="utf-8")
+    # Both homepages (dark index.html, light paper.html) sit at the site root, so one block fits both.
+    block = render_index_block(manifest)
+    for name in ("index.html", "paper.html"):
+        idx = SITE / name
+        t = idx.read_text(encoding="utf-8")
+        t, n = re.subn(r"    <!-- writeups:start.*?<!-- writeups:end -->", lambda _: block, t, flags=re.S)
+        assert n == 1, f"{name} needs the writeups:start / writeups:end markers"
+        idx.write_text(t, encoding="utf-8")
 
 
 if __name__ == "__main__":

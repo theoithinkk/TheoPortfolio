@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build command for the Cloudflare Pages project behind writeups.theoith.ink.
+# Build command for the Cloudflare Worker (theo-writeups) behind writeups.theoith.ink.
 # Output is _site/: the CTF writeups and only the assets they load, with writeups/index.html as the
 # home page. The rest of the portfolio (homepage, projects, CV) is never copied, so it can't be reached there.
 # The writeup pages link with ../../ paths, which resolve to the root here, so they need no changes.
