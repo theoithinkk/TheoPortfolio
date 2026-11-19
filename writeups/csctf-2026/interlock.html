@@ -8,9 +8,9 @@
 <title>Interlock (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="Four components each parse the same bytes differently — fast-uri vs WHATWG for the host, NFKC vs plain casefold for the identity, raw vs normalized for the path. The attacker lives in every gap: a string that looks safe to the checker and dangerous to the executor. The fix is parser unanimity — authorize on, and act on, the exact same canonical value. Defensive takeaways: - Normalize once, at the edge, and route/authorize on that same canonical path; never let the proxy and the app - Use ONE Unicode normalization (NFKC+casefold) for both &quot;is this on the roster&quot; and &quot;is this a duplicate&quot;; identity - Extract the host with the very parser the outbound fetch uses (or reject backslashes and control chars outright) so">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -59,6 +59,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read /api/v1/schema from the reliability…</span></a></li><li><a href="#step-2"><b>2</b><span>Edge path-authorization bypass with a…</span></a></li><li><a href="#step-3"><b>3</b><span>Defeat dual control with an…</span></a></li><li><a href="#step-4"><b>4</b><span>Bypass the quarantine with a fast-uri vs…</span></a></li><li><a href="#step-5"><b>5</b><span>Satisfy the release interlock and read…</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

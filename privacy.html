@@ -8,9 +8,9 @@
 <title>Privacy &amp; Security | Theodore Garcia</title>
 <meta name="description" content="What theoith.ink collects (nothing), what it stores on your device, and how to report a security issue.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css?v=20261104a">
-<link rel="stylesheet" href="paper.css?v=20261103b">
-<script src="prefs.js?v=20261103b" data-static></script>
+<link rel="stylesheet" href="style.css?v=20261119v">
+<link rel="stylesheet" href="paper.css?v=20261118a">
+<script src="prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="doc">
 <main class="sec doc-page">
@@ -26,12 +26,13 @@
     <h2>Stored on your device</h2>
     <p>The site remembers your display choices in your browser's local storage, under one key, <code>tg-prefs</code>. It never leaves your device:</p>
     <ul>
-      <li><strong>mode</strong>: light or dark</li>
+      <li><strong>mode</strong>: light or dark (on the homepage, light opens the paper edition)</li>
       <li><strong>char</strong>: the character palette you picked</li>
       <li><strong>sfx</strong> / <strong>music</strong>: whether sound effects and music are on (both start off)</li>
       <li><strong>simple</strong>: whether animations are turned off</li>
       <li><strong>expLayout</strong>: whether the Experience section shows as a list or a map</li>
     </ul>
+    <p>Switching between the dark and paper homepages also leaves a one-time marker, <code>tg-vt</code>, in session storage so the next page knows to play the switch animation. That page deletes it as soon as it opens.</p>
     <p>To erase it, clear this site's data in your browser settings.</p>
   </div>
 

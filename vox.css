@@ -1,0 +1,684 @@
+/* ==========================================================================
+   Paper-cutout explainer theme for the homepage.
+   Materials: cream newsprint, white cut paper, kraft, highlighter, ink, red string.
+   Motion rules:
+   - Text is readable from the first paint. Only paper pieces move: the hero collage is placed by
+     hand (slide in tilted, overshoot, settle: --ease-hand), chapter numbers are stamped, earned
+     certificates are stuck down, and each project's artwork assembles when it scrolls into view.
+   - Placed pieces "boil" for a few seconds (a stop-motion jitter at ~8 fps, steps(1), not a smooth
+     wobble), then lie still. Pointing at the collage wakes them again.
+   - Ink draws on (stroke-dashoffset), highlighter swipes left to right.
+   Anything hidden for an entrance is gated on html.js and revealed by .in (vox.js), so the page
+   reads fine with no JS and with reduced motion. The footer has a "Pause motion" switch.
+   ========================================================================== */
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 400 900; font-display: swap; src: url(fonts/fraunces.woff2) format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 400 700; font-display: swap; src: url(fonts/fraunces-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 700; font-display: swap; src: url(fonts/inter.woff2) format('woff2'); }
+
+:root {
+  --paper: #f2ead9;       /* newsprint page */
+  --card: #fffcf4;        /* white cut paper */
+  --kraft: #cfb88f;
+  --ink: #1c1a17;
+  --ink-2: #4d473e;
+  --hi: #ffd43b;          /* highlighter */
+  --red: #b3301f;         /* 5:1 on --paper, so small red labels stay readable */
+  --teal: #2b6b78;
+  --green: #2e8b57;
+  --line: #1c1a1726;
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --lift: 0 1px 0 #00000012, 0 10px 18px -10px #3a2a1070;
+  --lift-hi: 0 2px 0 #00000012, 0 24px 32px -14px #3a2a1080;
+  --lift-low: 0 1px 0 #00000012, 0 3px 5px -3px #3a2a1070;
+  /* white die-cut edge around transparent images, then a short paper shadow */
+  --cut: drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(2px 6px 5px #3a2a1055);
+  --ease-hand: cubic-bezier(.2, 1.35, .4, 1);   /* overshoots, like a piece pressed down by hand */
+  --ease-out: cubic-bezier(.16, 1, .3, 1);      /* fast start, long settle: hovers and presses */
+  --torn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 2L5 .5 10 2.5 15 1 20 3 25 .8 30 2.2 35 .4 40 2.8 45 1.2 50 2.6 55 .6 60 2.4 65 1 70 3 75 1.4 80 2.6 85 .5 90 2.2 95 1 100 2.4V97.6L95 99 90 97.4 85 99.5 80 97.2 75 98.8 70 97 65 99.2 60 97.6 55 99.4 50 97.4 45 98.8 40 97 35 99.6 30 97.8 25 99.2 20 97 15 99 10 97.5 5 99.4 0 98Z'/%3E%3C/svg%3E");
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { color-scheme: light; scroll-behavior: smooth; scroll-padding-top: 88px; overflow-x: clip; scrollbar-color: #8b8477 var(--paper); accent-color: var(--red); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 17px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+/* Paper fibre over everything, including photos, so it all reads as one printed surface. The texture
+   is dark specks on transparency, so it needs no blend mode (a blend mode here would make the
+   browser re-blend the whole page on every scroll frame). */
+body::before { content: ""; position: fixed; inset: 0; z-index: 90; pointer-events: none; background: url(img/paper/grain.png) 0 0 / 192px; opacity: .75; }
+::selection { background: var(--hi); color: var(--ink); }
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-underline-offset: .2em; text-decoration-thickness: .07em; }
+h1, h2, h3, h4 { font-family: var(--serif); line-height: 1.05; margin: 0; letter-spacing: -.015em; text-wrap: balance; }
+p, li { text-wrap: pretty; }
+ul, ol { margin: 0; }
+code { font: .88em var(--mono); background: #1c1a170d; padding: .05em .3em; border-radius: 3px; }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 2px; }
+.wrap { width: min(1180px, 100% - 32px); margin-inline: auto; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 16px; top: -60px; z-index: 100; background: var(--ink); color: var(--hi); padding: .6em 1em; font-weight: 700; }
+.skip:focus { top: 12px; }
+
+/* ---------- Icons (mask images, so they take the text colour) ---------- */
+.ii, .si { display: inline-block; background: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
+.ii { width: 1em; height: 1em; vertical-align: -.14em; transition: translate .25s var(--ease-out); }
+.ii-ext { --src: url(img/icons/tb-arrow-up-right.svg); }
+.ii-go { --src: url(img/icons/tb-arrow-right.svg); }
+.ii-down { --src: url(img/icons/tb-arrow-right.svg); rotate: 90deg; }
+a:hover .ii-ext { translate: 1px -1px; }
+a:hover .ii-go { translate: 3px 0; }
+a:hover .ii-down { translate: 0 2px; }
+.si { width: 20px; height: 20px; }
+
+/* ---------- Buttons: a cut paper label that lifts when you reach for it and flattens when pressed ---------- */
+.btn { display: inline-flex; align-items: center; gap: .5em; min-height: 44px; padding: .7em 1.15em; font: 700 15px/1 var(--sans); color: var(--ink); text-decoration: none; background: var(--card); border: 2px solid var(--ink); border-radius: 3px; box-shadow: var(--lift); cursor: pointer; transition: translate .3s var(--ease-out), rotate .3s var(--ease-out), box-shadow .3s var(--ease-out); }
+.btn:hover { translate: 0 -3px; rotate: -1.2deg; box-shadow: var(--lift-hi); }
+.btn:active { translate: 0 1px; rotate: 0deg; box-shadow: var(--lift-low); transition-duration: .06s; }
+.btn.primary { background: var(--hi); }
+.btn.dark { background: var(--ink); color: var(--hi); }
+.btn.small { min-height: 40px; padding: .5em .9em; font-size: 14px; }
+.linkish { font: inherit; color: inherit; background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
+html:not(.js) [data-still] { display: none; }   /* the switch needs JS, so don't show a dead button */
+
+/* ---------- Highlighter: swipes across once the phrase is in view ---------- */
+.hl { padding: 0 .12em; margin: 0 -.12em; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  background: linear-gradient(100deg, #ffd43b00 0, var(--hi) .25em, var(--hi) calc(100% - .3em), #ffd43b00) 0 88% / 0% 72% no-repeat;
+  transition: background-size .9s cubic-bezier(.65, 0, .25, 1) var(--delay, .35s); }
+.hl.in, html:not(.js) .hl { background-size: 100% 72%; }
+
+/* ---------- Entrances (paper pieces only) ---------- */
+.js [data-in] { opacity: 0; transition: opacity .35s ease, transform .8s var(--ease-hand); transition-delay: calc(var(--i, 0) * 110ms + var(--wait, 0ms)); }
+.js [data-in="up"] { transform: translateY(46px) rotate(-2.5deg); }
+.js [data-in="left"] { transform: translateX(-90px) rotate(-5deg); }
+.js [data-in="right"] { transform: translateX(90px) rotate(5deg); }
+.js [data-in="drop"] { transform: translateY(-70px) rotate(14deg) scale(1.12); }
+.js [data-in="pop"] { transform: scale(.3) rotate(-16deg); }
+.js [data-in].in { opacity: 1; transform: none; }
+
+/* Ink that draws itself: every .draw path uses pathLength="1" */
+.draw { fill: none; stroke: var(--red); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.js .draw { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.1s cubic-bezier(.6, .05, .25, 1) var(--d, 0s); }
+.js .in .draw, .js .in.draw { stroke-dashoffset: 0; }
+
+/* Stop-motion boil: hold each frame, jump to the next (no tweening), like cut paper on an animation
+   stand. A piece boils for about five seconds after it lands, then lies still; hovering the
+   collage (or the piece) wakes it. */
+@keyframes boil {
+  0%   { rotate: var(--r, 0deg); translate: 0 0; }
+  25%  { rotate: calc(var(--r, 0deg) + .7deg); translate: .7px -.6px; }
+  50%  { rotate: calc(var(--r, 0deg) - .4deg); translate: -.6px .5px; }
+  75%  { rotate: calc(var(--r, 0deg) + .3deg); translate: .4px .6px; }
+}
+.boil { rotate: var(--r, 0deg); }
+.in.boil, .in .boil { animation: boil var(--bd, .5s) steps(1, end) 1.6s 10; }
+.collage:hover .boil, .boil:hover { animation: boil var(--bd, .5s) steps(1, end) infinite; }
+.still *, .still *::before, .still *::after { animation-play-state: paused !important; }
+
+/* ---------- Top bar: a strip of paper with a torn bottom edge ---------- */
+.bar { position: sticky; top: 0; z-index: 50; filter: drop-shadow(0 3px 5px #3a2a1030); }
+.bar::before { content: ""; position: absolute; inset: 0 0 -6px; background: var(--card); -webkit-mask: var(--torn) 0 0 / 100% 100%; mask: var(--torn) 0 0 / 100% 100%; z-index: -1; }
+.bar-paper { display: flex; align-items: center; gap: 1.5rem; height: 64px; }
+.wordmark { font: 800 1.2rem/1 var(--serif); text-decoration: none; white-space: nowrap; padding-block: .6em; }
+.wordmark span { background: var(--hi); padding: 0 .15em; }
+.nav { display: flex; gap: .3rem; margin-left: auto; }
+.nav a { font: 600 14.5px/1 var(--sans); text-decoration: none; padding: .7em; border-radius: 2px;
+  background: linear-gradient(var(--hi), var(--hi)) 0 85% / 0% 40% no-repeat; transition: background-size .3s var(--ease-out); }
+.nav a:hover, .nav a[aria-current="true"] { background-size: 100% 40%; }
+.menu-btn { display: none; }
+/* Theme switch: a paper tab with a crescent moon that swaps to the dark homepage (vox.js). It only
+   works with JS, so it is hidden without it. */
+.btn.mode-btn { min-width: 44px; min-height: 44px; justify-content: center; rotate: -2deg; }
+.moon { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 4px -3px 0 0 currentColor; }
+html:not(.js) .mode-btn { display: none; }
+
+/* ---------- Hero: the name, the explainer board, then the pitch and the buttons ---------- */
+.hero { display: grid; justify-items: center; text-align: center; padding-block: clamp(2.6rem, 5vw, 3.8rem) 3rem; }
+.hero-head, .hero-foot { display: grid; justify-items: center; }
+.hero h1 { position: relative; font-weight: 900; font-size: clamp(2.5rem, 11.4vw, 6rem); line-height: .95; letter-spacing: -.03em; }
+/* A strip of label tape stuck across the corner of the name: "Theodore Garcia, explained" */
+.tape { position: absolute; right: -1.6em; top: -1.25em; font: 700 clamp(10px, 1.1vw, 13px)/1.4 var(--sans); letter-spacing: .14em; text-transform: uppercase; background: var(--ink); color: var(--hi); padding: .35em .8em; rotate: 7deg;
+  clip-path: polygon(0 8%, 4% 0, 9% 10%, 15% 2%, 22% 8%, 30% 0, 38% 9%, 46% 1%, 55% 8%, 63% 0, 71% 9%, 80% 2%, 88% 8%, 95% 0, 100% 7%, 100% 92%, 96% 100%, 89% 91%, 82% 99%, 74% 92%, 66% 100%, 58% 92%, 49% 99%, 41% 91%, 33% 100%, 25% 92%, 17% 99%, 9% 91%, 3% 100%, 0 93%); }
+.role { margin: 1rem 0 0; font: 700 clamp(11.5px, 1.2vw, 14px)/1.4 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
+.avail { font-weight: 600; margin: .8rem 0 0; max-width: 80ch; text-wrap: balance; }
+.dot { display: inline-block; width: 10px; height: 10px; margin-right: .45em; border-radius: 50%; background: var(--green); animation: blink 1.6s steps(1, end) 6; }
+@keyframes blink { 60% { scale: .55; } }
+
+/* The board: a corkboard with his cut-out photo in the middle and the proof points pinned around it.
+   Every position is a percentage of the board, so it scales as one piece. Small screens get a tall
+   board under the name; wide screens (below) get a landscape board with the name card pinned to it.
+   Colour carries meaning: each piece's pin and thread are coloured by kind (--c). */
+.collage { position: relative; width: 100%; max-width: 430px; aspect-ratio: 1 / 1.8; margin-top: clamp(1.6rem, 3vw, 2.2rem); border-radius: 4px;
+  background: radial-gradient(#7a5a2c3a 1px, #0000 1.6px) 0 0 / 9px 9px, radial-gradient(circle at 30% 20%, #d9c49c, #c3a978);
+  box-shadow: inset 0 0 0 8px #a98d5c, inset 0 0 30px #6b4f2266, var(--lift-hi); }
+.piece { position: absolute; z-index: 3; }
+.sun { z-index: 0; left: 15%; top: 49%; width: 70%; aspect-ratio: 1; }
+.sun i { display: block; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #e3a900 1.5px, #e3a90000 1.8px) 0 0 / 10px 10px, var(--hi); box-shadow: var(--lift); }
+.photo { z-index: 2; left: 13%; bottom: 0; width: 74%; filter: var(--cut); cursor: pointer; }
+.photo img { -webkit-mask: url(img/paper/torn-bottom.svg) 0 0 / 100% 100%; mask: url(img/paper/torn-bottom.svg) 0 0 / 100% 100%; }
+/* Thread colours, one per kind of proof */
+.hero { --t-ctf: #c22a18; --t-cert: #2559c4; --t-school: #23824c; --t-lead: #d98e00; }
+.piece[data-tie] { --c: var(--t-ctf); z-index: 5; transform-origin: 50% 0; }
+.piece[data-tie="cert"] { --c: var(--t-cert); }
+.piece[data-tie="school"] { --c: var(--t-school); }
+.piece[data-tie="lead"] { --c: var(--t-lead); }
+/* pinned notes swing on their pin when you point at them */
+.piece[data-tie]:hover { animation: swing 1s var(--ease-out); }
+@keyframes swing { 0%, 100% { rotate: 0deg; } 20% { rotate: 8deg; } 45% { rotate: -6deg; } 70% { rotate: 3deg; } }
+/* Push pins, in the colour of their thread. The anchors on his outline are pearl-headed map pins. */
+.piece[data-tie]::before, .hero-head::before { content: ""; position: absolute; z-index: 2; top: -6px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--c) 35%, #fff), var(--c) 60%, color-mix(in srgb, var(--c) 55%, #000)); box-shadow: 1px 2px 2px #0005; }
+.hero-head::before { display: none; --c: var(--ink); }
+.anchor { position: absolute; z-index: 4; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 35% 30%, #fff, #ece4d2 50%, #9b8f76); box-shadow: 1px 2px 2px #0006, 0 0 0 1.5px #6b5a3a66; }
+.threads { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;   /* behind the photo, so a thread can never cross his face */
+  overflow: visible; pointer-events: none; filter: drop-shadow(1px 2px 1px #0004); }
+.threads .draw { stroke-width: 2.2; transition-duration: 1.5s; }
+.threads .knot { stroke-width: 1.8; }
+
+.cut { filter: var(--cut); }
+.label { display: inline-block; background: var(--card); padding: .55em .85em .5em; font: 700 10px/1.25 var(--sans); letter-spacing: .06em; text-transform: uppercase; text-align: left; box-shadow: inset 0 4px 0 var(--c, var(--ink)), var(--lift);
+  clip-path: polygon(2% 0, 98% 3%, 100% 50%, 97% 100%, 3% 96%, 0 50%); }
+.label b { display: block; font: 800 13px/1.1 var(--serif); letter-spacing: -.01em; text-transform: none; }
+/* a logo sticker stuck onto the end of a label */
+.tagged { display: flex; align-items: center; }
+.tagged .logo { position: relative; z-index: 1; flex: none; width: 46px; margin-right: -10px; rotate: -8deg; }
+.tagged .label { padding-left: 1.3em; }
+.stamp { --s: 112px; display: grid; place-content: center; text-align: center; width: var(--s); aspect-ratio: 1; border-radius: 50%; color: var(--red); border: 3px solid var(--red); outline: 1.5px solid var(--red); outline-offset: -8px;
+  font: 800 calc(var(--s) * .094)/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; background: #fffcf4cc; mix-blend-mode: multiply; }
+.stamp b { font: 900 calc(var(--s) * .286)/1 var(--serif); letter-spacing: -.02em; text-transform: none; }
+.collage .stamp { --s: 70px; cursor: pointer; }
+/* the stamp comes down again when clicked */
+.hero .stamp.go { animation: thunk .5s var(--ease-hand); }
+@keyframes thunk { 0% { scale: 1.7; opacity: .3; } 45% { scale: .9; opacity: 1; } 100% { scale: 1; } }
+.p-iso .logo { position: absolute; z-index: 1; left: 72%; top: -16%; width: 50%; rotate: 9deg; }
+/* the CTF scoreboard: an index card with a logo sticker on every row and a strip of pink tape */
+.scorecard { position: relative; width: 13.2rem; padding: .75rem .8rem .6rem; text-align: left; background: var(--card); box-shadow: inset 0 5px 0 var(--c), var(--lift); }
+.scorecard::after { content: ""; position: absolute; right: -14px; bottom: 10px; width: 54px; height: 16px; background: #ff8fc0b8; rotate: -38deg; box-shadow: 0 1px 2px #0002; }
+.sc-title { margin: 0 0 .4rem; font: 800 10px/1.2 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.scorecard ul { list-style: none; padding: 0; display: grid; gap: .32rem; }
+.scorecard li { display: grid; grid-template-columns: 26px auto 1fr; align-items: center; gap: .45rem; font: 600 11px/1.15 var(--sans); }
+.scorecard img { width: 26px; height: 26px; object-fit: contain; }
+.scorecard b { font: 900 1rem/1 var(--serif); color: var(--red); white-space: nowrap; }
+/* leadership: four club logos stuck in a row above their label */
+.crew { display: grid; justify-items: start; gap: .3rem; }
+.crew .logos { display: flex; gap: 5px; padding-left: 4px; }
+.crew .logos img { width: 38px; height: 38px; object-fit: contain; rotate: -6deg; }
+.crew .logos img:nth-child(even) { rotate: 7deg; translate: 0 3px; }
+.crew .logos img.sq { border-radius: 7px; }
+/* school: a yellow note with the DLSU seal stuck on its corner and the Dean's List label on its foot */
+.p-note { padding: .6em .7em .7em; text-align: left; background: var(--hi); box-shadow: var(--lift); }
+.p-note::after { content: ""; position: absolute; left: -12px; top: 10px; width: 44px; height: 15px; background: #6fc7b4c4; rotate: -34deg; box-shadow: 0 1px 2px #0002; }
+.p-note > .logo { position: absolute; right: -12px; top: -16px; width: 40px; rotate: 12deg; }
+.p-note .tagged { margin: .55rem 0 0 -.2rem; }
+.p-note .tagged .logo { width: 38px; }
+.scrawl { font: italic 600 12px/1.25 var(--serif); color: var(--ink); margin: 0; }
+
+/* Positions on a small screen: a tall board with the photo at the bottom and the proof in two
+   columns above his head (only the stamp sits on him, on his arm). */
+.p-isc2 { left: 3%; top: 1.8%; width: 15.5%; }
+.p-aws1 { left: 19.5%; top: 1.4%; width: 15%; }
+.p-aws2 { left: 36%; top: 2.2%; width: 13.5%; }
+.p-lead { left: 3%; top: 14%; }
+.p-huawei { right: 2.5%; top: 15%; }
+.p-huawei .label { max-width: 10.5em; }
+.crew .label b { font-size: 11px; }
+.p-note { left: 3%; top: 29%; width: 45%; }
+.p-note > .logo { right: 4px; top: -18px; }
+.p-ctf { right: 3%; top: 27.5%; }
+.p-ctf .scorecard { width: 10.2rem; padding: .65rem .6rem .5rem; }
+.p-ctf li { grid-template-columns: 22px auto 1fr; gap: .35rem; font-size: 10px; }
+.p-ctf img { width: 22px; height: 22px; }
+.p-ctf b { font-size: .88rem; }
+.p-iso { right: 2%; bottom: 14%; }
+.p-iso .logo { left: -36%; }
+.tagged .logo { width: 36px; }
+.crew .logos img { width: 32px; height: 32px; }
+.label b { font-size: 12px; }
+
+/* Speech bubble: tap him or the bubble for the next line */
+.say { position: absolute; z-index: 6; right: 3%; top: 2%; width: max-content; max-width: 8em; padding: .6em .95em .65em; font: italic 700 clamp(14px, 1.45vw, 19px)/1.25 var(--serif); color: var(--ink); text-align: left;
+  background: var(--card); border: 2.5px solid var(--ink); border-radius: 1.2em; box-shadow: var(--lift); rotate: -3deg; transform-origin: 10% 100%; cursor: pointer; transition: translate .3s var(--ease-out); }
+.say:hover { translate: 0 -3px; }
+.say::before, .say::after { content: ""; position: absolute; top: 100%; left: 1.3em; border-style: solid; border-color: transparent; }
+.say::before { border-width: 18px 16px 0 0; border-top-color: var(--ink); }
+.say::after { border-width: 12px 10px 0 0; border-top-color: var(--card); margin: -3.5px 0 0 2.5px; }
+.say.go { animation: say .45s var(--ease-hand); }
+@keyframes say { 0% { scale: .6; } 100% { scale: 1; } }
+
+/* wide screens: a landscape board with the name card pinned to it. The pieces keep their size, so
+   below 1100px they would crowd; tablets get the tall board. */
+@media (min-width: 1100px) {
+  .hero { grid-template-areas: "board" "foot"; }
+  .hero-head { grid-area: board; position: relative; z-index: 6; justify-self: start; align-self: start; justify-items: start; width: 33%; margin: 3% 0 0 3%; padding: 1.7rem 1.5rem 1.4rem; text-align: left; background: var(--card); box-shadow: var(--lift-hi); rotate: -2deg; }
+  .hero-head::before { display: block; }
+  .hero h1 { font-size: clamp(2.6rem, 4.6vw, 4.4rem); }
+  .collage { grid-area: board; max-width: none; aspect-ratio: 1180 / 760; margin-top: 0; }
+  .sun { left: 42%; top: 9%; width: 37%; }
+  .photo { left: 38%; width: 45%; }
+  .say { left: 61%; right: auto; top: 3%; max-width: 10em; }
+  .p-huawei { left: auto; right: 2%; top: 4%; }
+  .p-huawei .label { max-width: 14.5em; }
+  .p-note > .logo { right: -12px; top: -16px; }
+  .crew .label b { font-size: 1.12rem; }
+  .p-aws1 { left: auto; right: 4%; top: 27%; width: 9.5%; }
+  .p-aws2 { left: auto; right: 3%; top: 47%; width: 8.5%; }
+  .p-ctf { right: 1.5%; top: auto; bottom: 2.5%; }
+  .p-ctf .scorecard { width: 15rem; padding: .75rem .8rem .6rem; }
+  .p-ctf li { grid-template-columns: 26px auto 1fr; gap: .45rem; font-size: 11px; }
+  .p-ctf img { width: 26px; height: 26px; }
+  .p-ctf b { font-size: 1rem; }
+  .p-lead { left: 3.5%; top: 50%; }
+  .p-isc2 { left: auto; right: 3.5%; top: 61%; width: 8.5%; }
+  .p-iso { left: 25%; right: auto; top: 60.5%; bottom: auto; }
+  .p-iso .logo { left: 72%; }
+  .collage .stamp { --s: 108px; }
+  .p-note { left: 3%; top: auto; bottom: 4%; width: 20%; }
+  .label { font-size: 11px; }
+  .label b { font-size: 1.12rem; }
+  .tagged .logo { width: 58px; }
+  .p-note .tagged .logo { width: 46px; }
+  .crew .logos img { width: 46px; height: 46px; }
+  .scrawl { font-size: 1rem; }
+}
+
+.hero-foot { margin-top: clamp(1.6rem, 3vw, 2.4rem); }
+.lede { font-size: clamp(1.12rem, 1.6vw, 1.36rem); line-height: 1.55; max-width: 44ch; margin: 0 0 1.5rem; }
+.circled { position: relative; white-space: nowrap; }
+.circled svg { position: absolute; left: -.45em; top: -.35em; width: calc(100% + .9em); height: calc(100% + .7em); overflow: visible; pointer-events: none; }
+.circled .draw { stroke-width: 2.5; }
+.ctas { display: flex; flex-wrap: wrap; gap: .8rem; }
+.hero .ctas { justify-content: center; }
+.socials { display: flex; justify-content: center; gap: .5rem; list-style: none; padding: 0; margin-top: 1.3rem; }
+.socials a, .socials button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--ink); background: var(--card); border: 2px solid var(--ink); cursor: pointer; transition: rotate .3s var(--ease-out), scale .3s var(--ease-out), background .2s; }
+.socials a:hover, .socials button:hover { rotate: -10deg; scale: 1.08; background: var(--hi); }
+
+/* ---------- Ticker: a strip of tape running across the page ---------- */
+.ticker { background: var(--ink); color: var(--paper); rotate: -1.2deg; margin: 1rem -2vw 0; overflow: hidden; box-shadow: var(--lift); }
+.ticker-track { display: flex; width: max-content; animation: tick 48s linear infinite; }
+.ticker span { font: italic 600 1.15rem/1 var(--serif); padding: .85rem 1.4rem; white-space: nowrap; }
+.ticker span::after { content: ""; display: inline-block; width: .5em; height: .5em; margin-left: 2.8rem; background: var(--hi); rotate: 45deg; vertical-align: .1em; }
+@keyframes tick { to { transform: translateX(-50%); } }
+
+/* ---------- Numbers band: highlighter-yellow paper with torn edges ---------- */
+.numbers { position: relative; margin-top: 3.5rem; padding: 3.2rem 0 3rem; isolation: isolate; }
+.numbers::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle, #e3a90055 1.3px, #e3a90000 1.6px) 0 0 / 11px 11px, var(--hi); -webkit-mask: var(--torn) 0 0 / 100% 100%; mask: var(--torn) 0 0 / 100% 100%; }
+.mini-h { font: 800 13px/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; margin: 0 0 1.2rem; color: var(--ink); }
+.stats { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.6rem; }
+.stats li { border-top: 3px solid var(--ink); padding-top: .8rem; }
+.stats b { display: block; font: 900 clamp(2.6rem, 4.6vw, 3.8rem)/1 var(--serif); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stats sup { font-size: .45em; vertical-align: .9em; }
+.stats span { display: block; margin-top: .4rem; font-size: .93rem; line-height: 1.4; font-weight: 500; }
+
+/* ---------- Chapters ---------- */
+.chapter { padding-top: 6rem; }
+.ch-head { display: grid; grid-template-columns: auto 1fr; gap: 1.6rem; align-items: center; margin-bottom: 3.2rem; }
+.ch-num { margin: 0; font: 900 2.6rem/1 var(--serif); color: var(--card); background: var(--red); padding: .35em .45em .3em; rotate: -5deg; box-shadow: var(--lift); font-variant-numeric: tabular-nums; }
+.ch-head h2 { font-weight: 900; font-size: clamp(2.4rem, 5.4vw, 4.3rem); letter-spacing: -.025em; }
+.ch-sub { margin: .6rem 0 0; font-size: 1.12rem; color: var(--ink-2); max-width: 58ch; }
+
+/* ---------- Case files ---------- */
+.case { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; margin-bottom: 6.5rem; }
+.case:nth-of-type(even) .case-art { order: 2; }
+.case-art { position: relative; margin: 0; min-height: 320px; }
+.case-body h3 { font-weight: 900; font-size: clamp(2rem, 3.6vw, 2.8rem); letter-spacing: -.025em; }
+/* the stack / context line that follows a project title */
+.case-meta { font: 700 12.5px/1.4 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--red); margin: .55rem 0 0; }
+.case-sum { font-size: 1.15rem; font-weight: 500; margin: .8rem 0 .9rem; max-width: 46ch; }
+.case-body ul { padding-left: 1.1rem; color: var(--ink-2); max-width: 62ch; }
+.case-body li { margin-bottom: .45rem; }
+.case-body li::marker { color: var(--red); }
+.links { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; margin: 1rem 0 0; }
+.links a, .go { font-weight: 700; text-decoration: none; background: linear-gradient(var(--hi), var(--hi)) 0 92% / 100% 30% no-repeat; transition: background-size .3s var(--ease-out); }
+.links a:hover, a:hover > .go { background-size: 100% 85%; }
+
+/* Annotation tags that drop onto a case's art after it lands */
+.tag { position: absolute; z-index: 3; background: var(--card); padding: .5em .85em; font: 700 13px/1.2 var(--sans); box-shadow: var(--lift); rotate: var(--r, -3deg); white-space: nowrap; }
+.tag.red { background: var(--red); color: #fff; }
+.t1 { top: 2%; right: -1%; --r: 3deg; }
+.t2 { bottom: 16%; right: -3%; --r: -4deg; }
+.t3 { bottom: -3%; left: 4%; --r: -2deg; }
+.js .tag { opacity: 0; transform: translateY(-26px) rotate(12deg) scale(1.25); transition: opacity .3s, transform .55s var(--ease-hand); transition-delay: calc(.9s + var(--i, 0) * .28s); }
+.js .in .tag { opacity: 1; transform: none; }
+
+/* AuditBridge: a risk register sheet that pushes in (Ken Burns) while its cells pop on */
+.sheet { position: relative; background: var(--card); padding: 1.4rem 1.4rem 2.6rem 2.6rem; box-shadow: var(--lift-hi); width: min(100%, 430px); margin: 1.5rem auto; rotate: -2deg; }
+.js .sheet { transform: scale(1.14) translateY(14px); transition: transform 2.2s cubic-bezier(.2, .7, .2, 1); }
+.js .in .sheet { transform: none; }
+.sheet-title { font: 800 12px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 1rem; color: var(--ink-2); }
+.heat { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.heat i { aspect-ratio: 1; border-radius: 2px; box-shadow: inset 0 0 0 1px #0000000f, 0 1px 0 #00000014; }
+.heat .l { background: #cfe3c4; } .heat .m { background: #ffe39a; } .heat .h { background: #f4a65d; } .heat .c { background: #d9472f; }
+.js .heat i { transform: scale(0) rotate(-20deg); transition: transform .4s var(--ease-hand) calc(.35s + var(--i, 0) * 38ms); }
+.js .in .heat i { transform: none; }
+.ax { position: absolute; margin: 0; font: 700 11px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.ax-x { bottom: 1rem; left: 50%; translate: -20% 0; }
+.ax-y { left: 1.7rem; top: 62%; rotate: -90deg; transform-origin: left top; }
+.ring { position: absolute; right: -6%; top: -9%; width: 50%; height: 30%; overflow: visible; }
+.ring .draw { stroke-width: 2.4; }
+
+/* DarkHole V2: an investigation board, cards pinned and joined with red string */
+.board { aspect-ratio: 1 / .9; max-width: 520px; width: 100%; margin-inline: auto; background: radial-gradient(circle at 30% 20%, #d9c49c, #c3a978); box-shadow: inset 0 0 0 10px #a98d5c, inset 0 0 30px #6b4f2266, var(--lift-hi); border-radius: 4px; min-height: 0; }
+.string { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.string .draw { stroke-width: .7; transition-duration: 2.4s; }
+.pins { list-style: none; padding: 0; position: absolute; inset: 0; z-index: 2; }
+.pins li { position: absolute; left: var(--x); top: var(--y); width: 38%; padding: .7rem .7rem .6rem; background: var(--card); font: 500 13.5px/1.3 var(--sans); box-shadow: var(--lift); translate: -50% -50%; rotate: var(--r); }
+.pins li::before { content: ""; position: absolute; top: -6px; left: 50%; width: 13px; height: 13px; margin-left: -6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff8a75, var(--red) 60%, #7a1d10); box-shadow: 1px 2px 2px #0005; }
+.pins li.root { background: var(--ink); color: #7dff9a; font: 700 1.2rem/1 var(--mono); text-align: center; width: 30%; padding: .8rem; }
+.js .pins li { opacity: 0; scale: 1.5; transition: opacity .2s, scale .45s var(--ease-hand); transition-delay: calc(.3s + var(--i, 0) * .33s); }
+.js .in .pins li { opacity: 1; scale: 1; }
+
+/* Polaroids with a strip of tape */
+.polaroid-wrap { display: grid; place-items: center; }
+.polaroid { position: relative; background: #fff; padding: 12px 12px 42px; box-shadow: var(--lift-hi); rotate: var(--r); max-width: 500px; transition: rotate .5s var(--ease-out); }
+.polaroid::before { content: ""; position: absolute; top: -14px; left: 50%; width: 120px; height: 30px; margin-left: -60px; background: #f3e8c8cc; rotate: -3deg; box-shadow: 0 1px 2px #0002; }
+.case:hover .polaroid { rotate: 0deg; }
+.polaroid img { border: 1px solid #0000001a; }
+
+/* Project Sinag: a stack of paper slips, each with a coloured filing dot. They sit apart, tilted
+   only slightly, so no slip covers the writing on the one under it. */
+.slips-wrap { display: grid; place-items: center; }
+.slips { list-style: none; padding: 0; width: min(100%, 400px); display: grid; gap: .6rem; }
+.slips li { position: relative; background: var(--card); padding: 1rem 1.2rem 1rem 3.1rem; font: 500 1.05rem/1.2 var(--sans); box-shadow: var(--lift); rotate: var(--r); }
+.slips li::before { content: ""; position: absolute; left: 1.1rem; top: 50%; width: 1.05rem; height: 1.05rem; margin-top: -.52rem; border-radius: 50%; background: var(--dot, var(--teal)); box-shadow: inset 0 -2px 0 #00000026; }
+.slips li:nth-child(2) { --dot: var(--hi); margin-left: 8%; }
+.slips li:nth-child(3) { --dot: var(--red); margin-left: 3%; }
+.slips li:nth-child(4) { --dot: var(--ink); margin-left: 12%; }
+.slips b { font-family: var(--serif); font-weight: 800; font-size: 1.2em; }
+.js .slips li { opacity: 0; transform: translateX(-120px) rotate(-10deg); transition: opacity .3s, transform .7s var(--ease-hand); transition-delay: calc(.3s + var(--i, 0) * .2s); }
+.js .in .slips li { opacity: 1; transform: none; }
+.slips-wrap .stamp { position: absolute; right: 2%; bottom: -4%; z-index: 3; }
+
+/* More projects: index cards that straighten up when you pick one up. Six tiles, so a row is never
+   left with one card on its own (3, 2 or 1 across). */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; }
+.card { display: block; background: var(--card); padding: 1rem 1rem 1.2rem; box-shadow: var(--lift); rotate: var(--r, 0deg); transition: rotate .4s var(--ease-out), translate .4s var(--ease-out), box-shadow .4s var(--ease-out); }
+.card:hover, .card:focus-within { rotate: 0deg; translate: 0 -6px; box-shadow: var(--lift-hi); }
+.card img, .ladder { aspect-ratio: 16 / 10; width: 100%; object-fit: cover; border: 1px solid var(--line); margin-bottom: .9rem; }
+.card img.contain { object-fit: contain; background: #efe6d2; padding: .6rem; }
+.card h4 { font-size: 1.35rem; font-weight: 800; }
+.card p { margin: .5rem 0 0; font-size: .95rem; color: var(--ink-2); }
+.card .case-meta { font-size: 11px; margin-top: .35rem; color: var(--red); }
+.card .links { margin-top: .7rem; }
+.card.more { display: grid; align-content: center; justify-items: start; gap: .2rem; min-height: 15rem; padding: 1.6rem; background: var(--kraft); text-decoration: none; }
+.card.more .si { width: 40px; height: 40px; margin-bottom: .7rem; }
+.card.more h4 { font-size: 1.7rem; font-weight: 900; }
+.card.more p { color: var(--ink); margin-bottom: .8rem; }
+.go { color: var(--ink); }
+.ladder { display: grid; grid-template-columns: 1fr 1fr; align-content: center; gap: 3px 0; padding: .6rem .9rem; background: #efe6d2; font: 600 11px/1.2 var(--mono); }
+.ladder .who { text-align: center; font-weight: 800; padding-bottom: .2rem; border-bottom: 2px solid var(--ink); }
+.ladder .msg { grid-column: 1 / -1; text-align: center; }
+.ladder .r::after { content: " \2192"; color: var(--red); }
+.ladder .l::before { content: "\2190 "; color: var(--teal); }
+.ladder .both { color: var(--teal); }
+
+/* ---------- On the record ---------- */
+.record { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); }
+.ctfs ol { list-style: none; padding: 0; }
+.ctf { display: grid; grid-template-columns: 68px 1fr; gap: 1.1rem; background: var(--card); padding: 1.1rem; margin-bottom: 1rem; box-shadow: var(--lift); }
+.ctf h4, .school h4, .route h4 { font-size: 1.3rem; font-weight: 800; }
+.ctf p, .school ul, .route ul { font-size: .95rem; color: var(--ink-2); }
+.ctf p { margin: .3rem 0 0; }
+.meta { font: 600 12.5px/1.4 var(--sans); color: var(--ink-2); letter-spacing: .02em; margin: .2rem 0 0; }
+.ctf .place { display: inline-block; margin: 0 0 .45rem; padding: .25em .55em; border: 2.5px solid var(--red); color: var(--red); font: 800 12px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; rotate: var(--r); mix-blend-mode: multiply; }
+.ctf .place.gold { background: var(--hi); color: var(--ink); border-color: var(--ink); mix-blend-mode: normal; }
+.more { margin: .6rem 0 2.8rem; font-weight: 700; }
+.more a { text-decoration: none; background: linear-gradient(var(--hi), var(--hi)) 0 92% / 100% 30% no-repeat; transition: background-size .3s var(--ease-out); }
+.more a:hover { background-size: 100% 85%; }
+.school { display: grid; grid-template-columns: 56px 1fr; gap: 1rem; padding: 1.1rem 0; border-top: 2px solid var(--ink); }
+.school ul { padding-left: 1.1rem; margin-top: .4rem; }
+
+/* Leadership: a dashed route that draws down the page, logo stickers as the stops */
+.route { list-style: none; position: relative; padding: 0 0 0 76px; }
+.route::before { content: ""; position: absolute; left: 31px; top: 20px; bottom: 30px; border-left: 3px dashed var(--ink); transform-origin: top; }
+.js .route::before { transform: scaleY(0); transition: transform 1.8s var(--ease-out) .1s; }
+.js .route.in::before { transform: none; }
+.route > li { position: relative; margin-bottom: 2.2rem; }
+.route > li > img { position: absolute; left: -76px; top: 0; width: 62px; height: 62px; object-fit: contain; background: var(--card); border-radius: 50%; padding: 6px; }
+.route > li > img.round { border-radius: 14px; }
+.route .meta b { color: var(--red); }
+.org { margin: .2rem 0 .5rem; font-weight: 600; }
+.tags { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0 0 .5rem; }
+.tags span { font: 600 12px/1 var(--sans); padding: .4em .6em; background: #ffd43b8c; }
+.route ul { padding-left: 1.1rem; }
+
+/* ---------- Credentials ---------- */
+.certs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; margin-bottom: 3.5rem; }
+.cert { display: grid; justify-items: center; text-align: center; gap: .5rem; padding: 1.6rem 1.2rem 1.3rem; text-decoration: none; background: var(--card); box-shadow: var(--lift); rotate: var(--r); transition: rotate .4s var(--ease-out), translate .4s var(--ease-out), box-shadow .4s var(--ease-out); }
+/* the "stuck down" entrance and the hover lift animate different properties, so list both */
+.js .cert[data-in] { transition: opacity .35s ease calc(var(--i, 0) * 110ms), transform .8s var(--ease-hand) calc(var(--i, 0) * 110ms), rotate .4s var(--ease-out), translate .4s var(--ease-out), box-shadow .4s var(--ease-out); }
+.cert:hover { rotate: 0deg; translate: 0 -8px; box-shadow: var(--lift-hi); }
+.cert img { width: 120px; }
+.cert b { font: 800 1.15rem/1.2 var(--serif); }
+.cert span { font: 700 13px/1 var(--sans); color: var(--red); }
+.cert-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem; }
+.minis { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.minis li > a, .minis.pencil li { display: flex; align-items: center; gap: .8rem; padding: .7rem; font: 600 .95rem/1.25 var(--sans); text-decoration: none; background: var(--card); box-shadow: var(--lift); height: 100%; }
+.minis li > a { transition: background .2s; }
+.minis li > a:hover { background: #fff6cf; }
+.minis img { width: 52px; flex: none; }
+/* Not earned yet: a pencil sketch on the page, not a cut piece */
+.minis.pencil li { flex-wrap: wrap; background: none; box-shadow: none; border: 2px dashed #8b847799; color: var(--ink-2); }
+.minis.pencil img { filter: grayscale(1) contrast(1.6) brightness(1.25); opacity: .55; mix-blend-mode: multiply; }
+.minis.pencil small { display: block; width: 100%; padding-left: calc(52px + .8rem); margin-top: -.6rem; font: italic 600 .9rem/1.2 var(--serif); color: var(--red); }
+
+/* Toolkit: label-maker tape */
+.kit { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.8rem; }
+.kit h4 { font-size: 1.15rem; font-weight: 800; margin-bottom: .7rem; }
+.dymo { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .45rem; }
+.dymo li { font: 700 12px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: #f6f1e4; background: var(--ink); padding: .5em .65em; border-radius: 2px; text-shadow: 0 1px 0 #000a; box-shadow: inset 0 -2px 0 #ffffff14, 0 2px 3px #0003; rotate: -.6deg; }
+.dymo li:nth-child(3n+2) { rotate: .8deg; }
+.dymo li:nth-child(5n+3) { background: var(--red); }
+.dymo li:nth-child(7n+5) { background: var(--teal); }
+
+/* ---------- Field notes: the generated CTF solve grid ----------
+   The markup comes from tools/build_writeups.py, so this section only restyles it. Each solve is a
+   paper tile in its category colour with the challenge name printed on it (from data-title). */
+.solves { background: var(--card); padding: clamp(1rem, 2.5vw, 1.8rem); box-shadow: var(--lift-hi); margin-bottom: 3.5rem; }
+.solve-head { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem 1.4rem; margin-bottom: 1.3rem; }
+.solve-count { margin: 0; font-weight: 600; }
+.solve-count b { font: 900 1.5rem/1 var(--serif); font-variant-numeric: tabular-nums; }
+.solve-legend { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; }
+.solve-legend button { min-height: 36px; font: 600 12.5px/1 var(--sans); padding: .45em .8em; border: 2px solid var(--c); background: none; color: var(--ink); border-radius: 99px; cursor: pointer; transition: background .2s; }
+.solve-legend button:hover { background: color-mix(in srgb, var(--c) 22%, var(--card)); }
+.solve-legend button[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 60%, var(--card)); }
+.solve-legend span { opacity: .75; }
+.solve-read { font-weight: 700; text-decoration: none; background: linear-gradient(var(--hi), var(--hi)) 0 92% / 100% 30% no-repeat; transition: background-size .3s var(--ease-out); }
+.solve-read:hover { background-size: 100% 85%; }
+.solve-repo { margin-left: auto; }
+.solve-body { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.solve-grid { grid-row: span 2; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.solve { border-radius: 2px; transition: translate .3s var(--ease-out), rotate .3s var(--ease-out), box-shadow .3s var(--ease-out), opacity .2s, scale .35s var(--ease-hand) calc(var(--i, 0) * 16ms); }
+a.solve { display: flex; align-items: flex-end; min-height: 5.4rem; padding: .6rem .7rem; color: var(--ink); text-decoration: none; font: 700 .86rem/1.2 var(--sans); overflow-wrap: anywhere;
+  background: var(--c); background: color-mix(in srgb, var(--c) 46%, var(--card)); box-shadow: inset 0 5px 0 var(--c), var(--lift-low); }
+a.solve::after { content: attr(data-title); }
+a.solve:hover, a.solve:focus-visible, a.solve.on { translate: 0 -3px; rotate: -1.5deg; position: relative; z-index: 1; box-shadow: inset 0 5px 0 var(--c), var(--lift); }
+/* room for the next ones: one pencilled row, the rest of the generator's padding is hidden */
+.solve.empty { min-height: 2.4rem; border: 1.5px dashed #1c1a1740; }
+.solve.empty:nth-of-type(n+5) { display: none; }
+.js .solve { scale: 0; }
+.js .in .solve { scale: 1; }
+.solve-grid.filtering a.solve:not(.match) { opacity: .25; }
+/* more solves than fit comfortably: smaller tiles, then plain colour squares */
+.solve-grid:has(> a.solve:nth-of-type(25)) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.solve-grid:has(> a.solve:nth-of-type(25)) a.solve { font-size: .76rem; min-height: 4.6rem; }
+.solve-grid:has(> a.solve:nth-of-type(61)) { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; }
+.solve-grid:has(> a.solve:nth-of-type(61)) a.solve { min-height: 0; aspect-ratio: 1; padding: 0; }
+.solve-grid:has(> a.solve:nth-of-type(61)) a.solve::after { content: none; }
+.solve-info { background: #efe2c4; padding: 1.1rem 1.2rem; rotate: .8deg; box-shadow: var(--lift); min-height: 11rem; }
+.solve-info h4 { font-size: 1.35rem; font-weight: 800; margin: .1rem 0 .3rem; }
+.solve-info p { margin: 0 0 .5rem; font-size: .95rem; }
+.solves .solve-kicker { font: 800 11.5px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+.solves .solve-meta { color: var(--ink-2); font-size: .85rem; }
+.solve-list { list-style: none; padding: 0; margin-top: .5rem; }
+.solve-list a { display: grid; grid-template-columns: 1.6rem 1fr auto auto; gap: .6rem; align-items: baseline; padding: .55rem .2rem; border-bottom: 1px solid var(--line); text-decoration: none; font-size: .93rem; transition: background .2s; }
+.solve-list a:hover { background: #ffd43b55; }
+.solve-rank { font: 900 1.05rem/1 var(--serif); font-variant-numeric: tabular-nums; }
+.solve-row-title { font-weight: 700; }
+.solve-row-cat, .solve-row-steps { font-size: .8rem; color: var(--ink-2); }
+.solve-row-cat::before { content: ""; display: inline-block; width: .7em; height: .7em; margin-right: .45em; border-radius: 2px; background: var(--c); }
+
+/* Notes: ruled index cards. Every line of text is one --rule tall and the rules are drawn at the
+   same step, so the writing sits on the lines instead of drifting across them. */
+.notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; align-items: start; }
+.note { --rule: 1.7rem; padding: var(--rule) 1.4rem var(--rule) 3.1rem; rotate: var(--r, 0deg); box-shadow: var(--lift);
+  background: linear-gradient(90deg, #0000 2.2rem, #d9472f66 2.2rem 2.3rem, #0000 2.3rem), repeating-linear-gradient(#0000 0 calc(var(--rule) - 1px), #8fb7c966 calc(var(--rule) - 1px) var(--rule)), var(--card); }
+.note > *, .note details > *, .note li { margin: 0; line-height: var(--rule); }
+.note h4 { font-size: 1.3rem; font-weight: 800; letter-spacing: -.01em; }
+.note .meta { font-size: 12.5px; }
+.lead-in { color: var(--ink-2); }
+.note summary { cursor: pointer; font-weight: 700; width: fit-content; background: linear-gradient(var(--hi), var(--hi)) 0 92% / 100% 30% no-repeat; transition: background-size .3s var(--ease-out); }
+.note summary::marker { color: var(--red); }
+.note summary:hover { background-size: 100% 85%; }
+.note details > * { font-size: .95rem; }
+.note details > * + * { margin-top: var(--rule); }   /* one blank ruled line between paragraphs */
+.note details ul { padding-left: 1.1rem; }
+
+/* ---------- End card ---------- */
+.endcard { position: relative; margin-top: 7rem; padding: 6rem 0 5rem; color: var(--paper); isolation: isolate; }
+.endcard::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ink); -webkit-mask: var(--torn) 0 0 / 100% 100%; mask: var(--torn) 0 0 / 100% 100%; }
+.endcard :focus-visible { outline-color: var(--hi); }
+.endcard h2 { font-weight: 900; font-size: clamp(2.4rem, 6.4vw, 5.2rem); line-height: 1.08; letter-spacing: -.028em; max-width: 15ch; }
+/* On the dark card the swipe has to cover the whole line: ink lettering only shows on the yellow.
+   The words stay paper-coloured until the swipe arrives. */
+.endcard .hl { padding: .02em .16em; color: var(--paper); background-position: 0 50%; background-size: 0% 100%; transition: background-size .9s cubic-bezier(.65, 0, .25, 1) var(--delay, .35s), color .25s linear calc(var(--delay, .35s) + .3s); }
+.endcard .hl.in, html:not(.js) .endcard .hl { background-size: 100% 100%; color: var(--ink); }
+.end-sub { font-size: 1.15rem; max-width: 52ch; margin: 1.2rem 0; color: #f2ead9cc; }
+.end-mail { margin: 0 0 2rem; }
+.end-mail a { font: italic 600 clamp(1.3rem, 3.4vw, 2.2rem)/1.2 var(--serif); color: var(--hi); text-decoration: underline wavy #ffd43b88; text-underline-offset: .25em; overflow-wrap: anywhere; }
+.endcard .btn { border-color: var(--card); box-shadow: 0 12px 20px -12px #000; }
+.endcard .btn.primary { border-color: var(--hi); }
+
+.foot { padding: 2rem 0 3rem; font-size: .85rem; color: var(--ink-2); }
+.foot p { margin: .3rem 0; }
+.toast { position: fixed; left: 50%; bottom: 24px; z-index: 95; margin: 0; translate: -50% 0; background: var(--ink); color: var(--hi); font-weight: 700; padding: .7em 1.1em; box-shadow: var(--lift-hi); opacity: 0; transition: opacity .25s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+/* ---------- Smaller screens ---------- */
+@media (max-width: 980px) {
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .record, .cert-rows { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  /* The section links fold into a sheet of paper that drops from the bar when Menu is pressed.
+     Without JS there is no button, so the links simply wrap under the name. */
+  .bar-paper { gap: .5rem; }
+  .bar-cta { margin-left: 0; }
+  .js .menu-btn { display: inline-flex; align-items: center; gap: .55em; margin-left: auto; min-height: 40px; padding: .5em .8em; font: 700 14px/1 var(--sans); color: var(--ink); background: none; border: 2px solid var(--ink); border-radius: 3px; cursor: pointer; }
+  .menu-btn[aria-expanded="true"] { background: var(--hi); }
+  .burger { width: 16px; height: 12px; background: linear-gradient(currentColor 0 0) 0 0 / 100% 2px no-repeat, linear-gradient(currentColor 0 0) 0 50% / 100% 2px no-repeat, linear-gradient(currentColor 0 0) 0 100% / 100% 2px no-repeat; }
+  .js .nav { display: none; }
+  .js .bar.open .nav { display: grid; position: absolute; left: 0; right: 0; top: calc(100% - 2px); margin: 0; padding: .2rem 16px 2rem; background: var(--card);
+    -webkit-mask: url(img/paper/torn-bottom.svg) 0 0 / 100% 100%; mask: url(img/paper/torn-bottom.svg) 0 0 / 100% 100%; }
+  .js .nav a { font: 800 1.5rem/1.2 var(--serif); padding: .6em 0; border-bottom: 1px dashed var(--line); background-position: 0 78%; background-size: 0% 34%; width: 100%; }
+  .js .nav a:last-child { border-bottom: 0; }
+  .js .nav a[aria-current="true"] { background-size: 7.5ch 34%; }
+  html:not(.js) .bar-paper { height: auto; flex-wrap: wrap; padding-block: .4rem; }
+  html:not(.js) .nav { order: 3; width: 100%; margin-left: 0; flex-wrap: wrap; }
+  .case { grid-template-columns: 1fr; margin-bottom: 4.5rem; }
+  .case:nth-of-type(even) .case-art { order: 0; }
+  .notes, .certs { grid-template-columns: 1fr; }
+  .solve-body { grid-template-columns: 1fr; }
+  .solve-grid { grid-row: auto; }
+  .solve-repo { margin-left: 0; }
+}
+@media (max-width: 620px) {
+  .cards { grid-template-columns: 1fr; }
+  .card.more { min-height: 0; }
+}
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ch-head { grid-template-columns: 1fr; gap: 1rem; }
+  .ch-num { justify-self: start; font-size: 2rem; }
+  .minis { grid-template-columns: 1fr; }
+  .stamp { --s: 92px; }
+  .tag { font-size: 12px; white-space: normal; max-width: 60%; }
+  .t1, .t2 { right: 0; }
+  .tape { top: -1.7em; right: -.6em; }
+  .pins li { font-size: 12px; padding: .55rem; }
+  .pins li.root { font-size: 1rem; }
+  .route { padding-left: 62px; }
+  .route::before { left: 24px; }
+  .route > li > img { left: -62px; width: 50px; height: 50px; }
+  .solve-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  a.solve { font-size: .78rem; min-height: 4.8rem; padding: .5rem .55rem; }
+  .solve.empty:nth-of-type(n+4) { display: none; }
+}
+@media (max-width: 479px) {
+  .bar-cta .ii { display: none; }
+  .mode-btn span { display: none; }   /* the moon alone; the aria-label still names it */
+  .wordmark { font-size: 1.1rem; }
+}
+/* below this the bar résumé button gives way to the Dark switch (the hero has both download buttons) */
+@media (max-width: 429px) {
+  .bar-cta { display: none; }
+}
+@media (pointer: coarse) {
+  .btn.small, .js .menu-btn { min-height: 44px; }
+}
+
+/* ---------- Theme switch: arriving from the dark homepage ("paper-y") ----------
+   The Light mode switch on / navigates here with a one-time marker; vox.js turns it into the view
+   transition type to-paper and adds three sheets (.vt-sheet) that exist only for the transition.
+   The pseudo-elements of a cross-document view transition live in the new page, so all of it is
+   drawn here: kraft, grid and cream sheets are laid over the dark page one after another (tilted,
+   overshoot and settle: --ease-hand), this page appears under the cream sheet, the cream sheet lifts
+   off, and the hero pieces are pinned down one by one on top. vox.js skips the transition for every
+   other navigation; no reduced motion here. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+.vt-sheet { display: none; position: fixed; inset: -6vh -6vw; z-index: 200; pointer-events: none; background: var(--paper);
+  -webkit-mask: var(--torn) 0 0 / 100% 100%; mask: var(--torn) 0 0 / 100% 100%; }
+.vt-sheet.kraft { view-transition-name: sheet-kraft; background: var(--kraft); }
+.vt-sheet.grid { view-transition-name: sheet-grid; background: linear-gradient(#2b6b7830 1px, transparent 1px) 0 0 / 26px 26px, linear-gradient(90deg, #2b6b7830 1px, transparent 1px) 0 0 / 26px 26px, var(--card); }
+.vt-sheet.cream { view-transition-name: sheet-cream; background: url(img/paper/grain.png) 0 0 / 192px, var(--paper); }
+html:active-view-transition-type(to-paper) .vt-sheet { display: block; }
+/* their own entrance would play inside the snapshots, twice over: the transition places them instead */
+.vt-arrive .hero [data-in] { transition: none; opacity: 1; transform: none; }
+html:active-view-transition-type(to-paper) .hero-head { view-transition-name: land-0; }
+html:active-view-transition-type(to-paper) .collage > .photo { view-transition-name: land-1; }
+html:active-view-transition-type(to-paper) .p-isc2 { view-transition-name: land-2; }
+html:active-view-transition-type(to-paper) .p-aws1 { view-transition-name: land-3; }
+html:active-view-transition-type(to-paper) .p-aws2 { view-transition-name: land-4; }
+html:active-view-transition-type(to-paper) .p-note { view-transition-name: land-5; }
+html:active-view-transition-type(to-paper) .p-lead { view-transition-name: land-6; }
+html:active-view-transition-type(to-paper) .p-huawei { view-transition-name: land-7; }
+html:active-view-transition-type(to-paper) .p-ctf { view-transition-name: land-8; }
+html:active-view-transition-type(to-paper) .p-iso { view-transition-name: land-9; }
+html:active-view-transition-type(to-paper) .collage > .say { view-transition-name: land-10; }
+/* stacking: dark page, then the sheets, then the pieces */
+html:active-view-transition-type(to-paper)::view-transition-group(*) { z-index: 4; }
+html:active-view-transition-type(to-paper)::view-transition-group(root) { z-index: 0; }
+html:active-view-transition-type(to-paper)::view-transition-group(sheet-kraft) { z-index: 1; }
+html:active-view-transition-type(to-paper)::view-transition-group(sheet-grid) { z-index: 2; }
+html:active-view-transition-type(to-paper)::view-transition-group(sheet-cream) { z-index: 3; }
+html:active-view-transition-type(to-paper)::view-transition-old(root) { mix-blend-mode: normal; animation: vt-sink .7s ease-in both; }
+/* this page switches on while the cream sheet covers everything */
+html:active-view-transition-type(to-paper)::view-transition-new(root) { mix-blend-mode: normal; animation: vt-show 1ms .62s both; }
+html:active-view-transition-type(to-paper)::view-transition-new(sheet-kraft) { --x0: -14vw; --r0: -11deg; --r1: -1.5deg; animation: vt-lay .5s var(--ease-hand) both, vt-gone 1ms .7s both; filter: drop-shadow(0 10px 18px #0007); }
+html:active-view-transition-type(to-paper)::view-transition-new(sheet-grid) { --x0: 12vw; --r0: 9deg; --r1: 1.2deg; animation: vt-lay .5s .11s var(--ease-hand) both, vt-gone 1ms .7s both; filter: drop-shadow(0 10px 18px #0006); }
+html:active-view-transition-type(to-paper)::view-transition-new(sheet-cream) { --x0: -4vw; --r0: -6deg; --r1: -.4deg; animation: vt-lay .5s .22s var(--ease-hand) both, vt-gone .35s .76s ease both; filter: drop-shadow(0 10px 18px #0006); }
+html:active-view-transition-type(to-paper)::view-transition-new(*) { animation: vt-land .42s var(--d, .48s) var(--ease-hand) both; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-1)  { --d: .52s; --r: -9deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-2)  { --d: .56s; --r: 14deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-3)  { --d: .6s;  --r: -12deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-4)  { --d: .64s; --r: 8deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-5)  { --d: .68s; --r: -7deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-6)  { --d: .72s; --r: 11deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-7)  { --d: .76s; --r: -13deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-8)  { --d: .8s;  --r: 9deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-9)  { --d: .84s; --r: -16deg; }
+html:active-view-transition-type(to-paper)::view-transition-new(land-10) { --d: .88s; --r: 10deg; }
+@keyframes vt-sink { to { transform: scale(.95); filter: brightness(.55); } }
+@keyframes vt-show { from { opacity: 0; } }
+@keyframes vt-gone { to { opacity: 0; } }
+@keyframes vt-lay { from { transform: translate(var(--x0, 0), -118vh) rotate(var(--r0, -8deg)); } to { transform: rotate(var(--r1, 0deg)); } }
+/* pressed down by hand: dropped in tilted and a little large, overshoots, settles */
+@keyframes vt-land { from { opacity: 0; transform: translateY(-48px) rotate(var(--r, 10deg)) scale(1.18); } 35% { opacity: 1; } }
+
+/* ---------- Reduced motion: everything in place, nothing moves ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

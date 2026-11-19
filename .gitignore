@@ -10,3 +10,4 @@ DESIGN.json
 
 node_modules/
 _site/
+*.stackdump

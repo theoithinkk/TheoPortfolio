@@ -8,9 +8,9 @@
 <title>Briefing for One (Forensics writeup) | Theodore Garcia</title>
 <meta name="description" content="Everything the malware would do at runtime can be reproduced as pure data handling, with no execution. I parsed the hive for the one input that personalises the key (MachineGuid), recomputed the same HMAC the script computes, carved the exact object the script downloads (validated by the script&#x27;s own expected hash), and opened the archive. The DLL is never loaded and no captured host is contacted. The object hashes the shortcut embeds are what prove the reconstruction is byte-exact.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -54,6 +54,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Verify and read the field guide</span></a></li><li><a href="#step-2"><b>2</b><span>Read the shortcut as data</span></a></li><li><a href="#step-3"><b>3</b><span>Recover each input offline</span></a></li><li><a href="#step-4"><b>4</b><span>Open the archive and read the token</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

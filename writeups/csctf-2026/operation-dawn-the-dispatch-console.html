@@ -8,9 +8,9 @@
 <title>Operation Dawn - The Dispatch Console (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="The sanitiser and WAF only guarded the front door (the /post write and the /dispatches read). The /digest report re-used the stored callsign in a concatenated query, so a value that was stored safely became a SQL injection the second time it was read — classic second-order, invisible to the request-time WAF. Defensive takeaways: - A WAF that inspects inbound requests does nothing for second-order injection, where the dangerous query is built - Don&#x27;t rely on denylisting `union`/`select`/`--`. The exploit used none of them; `&#x27; OR &#x27;1&#x27;=&#x27;1` was enough. - The command &quot;lock&quot; was only a WHERE filter in one query path. Access control for sensitive rows must be enforced">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -55,6 +55,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Map the app. Endpoints: GET…</span></a></li><li><a href="#step-2"><b>2</b><span>Test the obvious sink</span></a></li><li><a href="#step-3"><b>3</b><span>Find the second-order sink in /digest</span></a></li><li><a href="#step-4"><b>4</b><span>Dump the command standing order through…</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

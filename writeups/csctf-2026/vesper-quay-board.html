@@ -8,9 +8,9 @@
 <title>Vesper Quay Board (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="Two JSON parsers, one request. Go&#x27;s encoding/json folds key case and takes the last duplicate; Python&#x27;s json is exact and case-sensitive. The desk validated the UPPER-case keys while the quay executed the lower-case ones — a confused-deputy that turns a &quot;safe&quot; validation into attacker-chosen code on the box that holds the signing key. From there the signature is genuine, so the forged-warrant defense (requiring a station signature) is satisfied by the station itself. Defensive takeaways (API security / GRC angle): - One canonical parse. Never let a gateway/validator and the executor parse the same bytes with different libraries - Case-insensitive key matching (Go encoding/json default) is a footgun next to a case-sensitive consumer. Decode - Don&#x27;t run an interpreter on request-controlled argv, even &quot;only for the legacy courier&quot;. The courier check was the - Keep signing oracles off any box reachable by untrusted input. STATION_SIGN signs arbitrary stdin; code execution Live reproduction against a freshly-fetched instance. solve.py reads this case&#x27;s couriers from `/v1/warrants/current`, sends the case-folded warrant whose quay loader signs the canonical bytes with STATION_SIGN and files the correction, then prints the clearance_code echoed in the quay&#x27;s loader_stdout (per-instance flag differs from the documented one above): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33800 loader_stdout: {&quot;clearance_code&quot;:&quot;CSCTF{oSijHownvUlrnHbA3Rw76QNo}&quot;}">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -58,6 +58,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>GET /v1/openapi.json on the desk</span></a></li><li><a href="#step-2"><b>2</b><span>desk/quay parser differential</span></a></li><li><a href="#step-3"><b>3</b><span>What the quay child has</span></a></li><li><a href="#step-4"><b>4</b><span>Correction request schema</span></a></li><li><a href="#step-5"><b>5</b><span>Exploit:</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

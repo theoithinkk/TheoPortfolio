@@ -8,9 +8,9 @@
 <title>Ghost in the Historian (Forensics writeup) | Theodore Garcia</title>
 <meta name="description" content="The cipher is a pure XOR keystream, so decryption is the same routine as encryption and the only unknowns are the seed inputs. The encryptor itself tells you where they come from: it stamps each .enc&#x27;s mtime with the very time it seeds from, and the pid is printed in the log. The keystream state carrying between files is why the decrypt order has to be the encryptor&#x27;s scandir order, not the order you happen to list them in.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -54,6 +54,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Open the image without mounting it</span></a></li><li><a href="#step-2"><b>2</b><span>Carve the deleted encryptor</span></a></li><li><a href="#step-3"><b>3</b><span>Reverse the cipher</span></a></li><li><a href="#step-4"><b>4</b><span>Decrypt in order and read the token</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

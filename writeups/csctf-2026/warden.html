@@ -8,9 +8,9 @@
 <title>Warden (Misc writeup) | Theodore Garcia</title>
 <meta name="description" content="An audit hook is a deny-list over a fixed set of instrumented operations, not a capability sandbox. It hears opens, imports, execs and subprocess spawns, but it is deaf to operations that need no OS interaction, such as attribute access, reading the environment and writing to a file descriptor. The whole exploit lives in that blind spot: walk the class graph to the already-loaded os module and read the secret straight out of the environment. Emptying builtins and allowing only attribute reads looks locked down but leaves the whole silent-computation surface open.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -55,6 +55,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read jail.py and pin down what the…</span></a></li><li><a href="#step-2"><b>2</b><span>Hook only runs when an audit event is raised</span></a></li><li><a href="#step-3"><b>3</b><span>Reach the already-loaded os module…</span></a></li><li><a href="#step-4"><b>4</b><span>Dump the environment to the wire</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

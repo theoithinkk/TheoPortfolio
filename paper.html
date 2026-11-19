@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<!-- Content Security Policy: scripts, styles and fonts only from this site, no inline JS, no plugins, no forms.
+     'unsafe-inline' styles are only for per-element CSS variables (style="--i: 2").
+     The same policy is sent as a real HTTP header by /_headers; this tag is the fallback. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Theodore Garcia | GRC, Cloud &amp; AI Security</title>
+<meta name="description" content="Theodore Garcia: Computer Science (Network &amp; Information Security) student at De La Salle University focused on GRC, cloud security and AI security.">
+<meta name="theme-color" content="#f2ead9">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Theodore Garcia">
+<meta property="og:title" content="Theodore Garcia | GRC, Cloud & AI Security">
+<meta property="og:description" content="CS student at De La Salle University (Network & Information Security). Control mapping, risk registers and cloud security on AWS. ISC2 CC, AWS Cloud & AI Practitioner.">
+<meta property="og:url" content="https://theoith.ink/">
+<meta property="og:image" content="https://theoith.ink/img/og-paper.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Theodore Garcia, GRC, Cloud and AI Security">
+<meta name="twitter:card" content="summary_large_image">
+<!-- The light edition of the homepage: search engines are pointed at / (which also carries the structured data). -->
+<link rel="canonical" href="https://theoith.ink/">
+<link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="vox.css?v=20261119v">
+<!-- Not deferred: marks the page as JS-capable before first paint, so animated pieces start hidden instead of flashing. -->
+<script src="vox.js?v=20261119w"></script>
+<!-- Hold the first paint until the hero is parsed, so the theme-switch transition can name its pieces. -->
+<link rel="expect" href="#work" blocking="render">
+</head>
+<body>
+<a class="skip" href="#work">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-paper wrap">
+    <a class="wordmark" href="#top"><span>Theodore</span> Garcia</a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav"><i class="burger" aria-hidden="true"></i>Menu</button>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <a href="#work">Work</a>
+      <a href="#record">Experience</a>
+      <a href="#credentials">Credentials</a>
+      <a href="#notes">Writeups</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="btn small mode-btn" type="button" data-dark aria-label="Switch to dark mode"><i class="moon" aria-hidden="true"></i><span>Dark</span></button>
+    <a class="btn dark small bar-cta" href="files/Theodore-Garcia-Resume.pdf" download>Résumé <i class="ii ii-down" aria-hidden="true"></i></a>
+  </div>
+</header>
+
+<main>
+  <!-- Hero: an explainer board. The name card and his cut-out photo are pinned to a corkboard, and the
+       proof points around him are tied to pins at his outline with thread coloured by kind:
+       red for competitions, blue for certifications, green for school, gold for leadership. -->
+  <section id="top" class="hero wrap">
+    <div class="hero-head">
+      <h1>Theodore Garcia <span class="tape" data-in="pop" style="--i:4" aria-hidden="true">Explained</span></h1>
+      <p class="role">GRC · Cloud Security · AI Security</p>
+      <p class="avail"><i class="dot" aria-hidden="true"></i> Available now for GRC and cloud security internships, part-time or remote.</p>
+    </div>
+
+    <!-- The board. The element inside each .piece slides in, then "boils"; the .piece itself holds the pin.
+         vox.js ties every [data-tie] piece to the nearest pin on his outline. -->
+    <div class="collage">
+      <div class="piece sun"><i data-in="pop"></i></div>
+      <div class="piece photo"><img data-in="up" style="--i:2" src="img/theodore.webp" alt="Theodore Garcia" width="570" height="662" fetchpriority="high"></div>
+      <div class="piece p-isc2" data-tie="cert" aria-hidden="true"><img class="cut boil" data-in="drop" style="--i:5;--r:-8deg" src="img/badge-isc2-cc.webp" width="340" height="340" alt=""></div>
+      <div class="piece p-aws1" data-tie="cert" aria-hidden="true"><img class="cut boil" data-in="drop" style="--i:6;--r:7deg;--bd:.62s" src="img/badge-aws-ccp.webp" width="340" height="340" alt=""></div>
+      <div class="piece p-aws2" data-tie="cert" aria-hidden="true"><img class="cut boil" data-in="drop" style="--i:7;--r:-5deg;--bd:.55s" src="img/badge-aws-aip.webp" width="340" height="340" alt=""></div>
+      <div class="piece p-iso" data-tie="ctf" aria-hidden="true">
+        <span class="stamp boil" data-in="pop" style="--i:9;--r:-14deg;--bd:.7s"><b>2nd</b>ISO CTF 2026</span>
+        <img class="cut logo" data-in="drop" style="--i:10" src="img/logo-iso-plain.webp" width="320" height="320" alt="">
+      </div>
+      <div class="piece p-ctf" data-tie="ctf" aria-hidden="true">
+        <div class="scorecard boil" data-in="right" style="--i:11;--r:2deg;--bd:.6s">
+          <p class="sc-title">CTF scoreboard</p>
+          <ul>
+            <li><img class="cut" src="img/logo-packetcapture.webp" width="320" height="320" alt=""><b>14th</b><span>of 164 · Packet Capture</span></li>
+            <li><img class="cut" src="img/logo-chronos.webp" width="320" height="320" alt=""><b>44th</b><span>of 609 · CSCTF 2026</span></li>
+            <li><img class="cut" src="img/logo-pinkctf.webp" width="320" height="320" alt=""><b>66th</b><span>of 589 · PINK+ CTF</span></li>
+            <li><img class="cut" src="img/paper/triangular-flag.svg" width="120" height="120" alt=""><b>Top 23%</b><span>K17 CTF 2026</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="piece p-lead" data-tie="lead" aria-hidden="true">
+        <span class="crew boil" data-in="drop" style="--i:12;--r:-2deg;--bd:.58s">
+          <span class="logos"><img class="cut" src="img/logo-lscs.webp" width="160" height="160" alt=""><img class="cut" src="img/logo-acm.svg" width="300" height="300" alt=""><img class="cut sq" src="img/logo-sprint-square.webp" width="192" height="192" alt=""><img class="cut" src="img/logo-csg.webp" width="420" height="420" alt=""></span>
+          <span class="label">Student officer <b>LSCS · ACM · SPRINT · CSG</b></span>
+        </span>
+      </div>
+      <div class="piece p-huawei" data-tie="lead" aria-hidden="true">
+        <span class="tagged boil" data-in="right" style="--i:13;--r:3deg"><img class="cut logo" src="img/logo-huawei.webp" width="320" height="320" alt=""><span class="label">Best Trainee <b>Huawei Future Innovators Camp</b></span></span>
+      </div>
+      <div class="piece p-note" data-tie="school" aria-hidden="true">
+        <p class="scrawl" data-in="up" style="--i:14">CS @ De La Salle,<br>Network &amp; InfoSec major</p>
+        <img class="cut logo" src="img/logo-dlsu.svg" width="275" height="275" alt="">
+        <span class="tagged boil" data-in="left" style="--i:8;--r:-3deg"><img class="cut logo" src="img/logo-dost.svg" width="100" height="100" alt=""><span class="label">Dean's Lister <b>Terms 1–6</b>DOST merit scholar</span></span>
+      </div>
+      <!-- Tap him (or the bubble) for the next line -->
+      <button class="say" type="button" data-lines="Hi, I'm Theo. Tap me.|I map controls to ISO 27001 and NIST 800-53.|2nd place at the ISO CTF 2026.|Dean's Lister, terms 1 to 6.|ISC2 CC, plus two AWS certs.|Open to GRC and cloud security internships.|Part-time or remote works for me."><span aria-live="polite">Hi, I'm Theo. Tap me.</span></button>
+      <svg class="threads" aria-hidden="true" data-draw></svg>
+    </div>
+
+    <div class="hero-foot">
+      <p class="lede">I make security frameworks <span class="hl" style="--delay:.3s">work on real systems</span>: mapping controls to ISO&nbsp;27001 and NIST&nbsp;800-53, scoring risk, and writing it up so people can
+        <span class="circled" data-draw>act on it<svg viewBox="0 0 120 50" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="1" style="--d:.7s" d="M8 30C6 14 40 5 70 6s48 10 44 24-40 17-66 15S4 38 12 22"/></svg></span>.</p>
+      <div class="ctas">
+        <a class="btn primary" href="files/Theodore-Garcia-CV.pdf" download>Download CV <i class="ii ii-down" aria-hidden="true"></i></a>
+        <a class="btn" href="files/Theodore-Garcia-Resume.pdf" download>Résumé <i class="ii ii-down" aria-hidden="true"></i></a>
+        <a class="btn" href="mailto:garciatheodoreiii715@gmail.com">Email me</a>
+      </div>
+      <ul class="socials">
+        <li><a href="https://www.linkedin.com/in/theodore-garcia-179b24333/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="si" style="--src:url(img/icons/si-linkedin.svg)"></i></a></li>
+        <li><a href="https://github.com/theoithinkk" target="_blank" rel="noopener" aria-label="GitHub"><i class="si" style="--src:url(img/icons/si-github.svg)"></i></a></li>
+        <li><a href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener" aria-label="Credly"><i class="si" style="--src:url(img/icons/si-credly.svg)"></i></a></li>
+        <li><button type="button" data-copy="cianai" aria-label="Copy Discord username cianai"><i class="si" style="--src:url(img/icons/si-discord.svg)"></i></button></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track"><span>ISO/IEC 27001</span><span>NIST SP 800-53</span><span>Risk registers</span><span>AWS IAM</span><span>CIS Benchmarks</span><span>SOC 2</span><span>PCI DSS</span><span>RA 10173 Data Privacy Act</span><span>OWASP Top 10</span><span>CVSS 3.1</span><span>ISO/IEC 27001</span><span>NIST SP 800-53</span><span>Risk registers</span><span>AWS IAM</span><span>CIS Benchmarks</span><span>SOC 2</span><span>PCI DSS</span><span>RA 10173 Data Privacy Act</span><span>OWASP Top 10</span><span>CVSS 3.1</span></div>
+  </div>
+
+  <!-- The short version: five numbers a recruiter can read in five seconds. -->
+  <section class="numbers" aria-labelledby="numbers-h">
+    <div class="wrap">
+      <h2 id="numbers-h" class="mini-h">The short version</h2>
+      <ul class="stats" data-watch>
+        <li><b data-count="3">3</b><span>security certifications: ISC2 CC, AWS Cloud and AWS AI Practitioner</span></li>
+        <li><b>2<sup>nd</sup></b><span>place, ISO 2026 CTF at De La Salle</span></li>
+        <li><b data-count="14">14</b><span>of 164 teams, Packet Capture CTF (top 9%)</span></li>
+        <li><b data-count="13">13</b><span>findings in a 39-page pentest report, 2 of them Critical</span></li>
+        <li><b>6/6</b><span>terms on the Dean's List, as a DOST merit scholar</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Chapter 1: projects -->
+  <section id="work" class="chapter wrap">
+    <header class="ch-head">
+      <p class="ch-num" data-in="pop">01</p>
+      <div>
+        <h2>Case files</h2>
+        <p class="ch-sub">What I've built, mapped and broken. <span class="hl">GRC first</span>, with the security and engineering to back it up.</p>
+      </div>
+    </header>
+
+    <article class="case" data-watch>
+      <figure class="case-art doc">
+        <div class="sheet">
+          <p class="sheet-title">Risk register · heat map</p>
+          <div class="heat" data-stagger aria-hidden="true">
+            <i class="m"></i><i class="h"></i><i class="h"></i><i class="c"></i><i class="c"></i>
+            <i class="l"></i><i class="m"></i><i class="h"></i><i class="h"></i><i class="c"></i>
+            <i class="l"></i><i class="m"></i><i class="m"></i><i class="h"></i><i class="h"></i>
+            <i class="l"></i><i class="l"></i><i class="m"></i><i class="m"></i><i class="h"></i>
+            <i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="m"></i>
+            <svg class="ring" viewBox="0 0 60 60" preserveAspectRatio="none"><path class="draw" pathLength="1" style="--d:1.4s" d="M30 4C12 4 4 16 5 31s12 25 27 24 24-12 23-26S44 3 26 6"/></svg>
+          </div>
+          <p class="ax ax-y">Likelihood</p><p class="ax ax-x">Impact</p>
+        </div>
+        <span class="tag t1" style="--i:1">ISO 27001 · A.8.9</span>
+        <span class="tag t2" style="--i:2">NIST 800-53 · CM-6</span>
+        <span class="tag t3 red" style="--i:3">Scored 20/25: treat first</span>
+        <figcaption class="visually-hidden">Illustration of a 5 by 5 likelihood and impact risk matrix with control mappings</figcaption>
+      </figure>
+      <div class="case-body">
+        <h3>AuditBridge</h3>
+        <p class="case-meta">GRC · Python · In progress</p>
+        <p class="case-sum">A compliance mapping and risk register engine.</p>
+        <ul>
+          <li>Collects findings from CIS configuration checks, Nmap service scans and read-only web checks in a lab, with severity and evidence.</li>
+          <li>Maps each finding to ISO/IEC 27001, NIST SP 800-53, PCI DSS, SOC 2, OWASP and CIS controls, with the reasoning written down.</li>
+          <li>Scores risk on an explainable 5×5 scale and exports risk registers (CSV/XLSX), compliance report cards and an HTML heat map.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="case" data-watch>
+      <figure class="case-art board">
+        <svg class="string" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="draw" pathLength="1" style="--d:.5s" points="24,14 70,16 78,44 30,48 24,80 72,82"/></svg>
+        <ol class="pins" data-stagger aria-label="Attack chain, from first foothold to root">
+          <li style="--x:24%;--y:14%;--r:-3deg">Exposed <b>.git</b> repo</li>
+          <li style="--x:70%;--y:16%;--r:2deg">Hardcoded <b>credentials</b></li>
+          <li style="--x:78%;--y:44%;--r:-2deg"><b>SQL injection</b></li>
+          <li style="--x:30%;--y:48%;--r:3deg">Cron <b>command injection</b></li>
+          <li style="--x:24%;--y:80%;--r:-2deg">Password reuse + <b>sudo</b></li>
+          <li class="root" style="--x:72%;--y:82%;--r:-6deg">root#</li>
+        </ol>
+      </figure>
+      <div class="case-body">
+        <h3>DarkHole V2 penetration test</h3>
+        <p class="case-meta">Team VAPT · Jul – Aug 2026 · Nmap · Nessus · Burp Suite · sqlmap</p>
+        <p class="case-sum">A black-box internal test of a Linux host and its PHP web app, under a defined scope and rules of engagement.</p>
+        <ul>
+          <li>Validated scanner output by hand, then chained five weaknesses into full root access.</li>
+          <li>Co-authored a 39-page findings report: 13 findings (2 Critical, 5 High) with CVSS 3.1 vectors and prioritized remediation.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="case" data-watch>
+      <figure class="case-art polaroid-wrap">
+        <div class="polaroid" style="--r:2deg"><img src="img/proj-hulog.webp" width="960" height="540" alt="Hulog title card: a buyer who missed installment 16 of 48 sees the date their grace period ends" loading="lazy"></div>
+        <span class="tag t2 red" style="--i:1">Maceda Law · RA 6552</span>
+        <span class="tag t1" style="--i:2">Rules compute, Claude explains</span>
+      </figure>
+      <div class="case-body">
+        <h3>Hulog</h3>
+        <p class="case-meta">PayPal AI Hackathon 2026 · Next.js · Claude API</p>
+        <p class="case-sum">Property installments on PayPal that show Filipino homebuyers their grace period and refund rights under the Maceda Law (RA 6552) when a payment slips, in English or Filipino.</p>
+        <ul>
+          <li>Fixed rules calculate every legal date and amount, and Claude only explains them. An answer with a number that isn't in the buyer's facts is rewritten or replaced with fixed text.</li>
+          <li>Runs in the PayPal sandbox with signature-verified webhooks, plus a broker board that ranks who's behind and drafts follow-ups for a person to review and send.</li>
+        </ul>
+        <p class="links">
+          <a href="https://github.com/theoithinkk/hulog" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a>
+          <a href="https://hulog.onrender.com" target="_blank" rel="noopener">Live demo <i class="ii ii-ext" aria-hidden="true"></i></a>
+        </p>
+      </div>
+    </article>
+
+    <article class="case" data-watch>
+      <figure class="case-art polaroid-wrap">
+        <div class="polaroid" style="--r:-2deg"><img src="img/proj-scanner-results.webp" width="960" height="690" alt="Galicious Secret Scanner report showing 9 critical, 6 high, 4 medium and 2 low findings" loading="lazy"></div>
+        <span class="tag t1 red" style="--i:1">Finds secrets deleted from HEAD</span>
+        <span class="tag t3" style="--i:2">Every output redacted</span>
+      </figure>
+      <div class="case-body">
+        <h3>Galicious Secret Scanner</h3>
+        <p class="case-meta">Team project · Python · Flask · SARIF</p>
+        <p class="case-sum">Finds leaked credentials in folders and GitHub repos, including ones deleted from the latest commit but still in Git history.</p>
+        <ul>
+          <li>Regex signatures plus a Shannon-entropy check, with an opt-in validity test against AWS STS, GitHub, Stripe and Slack. Every output is redacted.</li>
+          <li>Tested against VulnRepo, a purpose-built repo with history-only secrets and decoys that must not be flagged.</li>
+        </ul>
+        <p class="links">
+          <a href="https://github.com/theoithinkk/GaliciousSecretScanner" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a>
+          <a href="https://youtu.be/wDCP1lN0BF0" target="_blank" rel="noopener">Video demo <i class="ii ii-ext" aria-hidden="true"></i></a>
+          <a href="https://github.com/theoithinkk/VulnRepo" target="_blank" rel="noopener">VulnRepo <i class="ii ii-ext" aria-hidden="true"></i></a>
+        </p>
+      </div>
+    </article>
+
+    <article class="case" data-watch>
+      <figure class="case-art slips-wrap">
+        <ol class="slips" data-stagger aria-label="What the app keeps in one place">
+          <li style="--r:-3deg">Property <b>listings</b></li>
+          <li style="--r:1.5deg">Client <b>inquiries</b></li>
+          <li style="--r:-1deg"><b>Viewings</b> and <b>referrals</b></li>
+          <li style="--r:2.5deg"><b>Commissions</b></li>
+        </ol>
+        <span class="stamp boil" style="--r:-12deg;--bd:.66s" aria-hidden="true"><b>RA 10173</b>Data Privacy Act</span>
+      </figure>
+      <div class="case-body">
+        <h3>Project Sinag</h3>
+        <p class="case-meta">Real client · In progress · TypeScript · Express · MySQL · React</p>
+        <p class="case-sum">A web app replacing a real estate brokerage's Excel files, built with a seven-person Scrum team for Filipino Sunshine Powerhouse Realty.</p>
+        <ul>
+          <li>Set up the architecture, MySQL migrations and the CI that runs the API tests on every pull request, and wrote the log-in, role checks, audit log and consent modules.</li>
+          <li>A lockout after 5 failed log-ins treats unknown e-mails the same, so no response reveals which accounts exist.</li>
+          <li>Built for the Data Privacy Act (RA 10173): versioned privacy notices, consent saved in the same transaction as each form, and e-mails kept only as SHA-256 fingerprints in events and audit logs.</li>
+        </ul>
+      </div>
+    </article>
+
+    <h3 class="mini-h">More from the workbench</h3>
+    <div class="cards">
+      <article class="card" style="--r:-1deg">
+        <img src="img/proj-pablings.webp" width="800" height="700" alt="Pablings Barbershop Management System home screen" loading="lazy">
+        <h4>Pablings Payroll</h4>
+        <p class="case-meta">Real client · Electron · SheetJS</p>
+        <p>A local-first Windows payroll app built for a working barbershop. It turns the shop's weekly Google Sheet export into commissions, allowances, late deductions and net pay per employee, then exports payslips in the shop's own layout. No cloud and no database, so pay data stays on the owner's machine.</p>
+        <p class="links"><a href="https://github.com/theoithinkk/PablingsApp" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+      </article>
+      <article class="card" style="--r:1deg">
+        <img src="img/proj-promptathon.webp" width="800" height="800" alt="Prompt-a-thon starter chat interface with an editable system prompt" loading="lazy">
+        <h4>Prompt-a-thon practice app</h4>
+        <p class="case-meta">Personal · Node.js · Express · Claude API</p>
+        <p>My own starting layout for the LSCS Prompt-a-thon, so competition time goes into the idea instead of setup. It streams Claude API replies to a plain JavaScript chat UI with a live-editable system prompt. Mock mode runs with no API key, and keys stay in an ignored <code>.env</code> file.</p>
+        <p class="links"><a href="https://github.com/theoithinkk/Promptathon" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+      </article>
+      <article class="card" style="--r:-.5deg">
+        <div class="ladder" aria-label="SIP call flow between caller and callee">
+          <span class="who">Caller</span><span class="who">Callee</span>
+          <span class="msg r">INVITE + SDP</span><span class="msg l">180 Ringing</span><span class="msg l">200 OK + SDP</span><span class="msg r">ACK</span><span class="msg both">RTP audio · RTCP SR</span><span class="msg r">BYE</span>
+        </div>
+        <h4>VoIP over SIP/RTP</h4>
+        <p class="case-meta">Java · UDP · Networking</p>
+        <p>A Java voice-call client built from the protocols up: SIP signaling and SDP over UDP, RTP audio, and RTCP sender reports every 5 seconds, with file, one-way and two-way call modes and clean teardown between calls.</p>
+        <p class="links"><a href="https://github.com/theoithinkk/NSCOM01-MP2-RealTimeAudioStreamingOverIP" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+      </article>
+      <article class="card" style="--r:1.2deg">
+        <img class="contain" src="img/proj-catbot.webp" width="520" height="509" alt="CatBot mascot, a green robot head" loading="lazy">
+        <h4>CatBot</h4>
+        <p class="case-meta">Python · Reinforcement learning</p>
+        <p>A tabular Q-learning bot that learns to catch cats with different movement styles on an 8×8 grid, evaluated over 20 games against 5 graded cats plus unseen behaviors, with results written to CSV.</p>
+        <p class="links"><a href="https://github.com/theoithinkk/CSINTSY_CatBot" target="_blank" rel="noopener">Code <i class="ii ii-ext" aria-hidden="true"></i></a></p>
+      </article>
+      <article class="card" style="--r:-1.4deg">
+        <img class="contain" src="img/paper/automation.svg" width="120" height="120" alt="Paper cut-out of a three-step process flow driven by a gear" loading="lazy">
+        <h4>UiPath automation</h4>
+        <p class="case-meta">RPA · UiPath Studio</p>
+        <p>A robotic process automation workflow built in UiPath Studio, with a recorded demo of it running.</p>
+        <p class="links">
+          <a href="https://drive.google.com/file/d/18ATL5nTUGfZf4bkaZCWGSCijfH1-By7P/view" target="_blank" rel="noopener">Video demo <i class="ii ii-ext" aria-hidden="true"></i></a>
+          <a href="https://cloud.uipath.com/theoithink/studio_/designer/e0d041d4-50fe-4d56-815b-a4f6adf0838d?solutionId=a7656f72-9d4a-4e52-7c28-08df2f5f4e80" target="_blank" rel="noopener">Studio project (UiPath sign-in) <i class="ii ii-ext" aria-hidden="true"></i></a>
+        </p>
+      </article>
+      <a class="card more" style="--r:.8deg" href="https://github.com/theoithinkk?tab=repositories" target="_blank" rel="noopener">
+        <i class="si" style="--src:url(img/icons/si-github.svg)" aria-hidden="true"></i>
+        <h4>More on GitHub</h4>
+        <p>The rest of my repositories, finished and unfinished.</p>
+        <span class="go">Browse repositories <i class="ii ii-ext" aria-hidden="true"></i></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Chapter 2: experience and education -->
+  <section id="record" class="chapter wrap">
+    <header class="ch-head">
+      <p class="ch-num" data-in="pop">02</p>
+      <div>
+        <h2>On the record</h2>
+        <p class="ch-sub">Competitions, leadership and school. The tags mark what carries into <span class="hl">GRC work</span>.</p>
+      </div>
+    </header>
+
+    <div class="record">
+      <div class="ctfs">
+        <h3 class="mini-h">Competitions and awards</h3>
+        <ol>
+          <li class="ctf">
+            <img class="cut" src="img/logo-huawei.webp" width="320" height="320" alt="Huawei logo" loading="lazy">
+            <div>
+              <p class="place gold" style="--r:-4deg">Best Trainee</p>
+              <h4>Huawei Future Innovators Camp</h4>
+              <p class="meta">Huawei Philippines · Taguig City · Nov 2026</p>
+              <p>Won the Best Trainee Award, one of five (one per group), after being selected from 300+ applicants. Pitched BuyBye, a connected checkout system for shoppers and store owners, in the Retail and Hospitality track.</p>
+            </div>
+          </li>
+          <li class="ctf">
+            <img class="cut" src="img/logo-chronos.webp" width="320" height="320" alt="Chronos Security logo" loading="lazy">
+            <div>
+              <p class="place" style="--r:5deg">44th / 609</p>
+              <h4>CSCTF 2026</h4>
+              <p class="meta">Chronos Security · Nov 2026</p>
+              <p>Top 8%. Solved web exploitation, pwn, ICS/OT, side-channel and miscellaneous challenges.</p>
+            </div>
+          </li>
+          <li class="ctf">
+            <img class="cut" src="img/logo-pinkctf.webp" width="320" height="320" alt="PINK+ CTF logo" loading="lazy">
+            <div>
+              <p class="place" style="--r:-5deg">66th / 589</p>
+              <h4>PINK+ CTF</h4>
+              <p class="meta">Online CTF · Nov 2026</p>
+              <p>Top 12%, placing 66th of 589 teams.</p>
+            </div>
+          </li>
+          <li class="ctf">
+            <img class="cut" src="img/logo-packetcapture-sticker.webp" width="300" height="300" alt="Packet Capture CTF logo" loading="lazy">
+            <div>
+              <p class="place" style="--r:-6deg">14th / 164</p>
+              <h4>Packet Capture CTF</h4>
+              <p class="meta">CyberPH and MQ CyberSec Club · Oct 2026</p>
+              <p>Top 9% in a network and security CTF. Solved OSINT, web exploitation, digital and network forensics and steganography, with 16 published writeups.</p>
+            </div>
+          </li>
+          <li class="ctf">
+            <img class="cut" src="img/paper/triangular-flag.svg" width="120" height="120" alt="" loading="lazy">
+            <div>
+              <p class="place" style="--r:4deg">Top 23%</p>
+              <h4>K17 CTF 2026</h4>
+              <p class="meta">UNSW Security Society · Team SlayTheFlagII · Sep 2026</p>
+              <p>152nd of 682 teams in an international jeopardy-style CTF: cryptography, forensics, reverse engineering, web, OSINT and misc.</p>
+            </div>
+          </li>
+          <li class="ctf">
+            <img class="cut" src="img/logo-iso-sticker.webp" width="300" height="300" alt="Information Security Organization, DLSU logo" loading="lazy">
+            <div>
+              <p class="place gold" style="--r:-3deg">2nd place</p>
+              <h4>ISO 2026 CTF: Uncharted Knowledge</h4>
+              <p class="meta">Information Security Organization, DLSU · Sep 2026</p>
+              <p>Cryptography, OS and Linux, digital forensics, web, metadata analysis, OSINT and steganography.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="more"><a href="#notes">Read my CTF writeups <i class="ii ii-go" aria-hidden="true"></i></a></p>
+
+        <h3 class="mini-h">Education</h3>
+        <div class="school">
+          <img src="img/logo-dlsu.svg" width="275" height="275" alt="De La Salle University seal" loading="lazy">
+          <div>
+            <h4>De La Salle University</h4>
+            <p class="meta">BS Computer Science, major in Network &amp; Information Security · Manila · 2024 – 2028</p>
+            <ul>
+              <li>Dean's Lister for Terms 1–6, every term to date</li>
+              <li>DOST Merit Scholar, an undergraduate scholarship from the Department of Science and Technology for students in science and technology programs</li>
+            </ul>
+          </div>
+        </div>
+        <div class="school">
+          <img src="img/paper/school.svg" width="120" height="120" alt="" loading="lazy">
+          <div>
+            <h4>Elizabeth Seton School</h4>
+            <p class="meta">Senior High School · STEM strand</p>
+            <ul>
+              <li>Ranked in the top 20% of the STEM batch</li>
+              <li>Excellence Award (With Honors)</li>
+              <li>Annual Excellence Award (With Honors)</li>
+              <li>Outstanding Research Award for senior high research work</li>
+              <li>Oral presenter at the PAREF Southridge Research Congress</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="lead">
+        <h3 class="mini-h">Leadership</h3>
+        <ol class="route" data-watch>
+          <li>
+            <img class="cut" src="img/logo-iso-sticker.webp" width="300" height="300" alt="" loading="lazy">
+            <p class="meta">Sep 2026 – present · <b>Current</b></p>
+            <h4>Research and Training Officer</h4>
+            <p class="org">Information Security Organization, DLSU</p>
+            <p class="tags"><span>Security awareness</span><span>Training design</span><span>CTF challenge authoring</span></p>
+            <ul>
+              <li>Keep members current on the threat landscape by tracking cybersecurity news and briefing the organization on what matters and why.</li>
+              <li>Design and build <strong>CTF challenges</strong> that turn security concepts into hands-on problems, so members learn by exploiting and defending, not just reading.</li>
+              <li>Plan and lead technical training sessions that build members' practical security skills.</li>
+            </ul>
+          </li>
+          <li>
+            <img class="cut" src="img/logo-lscs.webp" width="160" height="160" alt="" loading="lazy">
+            <p class="meta">Oct 2024 – Sep 2026 · <b>Promoted</b></p>
+            <h4>Associate Vice President for Academics</h4>
+            <p class="org">La Salle Computer Society · from Junior Officer</p>
+            <p class="tags"><span>Stakeholder communication</span><span>Documentation</span><span>Scheduling</span></p>
+            <ul>
+              <li>Directed pre-event operations for <strong>10+ academic events</strong>: technical talks, exam reviews, publications and coding competitions.</li>
+              <li>Coordinated scheduling, documentation and communication with faculty and partner departments so each event ran on time.</li>
+              <li>Before that, as Junior Officer for Research and Development (Oct 2024 – Sep 2025), helped plan and run the committee's events.</li>
+            </ul>
+          </li>
+          <li>
+            <img class="cut round" src="img/logo-sprint-square.webp" width="192" height="192" alt="" loading="lazy">
+            <p class="meta">Sep 2025 – Sep 2026</p>
+            <h4>Associate Vice President for HR Development</h4>
+            <p class="org">DLSU SPRINT · invite-only leadership organization</p>
+            <p class="tags"><span>Team leadership</span><span>Program planning</span></p>
+            <ul>
+              <li>Led member engagement: ran team-building activities and development workshops for <strong>30+ members</strong>.</li>
+              <li>Organized <strong>3+</strong> engagement and development initiatives over the term.</li>
+            </ul>
+          </li>
+          <li>
+            <img class="cut" src="img/logo-csg.webp" width="420" height="420" alt="" loading="lazy">
+            <p class="meta">Sep 2024 – Oct 2025</p>
+            <h4>Executive for Internal Relations</h4>
+            <p class="org">Computer Studies Government, DLSU</p>
+            <p class="tags"><span>Liaison with the Dean's Office</span><span>Internal communications</span></p>
+            <ul>
+              <li>Point of contact between the student government, <strong>10+ student organizations</strong> and the Dean's Office, keeping announcements and requests moving.</li>
+              <li>Handled internal communications and email for the College of Computer Studies' student government.</li>
+            </ul>
+          </li>
+          <li>
+            <img class="cut" src="img/logo-acm.svg" width="300" height="300" alt="" loading="lazy">
+            <p class="meta">Oct 2024 – Oct 2025</p>
+            <h4>Associate for Activities</h4>
+            <p class="org">DLSU ACM Student Chapter</p>
+            <p class="tags"><span>Facilitation</span></p>
+            <ul><li>Ran the chapter's general assemblies and lab orientations.</li></ul>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chapter 3: certifications and stack -->
+  <section id="credentials" class="chapter wrap">
+    <header class="ch-head">
+      <p class="ch-num" data-in="pop">03</p>
+      <div>
+        <h2>Credentials &amp; toolkit</h2>
+        <p class="ch-sub">Earned ones are cut out and stuck down. The ones I'm working towards are <span class="hl">still in pencil</span>.</p>
+      </div>
+    </header>
+
+    <div class="certs">
+      <a class="cert" data-in="drop" style="--i:0;--r:-3deg" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener">
+        <img class="cut" src="img/badge-isc2-cc.webp" width="340" height="340" alt="" loading="lazy"><b>ISC2 Certified in Cybersecurity</b><span>Verify on Credly <i class="ii ii-ext" aria-hidden="true"></i></span></a>
+      <a class="cert" data-in="drop" style="--i:1;--r:2deg" href="https://www.credly.com/badges/e03933a1-c0ac-4186-a29b-f93934ee32c1" target="_blank" rel="noopener">
+        <img class="cut" src="img/badge-aws-ccp.webp" width="340" height="340" alt="" loading="lazy"><b>AWS Certified Cloud Practitioner</b><span>Verify on Credly <i class="ii ii-ext" aria-hidden="true"></i></span></a>
+      <a class="cert" data-in="drop" style="--i:2;--r:-1deg" href="https://www.credly.com/badges/d066766f-7b21-424d-b5b6-7977efddf29d" target="_blank" rel="noopener">
+        <img class="cut" src="img/badge-aws-aip.webp" width="340" height="340" alt="" loading="lazy"><b>AWS Certified AI Practitioner</b><span>Verify on Credly <i class="ii ii-ext" aria-hidden="true"></i></span></a>
+    </div>
+
+    <div class="cert-rows">
+      <div>
+        <h3 class="mini-h">Skill badges · IBM SkillsBuild</h3>
+        <ul class="minis">
+          <li><a href="https://www.credly.com/badges/bc15332c-565b-4d0f-bd4c-3e4d4d7f3e03" target="_blank" rel="noopener"><img class="cut" src="img/badge-ibm-grc.webp" width="300" height="300" alt="" loading="lazy">GRC &amp; Data Privacy</a></li>
+          <li><a href="https://www.credly.com/badges/030bbdb9-d8c7-479f-898a-e5d9b198d25f" target="_blank" rel="noopener"><img class="cut" src="img/badge-ibm-vulnmgmt.webp" width="300" height="300" alt="" loading="lazy">Vulnerability Management</a></li>
+          <li><a href="https://www.credly.com/badges/fae467bc-ce29-464f-b4ec-f1cf8ec03b5c" target="_blank" rel="noopener"><img class="cut" src="img/badge-ibm-netsec.webp" width="300" height="300" alt="" loading="lazy">System &amp; Network Security</a></li>
+          <li><a href="https://www.credly.com/badges/ae7a7cc3-5c97-4775-8acb-aff5e24b2b8f" target="_blank" rel="noopener"><img class="cut" src="img/badge-ibm-cloudsec.webp" width="300" height="300" alt="" loading="lazy">Cloud Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="mini-h">Working towards</h3>
+        <ul class="minis pencil">
+          <li><img src="img/badge-secplus.webp" width="340" height="323" alt="" loading="lazy">Security+<small>CompTIA · next up</small></li>
+          <li><img src="img/badge-aws-scs.webp" width="295" height="340" alt="" loading="lazy">AWS Security Specialty<small>AWS · the cloud security step</small></li>
+          <li><img src="img/badge-iso27001la.webp" width="332" height="334" alt="" loading="lazy">ISO 27001 Lead Auditor / Implementer<small>PECB</small></li>
+          <li><img src="img/badge-cisa.webp" width="340" height="340" alt="" loading="lazy">CISA / CRISC<small>ISACA · longer term</small></li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="mini-h">Toolkit</h3>
+    <div class="kit">
+      <div><h4>GRC &amp; privacy</h4><ul class="dymo"><li>ISO/IEC 27001</li><li>NIST SP 800-53</li><li>CIS Benchmarks</li><li>PCI DSS</li><li>SOC 2</li><li>RA 10173 Data Privacy Act</li><li>5×5 risk scoring</li><li>Risk registers</li><li>Control mapping</li><li>Policy &amp; SOP drafting</li></ul></div>
+      <div><h4>Cloud &amp; AI</h4><ul class="dymo"><li>AWS core services</li><li>AWS IAM</li><li>Shared responsibility</li><li>Claude API</li><li>GitHub Actions</li><li>SARIF 2.1.0</li></ul></div>
+      <div><h4>Offensive security</h4><ul class="dymo"><li>Burp Suite</li><li>Kali Linux</li><li>OWASP Top 10</li><li>Nmap + NSE</li><li>Nessus</li><li>sqlmap</li><li>Nikto</li><li>CVSS 3.1</li></ul></div>
+      <div><h4>Languages</h4><ul class="dymo"><li>Python</li><li>JavaScript</li><li>Java</li><li>C</li><li>SQL</li><li>PHP</li><li>Rust</li><li>HTML</li><li>CSS</li><li>Bash</li></ul></div>
+      <div><h4>Tools</h4><ul class="dymo"><li>Linux</li><li>Git</li><li>GitHub</li><li>Flask</li><li>Node.js</li><li>Express</li><li>Electron</li><li>Apps Script</li><li>Microsoft 365</li><li>Excel</li></ul></div>
+    </div>
+  </section>
+
+  <!-- Chapter 4: writeups and notes. The solve grid is copied by hand from index.html: tools/build_writeups.py only rewrites index.html, so re-copy the block after each rebuild. -->
+  <section id="notes" class="chapter wrap">
+    <header class="ch-head">
+      <p class="ch-num" data-in="pop">04</p>
+      <div>
+        <h2>Field notes</h2>
+        <p class="ch-sub">Every tile is a CTF challenge I solved and <span class="hl">wrote up</span>. Pick one to read the walkthrough.</p>
+      </div>
+    </header>
+    <div id="writeups" data-watch>
+    <!-- writeups:start (generated by tools/build_writeups.py; edit the writeups, then rebuild) -->
+    <div class="solves">
+      <div class="solve-head"><p class="solve-count"><b>64</b> flags · <b>5</b> events · <b>9</b> categories · <b>281</b> steps</p><ul class="solve-legend" aria-label="Highlight a category"><li><button type="button" data-cat="ai-security" style="--c:#7fc06a" aria-pressed="false">AI Security <span>1</span></button></li><li><button type="button" data-cat="crypto" style="--c:#a27fe0" aria-pressed="false">Crypto <span>5</span></button></li><li><button type="button" data-cat="forensics" style="--c:#5aa7dc" aria-pressed="false">Forensics <span>22</span></button></li><li><button type="button" data-cat="misc" style="--c:#9aa0a6" aria-pressed="false">Misc <span>3</span></button></li><li><button type="button" data-cat="network" style="--c:#3f7fc4" aria-pressed="false">Network <span>5</span></button></li><li><button type="button" data-cat="osint" style="--c:#4fc1a6" aria-pressed="false">OSINT <span>9</span></button></li><li><button type="button" data-cat="reverse-engineering" style="--c:#f08a4b" aria-pressed="false">Reverse Engineering <span>2</span></button></li><li><button type="button" data-cat="steganography" style="--c:#d77fb3" aria-pressed="false">Steganography <span>4</span></button></li><li><button type="button" data-cat="web" style="--c:#e8b84a" aria-pressed="false">Web <span>13</span></button></li></ul><a class="solve-read solve-repo" href="https://github.com/theoithinkk/CTFwriteups" target="_blank" rel="noopener">All writeups on GitHub <i class="ii ii-go" aria-hidden="true"></i></a></div>
+      <div class="solve-body">
+      <div class="solve-grid">
+      <a class="solve" href="writeups/packet-capture-act-1/digital-footprint.html" style="--c:#4fc1a6" data-cat="osint" data-title="Digital Footprint" data-meta="OSINT · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Bans and deletions remove content from the live site, not from the internet." aria-label="Digital Footprint, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/forgotten-repository.html" style="--c:#4fc1a6" data-cat="osint" data-title="Forgotten Repository" data-meta="OSINT · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Deleting a secret in a new commit doesn&#x27;t remove it from git history." aria-label="Forgotten Repository, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/hidden-profile.html" style="--c:#4fc1a6" data-cat="osint" data-title="Hidden Profile" data-meta="OSINT · 5 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Deleted or hidden posts can still exist in web archives." aria-label="Hidden Profile, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/last-breadcrumb.html" style="--c:#4fc1a6" data-cat="osint" data-title="Last Breadcrumb" data-meta="OSINT · 9 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Each pivot reuses the latest clue on a site already visited (hash &gt; YouTube &gt; Mastodon &gt; paste &gt; PGP keyserver &gt; Mastodon &gt; YouTube)." aria-label="Last Breadcrumb, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/scattered-identities.html" style="--c:#4fc1a6" data-cat="osint" data-title="Scattered Identities" data-meta="OSINT · 6 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Every identity here is linked, not named." aria-label="Scattered Identities, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/silent-observer.html" style="--c:#4fc1a6" data-cat="osint" data-title="Silent Observer" data-meta="OSINT · Medium · 6 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account&#x27;s food posts) were decoys." aria-label="Silent Observer, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/treasure-hunt-time.html" style="--c:#4fc1a6" data-cat="osint" data-title="Treasure Hunt Time" data-meta="OSINT · 5 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="When the file says &quot;wrong hole&quot;, go back to the brief." aria-label="Treasure Hunt Time, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-1/under-construction.html" style="--c:#4fc1a6" data-cat="osint" data-title="Under Construction" data-meta="OSINT · internet history · 4 steps" data-event="Packet Capture CTF · Act I: The Signal" data-trick="The description itself is the search query." aria-label="Under Construction, OSINT, Packet Capture CTF · Act I: The Signal"></a>
+      <a class="solve" href="writeups/packet-capture-act-2/forgotten-router.html" style="--c:#e8b84a" data-cat="web" data-title="Forgotten Router" data-meta="Web · information disclosure / exposed file · 3 steps" data-event="Packet Capture CTF · Act II: The Breach" data-trick="The login/diagnostics CGI is a distraction." aria-label="Forgotten Router, Web, Packet Capture CTF · Act II: The Breach"></a>
+      <a class="solve" href="writeups/packet-capture-act-2/internal-trouble.html" style="--c:#e8b84a" data-cat="web" data-title="Internal Trouble" data-meta="Web · SSRF · 4 steps" data-event="Packet Capture CTF · Act II: The Breach" data-trick="The &quot;Is Website Down?&quot; checker is an SSRF primitive." aria-label="Internal Trouble, Web, Packet Capture CTF · Act II: The Breach"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/deleted-doesnt-mean-gone.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Deleted Doesn&#x27;t Mean Gone" data-meta="Forensics · disk file carving · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Deleting or wiping the file table doesn&#x27;t erase the data." aria-label="Deleted Doesn&#x27;t Mean Gone, Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/hidden-within.html" style="--c:#d77fb3" data-cat="steganography" data-title="Hidden Within" data-meta="Steganography · 2 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Test each colour channel&#x27;s LSB on its own as well as interleaved." aria-label="Hidden Within, Steganography, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/last-packet.html" style="--c:#3f7fc4" data-cat="network" data-title="Last Packet" data-meta="Network · 4 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="ICMP payloads are a common covert channel." aria-label="Last Packet, Network, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/memory-echoes.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Memory Echoes" data-meta="Forensics · 4 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="In a set of identical-looking records, look for the structural outlier, here the one file with an extra named data stream." aria-label="Memory Echoes, Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/registry-secrets.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Registry Secrets" data-meta="Forensics · Memory · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Tie the process list to network activity first." aria-label="Registry Secrets, Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/packet-capture-act-3/usb-secrets.html" style="--c:#5aa7dc" data-cat="forensics" data-title="USB Secrets" data-meta="Forensics · 3 steps" data-event="Packet Capture CTF · Act III: The Echo" data-trick="Know what a normal artifact looks like (vendor, product, rev, serial) so the field that breaks the pattern stands out." aria-label="USB Secrets, Forensics, Packet Capture CTF · Act III: The Echo"></a>
+      <a class="solve" href="writeups/csctf-2026/emanation.html" style="--c:#a27fe0" data-cat="crypto" data-title="Emanation" data-meta="Crypto · 4 steps" data-event="CSCTF 2026" data-trick="Both countermeasures leaked their own secret." aria-label="Emanation, Crypto, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/the-keywheel.html" style="--c:#a27fe0" data-cat="crypto" data-title="The Keywheel" data-meta="Crypto · PRNG state recovery / backward prediction · 4 steps" data-event="CSCTF 2026" data-trick="MT19937 is invertible." aria-label="The Keywheel, Crypto, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/the-signet.html" style="--c:#a27fe0" data-cat="crypto" data-title="The Signet" data-meta="Crypto · ECDSA nonce recovery — arithmetic-progression nonces on secp256k1 · 4 steps" data-event="CSCTF 2026" data-trick="Nonces that step by a constant stride make each ECDSA signature a linear equation in (d, start, stride); three signatures are enough to solve for the private key, and the rest verify it." aria-label="The Signet, Crypto, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/watchword.html" style="--c:#a27fe0" data-cat="crypto" data-title="Watchword" data-meta="Crypto · AES-GCM nonce reuse / &quot;Forbidden Attack&quot; · 5 steps" data-event="CSCTF 2026" data-trick="Nonce reuse in AES-GCM doesn&#x27;t just risk confidentiality (reused keystream) — it breaks the authenticator entirely." aria-label="Watchword, Crypto, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/briefing-for-one.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Briefing for One" data-meta="Forensics · LNK, WebDAV pcap, 7z recovery · 4 steps" data-event="CSCTF 2026" data-trick="Everything the malware would do at runtime can be reproduced as pure data handling, with no execution." aria-label="Briefing for One, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/ghost-in-the-historian.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Ghost in the Historian" data-meta="Forensics · ext4 carving, xorshift decryptor · 4 steps" data-event="CSCTF 2026" data-trick="The cipher is a pure XOR keystream, so decryption is the same routine as encryption and the only unknowns are the seed inputs." aria-label="Ghost in the Historian, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/interlock-witness.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Interlock Witness" data-meta="Forensics · Modbus/TCP policy replay · 4 steps" data-event="CSCTF 2026" data-trick="The policy judges each write on the state in the instant before its response, so the solver must replay state strictly in request-to-response order and apply an accepted write only after its response, never on the request." aria-label="Interlock Witness, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/last-buffer.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Last Buffer" data-meta="Forensics · Vim swap file correlation · 4 steps" data-event="CSCTF 2026" data-trick="Two files that both restore cleanly cannot be told apart by content alone, because the drill revision looks equally plausible." aria-label="Last Buffer, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/last-commit.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Last Commit" data-meta="Forensics · SQLite WAL reconstruction · 4 steps" data-event="CSCTF 2026" data-trick="A WAL is a history, not just a current state." aria-label="Last Commit, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/operation-dawn-the-medics-phone.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Operation Dawn - The Medic&#x27;s Phone" data-meta="Forensics · Android SQLite WAL recovery · 3 steps" data-event="CSCTF 2026" data-trick="The app-level withdrawal only changed the live row." aria-label="Operation Dawn - The Medic&#x27;s Phone, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/ortelia-vdr-carving.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Ortelia VDR Carving" data-meta="Forensics · fragmented PNG carving · 4 steps" data-event="CSCTF 2026" data-trick="Header and footer carving fails on fragmented files." aria-label="Ortelia VDR Carving, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/polyglot-requiem.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Polyglot Requiem" data-meta="Forensics · git, PNG polyglot, SQLite carving · 4 steps" data-event="CSCTF 2026" data-trick="Three layers of innocent artifacts (an unreachable commit, a PNG with a ZIP behind IEND, a SQLite file with an unlinked cell) each hid the next piece, and the pieces only meet in the key derivation: provenance tag from the image, timestamp from git, ciphertext from a deleted row." aria-label="Polyglot Requiem, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/recon-plate.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Recon Plate" data-meta="Forensics · bit-plane steganography · 6 steps" data-event="CSCTF 2026" data-trick="A naive &quot;extract the LSBs&quot; would have returned only the decoy, so always check the neighbouring bit planes." aria-label="Recon Plate, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/redline.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Redline" data-meta="Forensics · DOCX tracked-change recovery · 3 steps" data-event="CSCTF 2026" data-trick="Word keeps deleted text inside document.xml as w:del runs, so the approved authorization was never gone, just marked deleted, while a forged one was inserted in its place by s.kessler." aria-label="Redline, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/relay-capture.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Relay Capture" data-meta="Forensics · cropped PNG recovery · 5 steps" data-event="CSCTF 2026" data-trick="Cropping changes what a viewer shows, not what the file contains." aria-label="Relay Capture, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/shadow-dispatch.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Shadow-Dispatch" data-meta="Forensics · Lambda layer pyc analysis · 5 steps" data-event="CSCTF 2026" data-trick="Nothing in the function code changed." aria-label="Shadow-Dispatch, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/silent-breaker.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Silent Breaker" data-meta="Forensics · IEC-104 and SS7 correlation · 6 steps" data-event="CSCTF 2026" data-trick="No single source tells the whole story." aria-label="Silent Breaker, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/telltale.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Telltale" data-meta="Forensics · optical LED covert channel · 4 steps" data-event="CSCTF 2026" data-trick="A steady-looking status LED is not a quiet output." aria-label="Telltale, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/the-capability-ghost.html" style="--c:#5aa7dc" data-cat="forensics" data-title="The Capability Ghost" data-meta="Forensics · PAX xattrs and journal triage · 4 steps" data-event="CSCTF 2026" data-trick="The marker&#x27;s key was hiding in plain metadata, the TAG in a PAX user xattr and the EPOCH in a journal field, and the cipher was spelled out in the binary&#x27;s own --help, so the whole thing unseals statically without root." aria-label="The Capability Ghost, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/the-layer-that-wouldnt-die.html" style="--c:#5aa7dc" data-cat="forensics" data-title="The Layer That Wouldn&#x27;t Die" data-meta="Forensics · OCI layer whiteout recovery · 4 steps" data-event="CSCTF 2026" data-trick="A file deleted in a later layer is still stored in the layer that created it." aria-label="The Layer That Wouldn&#x27;t Die, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/tone-burst.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Tone Burst" data-meta="Forensics · audio FSK decoding · 4 steps" data-event="CSCTF 2026" data-trick="A repeating preamble plus an HDLC-style 0x7E flag tells you the frame boundary." aria-label="Tone Burst, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/water-hammer-reconciliation.html" style="--c:#5aa7dc" data-cat="forensics" data-title="Water Hammer Reconciliation" data-meta="Forensics · Modbus/TCP capture reconciliation · 5 steps" data-event="CSCTF 2026" data-trick="An acknowledgement is not state." aria-label="Water Hammer Reconciliation, Forensics, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/dispatch-authenticator.html" style="--c:#7fc06a" data-cat="ai-security" data-title="Dispatch Authenticator" data-meta="AI Security · federated learning gradient leakage · 4 steps" data-event="CSCTF 2026" data-trick="In federated learning, &quot;we only share gradients, not data&quot; is not a privacy guarantee." aria-label="Dispatch Authenticator, AI Security, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/lattice.html" style="--c:#9aa0a6" data-cat="misc" data-title="Lattice" data-meta="Misc · inverting a home-built block cipher · 4 steps" data-event="CSCTF 2026" data-trick="Leaving out the decrypt routine is not a protection." aria-label="Lattice, Misc, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/operation-dawn-the-cipher-lock.html" style="--c:#9aa0a6" data-cat="misc" data-title="Operation Dawn - The Cipher Lock" data-meta="Misc · power analysis on AES S-box · 4 steps" data-event="CSCTF 2026" data-trick="A comparison that runs the secret through an S-box leaks the secret&#x27;s Hamming weight in power, one byte at a time." aria-label="Operation Dawn - The Cipher Lock, Misc, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/warden.html" style="--c:#9aa0a6" data-cat="misc" data-title="Warden" data-meta="Misc · CPython audit hook sandbox escape · 4 steps" data-event="CSCTF 2026" data-trick="An audit hook is a deny-list over a fixed set of instrumented operations, not a capability sandbox." aria-label="Warden, Misc, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/ghost-signal.html" style="--c:#3f7fc4" data-cat="network" data-title="Ghost Signal" data-meta="Network · SS7 Diameter billing correlation · 4 steps" data-event="CSCTF 2026" data-trick="The whole case is a cross-reference exercise, because the attacker&#x27;s IMSI is deliberately the only malformed 15-digit one and the single value present in all three artifacts." aria-label="Ghost Signal, Network, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/grid-watch.html" style="--c:#3f7fc4" data-cat="network" data-title="Grid-Watch" data-meta="Network · MAVLink 2 signing key re-provisioning · 4 steps" data-event="CSCTF 2026" data-trick="The link refuses unsigned and replayed commands, but the note hands over the exact HKDF that builds the provisioning key, and every input to it is recoverable from the evidence: the serial from a STATUSTEXT, the epoch by calibrating the RTC ticks, and the nonce from the connect banner." aria-label="Grid-Watch, Network, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/severed-link.html" style="--c:#3f7fc4" data-cat="network" data-title="Severed Link" data-meta="Network · MAVLink 2 signing key leak · 5 steps" data-event="CSCTF 2026" data-trick="Signing only buys authenticity while the key is secret, and the operator distributed the new key over the very channel it protects, where it was recorded." aria-label="Severed Link, Network, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/silent-orbit.html" style="--c:#3f7fc4" data-cat="network" data-title="Silent Orbit" data-meta="Network · CCSDS and CFDP NAK reconstruction · 4 steps" data-event="CSCTF 2026" data-trick="The suppressed record is fully determined by the relay&#x27;s published state machine." aria-label="Silent Orbit, Network, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/operation-dawn-radio-recovery.html" style="--c:#f08a4b" data-cat="reverse-engineering" data-title="Operation Dawn - Radio Recovery" data-meta="Reverse Engineering · custom firmware container -&gt; zlib-preset-dictionary rootfs -&gt; cpio -&gt; U-Boot env XOR · 4 steps" data-event="CSCTF 2026" data-trick="" aria-label="Operation Dawn - Radio Recovery, Reverse Engineering, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/apogee.html" style="--c:#e8b84a" data-cat="web" data-title="Apogee" data-meta="Web · Supply-chain, ZIP duplicate-name + symlink parser-differential writes into a write-protected store · 5 steps" data-event="CSCTF 2026" data-trick="A parser differential -- the verifier and the extractor disagreed about the same bytes." aria-label="Apogee, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/corridor-transit-gate.html" style="--c:#e8b84a" data-cat="web" data-title="Corridor Transit Gate" data-meta="Web · API, API gateway broken access control · 5 steps" data-event="CSCTF 2026" data-trick="The gateway and the backend disagree on what a path means." aria-label="Corridor Transit Gate, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/cutover.html" style="--c:#e8b84a" data-cat="web" data-title="Cutover" data-meta="Web · Node.js — parser-differential prototype pollution + risk-screen number-grammar bypass · 5 steps" data-event="CSCTF 2026" data-trick="Two bugs stacked on one trust boundary." aria-label="Cutover, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/interlock.html" style="--c:#e8b84a" data-cat="web" data-title="Interlock" data-meta="Web · parser-confusion chain: path-authz bypass + Unicode normalization + host-parser mismatch · 5 steps" data-event="CSCTF 2026" data-trick="Four components each parse the same bytes differently — fast-uri vs WHATWG for the host, NFKC vs plain casefold for the identity, raw vs normalized for the path." aria-label="Interlock, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/key-custody.html" style="--c:#e8b84a" data-cat="web" data-title="Key Custody" data-meta="Web · API, JWT HS256 `kid` key-injection — a public asset used as the signing key · 4 steps" data-event="CSCTF 2026" data-trick="Never let attacker-controlled token metadata select the verification key." aria-label="Key Custody, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/operation-dawn-the-dispatch-console.html" style="--c:#e8b84a" data-cat="web" data-title="Operation Dawn - The Dispatch Console" data-meta="Web · second-order SQL injection + WAF bypass · 4 steps" data-event="CSCTF 2026" data-trick="The sanitiser and WAF only guarded the front door (the /post write and the /dispatches read)." aria-label="Operation Dawn - The Dispatch Console, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/operation-dawn-the-standing-order.html" style="--c:#e8b84a" data-cat="web" data-title="Operation Dawn - The Standing Order" data-meta="Web · signed-cookie forgery via SHA-1 hash length extension -&gt; privilege escalation, then SSRF filter bypass · 4 steps" data-event="CSCTF 2026" data-trick="Two classic bugs chained." aria-label="Operation Dawn - The Standing Order, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/two-key-turn.html" style="--c:#e8b84a" data-cat="web" data-title="Two-Key Turn" data-meta="Web · API, race condition — TOCTOU on a two-person approval rule · 3 steps" data-event="CSCTF 2026" data-trick="The two-person rule is an invariant (&quot;2 distinct officers&quot;), and the server enforced it with a read-check-write sequence that was not atomic." aria-label="Two-Key Turn, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/csctf-2026/vesper-quay-board.html" style="--c:#e8b84a" data-cat="web" data-title="Vesper Quay Board" data-meta="Web · API, parser-differential RCE + Ed25519 signing with the victim&#x27;s own key · 5 steps" data-event="CSCTF 2026" data-trick="Two JSON parsers, one request." aria-label="Vesper Quay Board, Web, CSCTF 2026"></a>
+      <a class="solve" href="writeups/pink-ctf/99.html" style="--c:#a27fe0" data-cat="crypto" data-title="99" data-meta="Crypto · QWERTZ-99 factoring · 5 steps" data-event="Pink CTF" data-trick="QWERTZ-98 &quot;encryption&quot; is multiplication by a number derived from the password, and multiplication leaks structure." aria-label="99, Crypto, Pink CTF"></a>
+      <a class="solve" href="writeups/pink-ctf/soeder-swim.html" style="--c:#4fc1a6" data-cat="osint" data-title="Soeder Swim" data-meta="OSINT · reverse image geolocation · 4 steps" data-event="Pink CTF" data-trick="Geolocation OSINT is chaining small clues." aria-label="Soeder Swim, OSINT, Pink CTF"></a>
+      <a class="solve" href="writeups/pink-ctf/journey.html" style="--c:#f08a4b" data-cat="reverse-engineering" data-title="Journey" data-meta="Reverse Engineering · nine-language decoder chain · 10 steps" data-event="Pink CTF" data-trick="Layered obfuscation only costs time, not security." aria-label="Journey, Reverse Engineering, Pink CTF"></a>
+      <a class="solve" href="writeups/pink-ctf/cluck-cluck.html" style="--c:#d77fb3" data-cat="steganography" data-title="Cluck Cluck" data-meta="Steganography · WAV LSB and Chicken esolang · 6 steps" data-event="Pink CTF" data-trick="The flag was in the one place a normal run never reaches, the code the program always jumps over." aria-label="Cluck Cluck, Steganography, Pink CTF"></a>
+      <a class="solve" href="writeups/pink-ctf/suspicious-numbers.html" style="--c:#d77fb3" data-cat="steganography" data-title="Suspicious Numbers" data-meta="Steganography · atomic number encoding · 4 steps" data-event="Pink CTF" data-trick="The numbers are 1337 times an atomic number." aria-label="Suspicious Numbers, Steganography, Pink CTF"></a>
+      <a class="solve" href="writeups/pink-ctf/tns2.html" style="--c:#d77fb3" data-cat="steganography" data-title="TNS2" data-meta="Steganography · TI-Nspire hidden in geometry · 4 steps" data-event="Pink CTF" data-trick="The readable flag in the file is a decoy, and the real one is split between line segments drawn as letters and two text fragments that fill the gaps in them." aria-label="TNS2, Steganography, Pink CTF"></a>
+      <a class="solve" href="writeups/pink-ctf/escaped.html" style="--c:#e8b84a" data-cat="web" data-title="Escaped" data-meta="Web · multibyte SQL injection · 4 steps" data-event="Pink CTF" data-trick="Escaping characters is not the same as parameterizing a query, and the flag says it outright: 0x5C is not always a backslash." aria-label="Escaped, Web, Pink CTF"></a>
+      <a class="solve" href="writeups/pink-ctf/sql-injection.html" style="--c:#e8b84a" data-cat="web" data-title="SQL Injection" data-meta="Web · multibyte SQL injection · 4 steps" data-event="Pink CTF" data-trick="Escaping characters is not the same as parameterizing a query, and the flag says it outright: 0x5C is not always a backslash." aria-label="SQL Injection, Web, Pink CTF"></a>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      <i class="solve empty" aria-hidden="true"></i>
+      </div>
+      <aside class="solve-info" aria-live="polite"><p class="solve-kicker">Toughest solve</p><h4>Journey</h4><p class="solve-meta">Reverse Engineering · 10 steps · Pink CTF</p><p>Layered obfuscation only costs time, not security.</p><a class="solve-read" href="writeups/pink-ctf/journey.html">Read the writeup <i class="ii ii-go" aria-hidden="true"></i></a></aside>
+      <div class="solve-ranked"><p class="solve-kicker">Hardest solves</p><ol class="solve-list"><li><a href="writeups/pink-ctf/journey.html" style="--c:#f08a4b"><span class="solve-rank">1</span><span class="solve-row-title">Journey</span><span class="solve-row-cat">Reverse Engineering</span><span class="solve-row-steps">10 steps</span></a></li><li><a href="writeups/packet-capture-act-1/last-breadcrumb.html" style="--c:#4fc1a6"><span class="solve-rank">2</span><span class="solve-row-title">Last Breadcrumb</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">9 steps</span></a></li><li><a href="writeups/packet-capture-act-1/scattered-identities.html" style="--c:#4fc1a6"><span class="solve-rank">3</span><span class="solve-row-title">Scattered Identities</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">6 steps</span></a></li><li><a href="writeups/packet-capture-act-1/silent-observer.html" style="--c:#4fc1a6"><span class="solve-rank">4</span><span class="solve-row-title">Silent Observer</span><span class="solve-row-cat">OSINT</span><span class="solve-row-steps">6 steps</span></a></li><li><a href="writeups/csctf-2026/recon-plate.html" style="--c:#5aa7dc"><span class="solve-rank">5</span><span class="solve-row-title">Recon Plate</span><span class="solve-row-cat">Forensics</span><span class="solve-row-steps">6 steps</span></a></li></ol></div>
+      </div>
+    </div>
+    <!-- writeups:end -->
+    </div>
+
+    <h3 class="mini-h">Notes</h3>
+    <div class="notes">
+      <article class="note" style="--r:-1deg">
+        <p class="meta"><time datetime="2026-10">Oct 2026</time> · Secrets · Git · Cloud</p>
+        <h4>Deleting a secret doesn't un-leak it</h4>
+        <p class="lead-in">Why my secret scanner reads Git history, not just the current files.</p>
+        <details>
+          <summary>Read note</summary>
+          <p>When we built the Galicious Secret Scanner, the most important test wasn't in the latest commit. In our VulnRepo fixture, a "security cleanup" commit moved hardcoded credentials into environment variables. The working tree looked almost clean, but the AWS secret key, a GitHub token and a database password were all still one <code>git log -p</code> away.</p>
+          <p>The lesson for GRC: the control isn't "remove the secret", it's <strong>rotate it, then remove it</strong>. Removing it without rotating leaves the likelihood exactly where it was, with a false sense of closure.</p>
+          <p>In a risk register, a leaked credential that was only deleted should stay open until there's evidence it was rotated.</p>
+        </details>
+      </article>
+      <article class="note" style="--r:.8deg">
+        <p class="meta"><time datetime="2026-10">Oct 2026</time> · Control mapping</p>
+        <h4>One finding, five frameworks</h4>
+        <p class="lead-in">Mapping an exposed <code>.git</code> directory, and why the rationale matters more than the IDs.</p>
+        <details>
+          <summary>Read note</summary>
+          <p>In DarkHole V2, an exposed <code>.git</code> directory was the first step to root. Here's how that one finding maps:</p>
+          <ul>
+            <li><strong>OWASP Top 10 (2025):</strong> A02 Security Misconfiguration.</li>
+            <li><strong>CIS Controls v8:</strong> Control 4, Secure Configuration of Enterprise Assets and Software.</li>
+            <li><strong>NIST SP 800-53 Rev. 5:</strong> CM-6 Configuration Settings, CM-7 Least Functionality.</li>
+            <li><strong>ISO/IEC 27001:2022 Annex A:</strong> 8.9 Configuration management, 8.4 Access to source code.</li>
+            <li><strong>PCI DSS v4.0.1:</strong> Requirement 2, apply secure configurations to all system components.</li>
+          </ul>
+          <p>Matching IDs is the easy part. What makes a mapping useful to an auditor is the <strong>why</strong>: the server shipped files it never needed to serve (least functionality), and source code with credentials was reachable by anyone (access to source code). That rationale is what AuditBridge stores next to every mapping.</p>
+        </details>
+      </article>
+      <article class="note" style="--r:-.6deg">
+        <p class="meta"><time datetime="2026-10">Oct 2026</time> · Risk</p>
+        <h4>5×5 risk scoring without fooling yourself</h4>
+        <p class="lead-in">The matrix is for sorting risks, not measuring them.</p>
+        <details>
+          <summary>Read note</summary>
+          <ul>
+            <li><strong>The score is ordinal.</strong> Likelihood × impact gives 1–25, but a 12 isn't "twice as risky" as a 6. Use it to rank and prioritize, not to do math.</li>
+            <li><strong>Define the levels before you score.</strong> Write down what each likelihood and impact level means for this organization, or two people will score the same risk differently.</li>
+            <li><strong>Score inherent and residual separately.</strong> The gap between them is the value of the control, so record the evidence that the control actually works.</li>
+            <li><strong>Explain every score.</strong> AuditBridge keeps a one-line rationale next to each rating, so the register still makes sense months later.</li>
+          </ul>
+        </details>
+      </article>
+      <article class="note" style="--r:1.2deg">
+        <p class="meta"><time datetime="2026-10">Oct 2026</time> · Banking · In progress</p>
+        <h4>Reading BSP Circular 1140 as a student</h4>
+        <p class="lead-in">Notes from preparing for IT risk roles at Philippine banks.</p>
+        <details>
+          <summary>Read note</summary>
+          <p>BSP Circular No. 1140 (2019) sets the Bangko Sentral's expectations for how supervised financial institutions manage IT risk. I'm reading it area by area:</p>
+          <ul>
+            <li>IT governance, with oversight from the board and senior management</li>
+            <li>The IT risk management process: identify, measure, control, monitor</li>
+            <li>Information security</li>
+            <li>IT operations, projects and outsourcing to third parties</li>
+          </ul>
+          <p>What stands out so far: expectations scale with how complex an institution's IT is, and accountability sits with the board, not only the IT team. These notes are a work in progress, so read the circular itself for anything you rely on.</p>
+        </details>
+      </article>
+    </div>
+  </section>
+
+  <!-- End card -->
+  <section id="contact" class="endcard">
+    <div class="wrap">
+      <h2>Hiring for GRC or cloud security? <span class="hl">Let's talk.</span></h2>
+      <p class="end-sub">Available now for GRC, information security and cloud security internships, part-time or remote. Based in Las Piñas City, Philippines.</p>
+      <p class="end-mail"><a href="mailto:garciatheodoreiii715@gmail.com">garciatheodoreiii715@gmail.com</a></p>
+      <div class="ctas">
+        <a class="btn primary" href="files/Theodore-Garcia-CV.pdf" download>Download CV <i class="ii ii-down" aria-hidden="true"></i></a>
+        <a class="btn" href="files/Theodore-Garcia-Resume.pdf" download>Résumé <i class="ii ii-down" aria-hidden="true"></i></a>
+        <a class="btn" href="https://www.linkedin.com/in/theodore-garcia-179b24333/" target="_blank" rel="noopener">LinkedIn <i class="ii ii-ext" aria-hidden="true"></i></a>
+        <a class="btn" href="https://github.com/theoithinkk" target="_blank" rel="noopener">GitHub <i class="ii ii-ext" aria-hidden="true"></i></a>
+        <a class="btn" href="https://www.credly.com/users/theodore-garcia.4cbc8477/badges/credly" target="_blank" rel="noopener">Credly <i class="ii ii-ext" aria-hidden="true"></i></a>
+        <button class="btn" type="button" data-copy="cianai" aria-label="Copy Discord username cianai">Discord: cianai</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot wrap">
+  <p>&copy; 2026 Theodore Garcia · <a href="privacy.html">Privacy &amp; security</a> · <a href=".well-known/security.txt">security.txt</a> · <a href="https://sts.theoith.ink/">Previous edition</a> · <button type="button" class="linkish" data-still aria-pressed="false">Pause motion</button></p>
+  <p>Fonts: Fraunces and Inter (SIL Open Font License). Icons: Simple Icons (CC0), Tabler Icons (MIT). Badges and logos belong to their owners.</p>
+</footer>
+<p class="toast" role="status" aria-live="polite"></p>
+</body>
+</html>

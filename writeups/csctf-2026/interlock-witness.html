@@ -8,9 +8,9 @@
 <title>Interlock Witness (Forensics writeup) | Theodore Garcia</title>
 <meta name="description" content="The policy judges each write on the state in the instant before its response, so the solver must replay state strictly in request-to-response order and apply an accepted write only after its response, never on the request. Validating each response against its request (matching transaction, protocol, unit, function, FC16 address and quantity echo, FC03 byte count) is what separates &quot;the controller accepted this&quot; from &quot;the client merely sent it&quot;, the same split a real response-cell forensic tool makes. The policy states its own counts (8 ineligible writes, 5 of them prerequisite-state), and reproducing those exactly shows the classification is correct, not merely plausible, before the hash is taken.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -54,6 +54,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the four supplied docs</span></a></li><li><a href="#step-2"><b>2</b><span>Parse the capture with no tshark</span></a></li><li><a href="#step-3"><b>3</b><span>Replay the policy in strict wire order</span></a></li><li><a href="#step-4"><b>4</b><span>Find unsafe writes and compute the witness</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

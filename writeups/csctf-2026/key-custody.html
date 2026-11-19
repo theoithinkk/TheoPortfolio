@@ -8,9 +8,9 @@
 <title>Key Custody (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="Never let attacker-controlled token metadata select the verification key. `kid` picked the HMAC secret, and the secret was a publicly downloadable file — so the attacker holds the key and can mint any token. Two failures had to line up: a `kid` resolved as a filesystem path (with `..` traversal), and a key source that is not actually secret. Either alone is bad; together they are a full admin forge. Defensive takeaways (API security / GRC angle): - Pin the algorithm AND resolve `kid` against a strict allow-list of key IDs mapped to secrets you control. Never - Signing keys must be secret and stored outside any web-served directory. A key that can be fetched over /public - Sanitise every externally supplied identifier used for lookup — reject `..`, absolute paths, and separators — - Bind sessions to immutable, server-issued claims and verify them server-side; here the admin route&#x27;s extra">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -54,6 +54,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the self-describing schema and your…</span></a></li><li><a href="#step-2"><b>2</b><span>Token chooses its own verification key</span></a></li><li><a href="#step-3"><b>3</b><span>Find the public asset that serves as a…</span></a></li><li><a href="#step-4"><b>4</b><span>Forge an admin JWT keyed by the public asset</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

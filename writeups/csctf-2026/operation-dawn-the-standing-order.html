@@ -8,9 +8,9 @@
 <title>Operation Dawn - The Standing Order (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="Two classic bugs chained. (1) A secret-prefix SHA-1 MAC (SHA1(secret||data)) is forgeable via length extension without the secret — you can append attacker data and still produce a valid tag; here that flips role=operator to role=admin. (2) The SSRF guard was a string blacklist of loopback spellings, so an alternate encoding of the same address (decimal 2130706433) reaches 127.0.0.1 anyway. Defensive takeaways (API security / GRC angle): - Sign cookies with HMAC-SHA-256, not SHA1(secret||data). HMAC is immune to length extension. Better still, sign a - Don&#x27;t carry authorization state (role) in a client-held, string-concatenated blob; keep it server-side keyed by an - SSRF defense is not a string blacklist. Resolve the host to an IP, then allow/deny-list the PARSED address against">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -54,6 +54,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Look at the session cookie</span></a></li><li><a href="#step-2"><b>2</b><span>SHA-1 hash length extension to forge…</span></a></li><li><a href="#step-3"><b>3</b><span>Admin relay page</span></a></li><li><a href="#step-4"><b>4</b><span>SSRF to the internal provisioning node</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

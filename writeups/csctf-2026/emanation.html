@@ -8,9 +8,9 @@
 <title>Emanation (Crypto writeup) | Theodore Garcia</title>
 <meta name="description" content="Both countermeasures leaked their own secret. The random delay was visible as a marker spike, so alignment was trivial, and the mask was processed (and leaked) on its own, so combining its sample with each masked byte cancelled it out. A first-order mask only raises the attack to second order; it stops being cheap only when the shares are not separately observable, or with higher-order masking plus real jitter. Defensive takeaway (GRC angle): masking and random delays are &quot;hiding&quot; controls whose strength depends on implementation details. A side-channel evaluation should test against the attacker&#x27;s best combination (alignment + higher-order CPA), not just first-order CPA, before claiming resistance.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -54,6 +54,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>emanation.zip</span></a></li><li><a href="#step-2"><b>2</b><span>Defeating the random delay</span></a></li><li><a href="#step-3"><b>3</b><span>Defeating the mask</span></a></li><li><a href="#step-4"><b>4</b><span>Reading the order</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

@@ -8,9 +8,9 @@
 <title>Shadow-Dispatch (Forensics writeup) | Theodore Garcia</title>
 <meta name="description" content="Nothing in the function code changed. A poisoned Lambda layer shipped a hash-based, unchecked .pyc that did not match its .py source. It read SSM secrets and leaked them 2 bytes at a time through the telemetry &quot;correlation&quot; field, encrypted with a key derived from the request ID. Remediation: treat all four SSM secrets as compromised and rotate them, remove layer versions 4, 6, 8 and 10, and note that $LATEST (version 10) is poisoned.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -57,6 +57,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Work out what changed</span></a></li><li><a href="#step-2"><b>2</b><span>Diff the layers</span></a></li><li><a href="#step-3"><b>3</b><span>Disassemble the malicious pyc</span></a></li><li><a href="#step-4"><b>4</b><span>Decode the telemetry tokens</span></a></li><li><a href="#step-5"><b>5</b><span>Confirm it is the signing key and…</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

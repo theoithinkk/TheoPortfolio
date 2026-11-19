@@ -44,11 +44,11 @@
   ]
 }
 </script>
-<link rel="stylesheet" href="style.css?v=20261104a">
-<link rel="stylesheet" href="paper.css?v=20261103b">
+<link rel="stylesheet" href="style.css?v=20261119v">
+<link rel="stylesheet" href="paper.css?v=20261118a">
 <!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
-<script src="prefs.js?v=20261103b"></script>
-<script src="main.js?v=20261111a" defer></script>
+<script src="prefs.js?v=20261119v"></script>
+<script src="main.js?v=20261119v" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#about">Skip to content</a>
@@ -145,7 +145,8 @@
 <audio id="music" src="audio/music.mp3" loop preload="none"></audio>
 
 <main>
-  <!-- Hero: name on top, photo centered, cards floating around it -->
+  <!-- Hero: name and intro on the left, photo with logos around it on the right, the hand below.
+       Playing a hand card turns it into a combat screen (.hero.combat, see the end of style.css). -->
   <section id="top" class="hero">
     <div class="embers" aria-hidden="true"></div>
 
@@ -158,19 +159,20 @@
 
     <div class="stage">
       <img class="hero-photo" src="img/theodore.webp" alt="Theodore Garcia" width="570" height="662">
+      <div class="hero-hp" aria-hidden="true"><span>Available</span></div>
       <!-- Logos float around the photo. Hover (or focus) flips one into its card; click jumps to its section.
-           main.js scatters them on each side of the photo, and each one bobs on its own timer. -->
+           main.js puts them on an arch around the photo, and each one bobs on its own timer. -->
       <div class="floaters">
         <a class="floater" href="#education" aria-label="Dean's Lister, terms 1 to 6. Go to Education"><span class="token"><img src="img/logo-dlsu.svg" alt=""></span><span class="token-label">Dean's Lister</span><article class="card rare power" aria-hidden="true"><span class="cost">1</span><span class="banner">Dean's Lister</span><span class="art"><img src="img/logo-dlsu.svg" alt=""></span><span class="type">Power</span><span class="desc">Terms <em>1–6</em>, every term to date.</span></article></a>
         <a class="floater" href="#certifications" aria-label="ISC2 Certified in Cybersecurity. Go to Certifications"><span class="token halo"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="token-label">ISC2 CC</span><article class="card rare skill" aria-hidden="true"><span class="cost">1</span><span class="banner">ISC2 CC</span><span class="art"><img src="img/badge-isc2-cc.webp" alt=""></span><span class="type">Skill</span><span class="desc"><em>Certified</em> in Cybersecurity.</span></article></a>
         <a class="floater" href="#certifications" aria-label="AWS Certified Cloud Practitioner. Go to Certifications"><span class="token"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="token-label">AWS Cloud Practitioner</span><article class="card uncommon skill" aria-hidden="true"><span class="cost">1</span><span class="banner">AWS Cloud Practitioner</span><span class="art"><img src="img/badge-aws-ccp.webp" alt=""></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em>.</span></article></a>
-        <a class="floater" href="#experience" aria-label="2nd place, ISO CTF 2026. Go to Experience"><span class="token"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"></span><span class="token-label">ISO CTF · 2nd</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">ISO CTF 2026</span><span class="art"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"><span class="chip">2nd</span></span><span class="type">Attack</span><span class="desc"><em>2nd Place</em>, Uncharted Knowledge CTF.</span></article></a>
+        <a class="floater" href="#experience" aria-label="2nd place, ISO CTF 2026. Go to Experience"><span class="token"><img class="sticker" src="img/logo-iso-plain.webp" alt="Information Security Organization, DLSU logo"></span><span class="token-label">ISO CTF · 2nd</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">ISO CTF 2026</span><span class="art"><img class="sticker" src="img/logo-iso-plain.webp" alt="Information Security Organization, DLSU logo"><span class="chip">2nd</span></span><span class="type">Attack</span><span class="desc"><em>2nd Place</em>, Uncharted Knowledge CTF.</span></article></a>
         <a class="floater" href="#experience" aria-label="Associate VP for Academics, La Salle Computer Society. Go to Experience"><span class="token halo"><img src="img/logo-lscs.webp" alt=""></span><span class="token-label">LSCS</span><article class="card uncommon power" aria-hidden="true"><span class="cost">2</span><span class="banner">LSCS</span><span class="art"><img src="img/logo-lscs.webp" alt=""></span><span class="type">Power</span><span class="desc">10+ events as <em>Associate VP</em> for Academics.</span></article></a>
         <a class="floater" href="#experience" aria-label="Associate for Activities, DLSU ACM Student Chapter. Go to Experience"><span class="token"><img src="img/logo-acm.svg" alt=""></span><span class="token-label">DLSU ACM</span><article class="card common power" aria-hidden="true"><span class="cost">1</span><span class="banner">DLSU ACM</span><span class="art"><img src="img/logo-acm.svg" alt=""></span><span class="type">Power</span><span class="desc"><em>Associate</em> for Activities.</span></article></a>
         <a class="floater" href="#education" aria-label="DOST Merit Scholar. Go to Education"><span class="token"><img src="img/logo-dost.svg" alt=""></span><span class="token-label">DOST Scholar</span><article class="card uncommon power" aria-hidden="true"><span class="cost">1</span><span class="banner">DOST Scholar</span><span class="art"><img src="img/logo-dost.svg" alt=""></span><span class="type">Power</span><span class="desc"><em>Merit</em> scholarship, DOST.</span></article></a>
         <a class="floater" href="#certifications" aria-label="AWS Certified AI Practitioner. Go to Certifications"><span class="token"><img src="img/badge-aws-aip.webp" alt=""></span><span class="token-label">AWS AI Practitioner</span><article class="card uncommon skill" aria-hidden="true"><span class="cost">1</span><span class="banner">AWS AI Practitioner</span><span class="art"><img src="img/badge-aws-aip.webp" alt=""></span><span class="type">Skill</span><span class="desc">AWS <em>Certified</em>.</span></article></a>
         <a class="floater" href="#projects" aria-label="DarkHole V2 penetration test, 13 findings. Go to Projects"><span class="token"><img class="paper" src="img/paper/skull.svg" alt=""></span><span class="token-label">DarkHole V2</span><article class="card rare attack" aria-hidden="true"><span class="cost">3</span><span class="banner">DarkHole V2</span><span class="art"><img class="paper" src="img/paper/skull.svg" alt=""><span class="chip">13</span></span><span class="type">Attack</span><span class="desc">Findings, <em>2 Critical</em>. 39-page report.</span></article></a>
-        <a class="floater" href="#experience" aria-label="14th of 164 teams, Packet Capture CTF. Go to Experience"><span class="token"><img class="sticker" src="img/logo-packetcapture-sticker.webp" alt="Packet Capture CTF logo"></span><span class="token-label">Packet Capture · 14th</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">Packet Capture</span><span class="art"><img class="sticker" src="img/logo-packetcapture-sticker.webp" alt="Packet Capture CTF logo"><span class="chip">14th</span></span><span class="type">Attack</span><span class="desc"><em>14th</em> of 164 teams, top 9%.</span></article></a>
+        <a class="floater" href="#experience" aria-label="14th of 164 teams, Packet Capture CTF. Go to Experience"><span class="token"><img class="sticker" src="img/logo-packetcapture.webp" alt="Packet Capture CTF logo"></span><span class="token-label">Packet Capture · 14th</span><article class="card rare attack" aria-hidden="true"><span class="cost">2</span><span class="banner">Packet Capture</span><span class="art"><img class="sticker" src="img/logo-packetcapture.webp" alt="Packet Capture CTF logo"><span class="chip">14th</span></span><span class="type">Attack</span><span class="desc"><em>14th</em> of 164 teams, top 9%.</span></article></a>
         <a class="floater" href="#experience" aria-label="K17 CTF 2026, top 23 percent. Go to Experience"><span class="token"><img class="paper" src="img/paper/triangular-flag.svg" alt=""></span><span class="token-label">K17 CTF · top 23%</span><article class="card uncommon attack" aria-hidden="true"><span class="cost">2</span><span class="banner">K17 CTF 2026</span><span class="art"><img class="paper" src="img/paper/triangular-flag.svg" alt=""><span class="chip">Top 23%</span></span><span class="type">Attack</span><span class="desc">152nd of 682 teams, <em>SlayTheFlagII</em>.</span></article></a>
         <a class="floater" href="#experience" aria-label="Associate VP for HR Development, DLSU SPRINT. Go to Experience"><span class="token"><img class="rounded" src="img/logo-sprint-square.webp" alt=""></span><span class="token-label">DLSU SPRINT</span><article class="card uncommon power" aria-hidden="true"><span class="cost">2</span><span class="banner">DLSU SPRINT</span><span class="art"><img src="img/logo-sprint.png" alt=""></span><span class="type">Power</span><span class="desc">30+ members, as <em>Associate VP</em> for HR.</span></article></a>
         <a class="floater" href="#experience" aria-label="Executive for Internal Relations, Computer Studies Government. Go to Experience"><span class="token"><img src="img/logo-csg.webp" alt=""></span><span class="token-label">CCS Government</span><article class="card common power" aria-hidden="true"><span class="cost">1</span><span class="banner">CS Government</span><span class="art"><img src="img/logo-csg.webp" alt=""></span><span class="type">Power</span><span class="desc"><em>Internal Relations</em> executive.</span></article></a>
@@ -200,6 +202,7 @@
 
     <div class="hand-wrap">
       <div class="pile" aria-hidden="true"><span>6</span></div>
+      <div class="hero-orb" aria-hidden="true"><b>3</b><span>Certs</span></div>
       <nav class="hand" aria-label="Jump to a section">
         <a class="card common skill" href="#education"><span class="cost">0</span><span class="banner">Education</span><span class="art"><img src="img/logo-dlsu.svg" alt=""></span><span class="type">Skill</span><span class="desc">My <em>degree</em> and honors.</span></a>
         <a class="card uncommon power" href="#experience"><span class="cost">1</span><span class="banner">Experience</span><span class="art"><img src="img/logo-lscs.webp" alt=""></span><span class="type">Power</span><span class="desc"><em>Leadership</em> and CTFs.</span></a>
@@ -253,7 +256,7 @@
     <h3 class="sub-head map-head">Competitions and awards</h3>
     <ol class="map">
       <li class="stop elite">
-        <div class="node"><img class="paper" src="img/paper/hammer-and-wrench.svg" alt=""></div>
+        <div class="node"><img src="img/logo-huawei.webp" alt="Huawei logo"></div>
         <div class="panel">
           <p class="node-type">Award</p>
           <h3>Huawei Future Innovators Camp · Best Trainee</h3>
@@ -267,7 +270,7 @@
         </div>
       </li>
       <li class="stop elite">
-        <div class="node"><img class="paper" src="img/paper/triangular-flag.svg" alt=""></div>
+        <div class="node"><img src="img/logo-chronos.webp" alt="Chronos Security logo"></div>
         <div class="panel">
           <p class="node-type">CTF</p>
           <h3>CSCTF 2026 · 44th, top 8%</h3>
@@ -281,7 +284,7 @@
         </div>
       </li>
       <li class="stop elite">
-        <div class="node"><img class="paper" src="img/paper/triangular-flag.svg" alt=""></div>
+        <div class="node"><img src="img/logo-pinkctf.webp" alt="PINK+ CTF logo"></div>
         <div class="panel">
           <p class="node-type">CTF</p>
           <h3>PINK+ CTF · 66th, top 12%</h3>
@@ -293,7 +296,7 @@
         </div>
       </li>
       <li class="stop elite">
-        <div class="node"><img class="sticker" src="img/logo-packetcapture-sticker.webp" alt="Packet Capture CTF logo"></div>
+        <div class="node"><img class="sticker" src="img/logo-packetcapture.webp" alt="Packet Capture CTF logo"></div>
         <div class="panel">
           <p class="node-type">CTF</p>
           <h3>Packet Capture CTF · 14th, top 9%</h3>
@@ -321,7 +324,7 @@
         </div>
       </li>
       <li class="stop elite">
-        <div class="node"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"></div>
+        <div class="node"><img class="sticker" src="img/logo-iso-plain.webp" alt="Information Security Organization, DLSU logo"></div>
         <div class="panel">
           <p class="node-type">CTF</p>
           <h3>ISO 2026 CTF · 2nd place</h3>
@@ -343,7 +346,7 @@
          an ongoing role uses --e:var(--months) so its bar always reaches today. -->
     <ol class="map">
       <li class="stop event">
-        <div class="node"><img class="sticker" src="img/logo-iso-sticker.webp" alt="Information Security Organization, DLSU logo"></div>
+        <div class="node"><img class="sticker" src="img/logo-iso-plain.webp" alt="Information Security Organization, DLSU logo"></div>
         <div class="panel">
           <p class="node-type">Leadership · Current</p>
           <h3>Research and Training Officer</h3>

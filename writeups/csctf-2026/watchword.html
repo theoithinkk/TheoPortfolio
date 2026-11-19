@@ -8,9 +8,9 @@
 <title>Watchword (Crypto writeup) | Theodore Garcia</title>
 <meta name="description" content="Nonce reuse in AES-GCM doesn&#x27;t just risk confidentiality (reused keystream) — it breaks the authenticator entirely. Two or more (ciphertext, tag) pairs under one reused nonce give enough algebraic structure (GHASH is linear in `H` once the AAD/ciphertext blocks are fixed) to solve for both the GHASH subkey `H` and the per-message tag mask `S` via polynomial GCD over GF(2^128), without ever touching the AES key itself. Once `S` is known, anything &quot;protected&quot; by that same per-nonce value — here, a second payload deliberately keyed off `E_K(J0)` — falls immediately.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -57,6 +57,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Handout `watchword.zip`</span></a></li><li><a href="#step-2"><b>2</b><span>Build the algebra</span></a></li><li><a href="#step-3"><b>3</b><span>Implement GF field arithmetic +…</span></a></li><li><a href="#step-4"><b>4</b><span>Solve for H and S</span></a></li><li><a href="#step-5"><b>5</b><span>Decrypt the sealed master order</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

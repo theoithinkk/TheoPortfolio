@@ -12,6 +12,8 @@
   --grain: url(img/paper/grain.png);
   --lift: 1px 2px 0 #0a080570, 2px 5px 6px -2px #0a080580;          /* a piece resting on the page */
   --lift-hi: 2px 4px 0 #0a080560, 6px 14px 14px -6px #0a080590;     /* a piece picked up */
+  /* The only cut edge on the site. Images carry no edge of their own (no baked sticker border, no
+     cream stroke in img/paper/*.svg), so every logo and paper piece gets the same 2.5px rim. */
   --cut: drop-shadow(2.5px 0 0 var(--edge)) drop-shadow(-2.5px 0 0 var(--edge))
          drop-shadow(0 2.5px 0 var(--edge)) drop-shadow(0 -2.5px 0 var(--edge));
 }
@@ -80,7 +82,7 @@ body::before { opacity: 1; background-image: var(--grain); background-size: 192p
 
 /* ---------- Logos and badges as printed stickers (real marks, never redrawn) ---------- */
 .token img, .token.halo img { filter: var(--cut) drop-shadow(2px 4px 2px #0a0805a0); }
-.token img.paper { filter: drop-shadow(2px 4px 2px #0a0805b3); }        /* paper art already has its edge */
+.token img.paper { filter: var(--cut) drop-shadow(2px 4px 2px #0a0805b3); }   /* beats style.css .token img.paper */
 .logo-row img, .btile-img img { filter: var(--cut) drop-shadow(1.5px 3px 1.5px #0a080590); }
 
 /* ---------- Stack: every skill is the same paper chip, in its own colour ----------
@@ -110,19 +112,16 @@ body::before { opacity: 1; background-image: var(--grain); background-size: 192p
 }
 .simple .tiles li::before { rotate: 0deg; }
 .stop .node img, .stop .node img.ink, .stop .node img.rounded { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
-.stop .node img.paper, .card .art img.paper { filter: drop-shadow(1.5px 3px 1.5px #0b0805a6); }
+.stop .node img.paper, .card .art img.paper { filter: var(--cut) drop-shadow(1.5px 3px 1.5px #0b0805a6); }
 .map.compact .stop .node { background: none; }
-.card .art img:not(.paper) { filter: var(--cut) drop-shadow(1.5px 3px 1px #0009); }
+.card .art img { filter: var(--cut) drop-shadow(1.5px 3px 1px #0009); }
 /* The same sticker edge where older, more specific rules set their own filter. */
 .btile.goal .btile-img img { filter: saturate(.55) brightness(.85) var(--cut) drop-shadow(1.5px 3px 1.5px #0a080590); }
-.map.compact .stop .node img:not(.paper), .map.compact .stop:hover .node img:not(.paper),
-.map.compact .stop.on .node img:not(.paper) { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
-.map.compact .stop.on .node img:not(.paper) { filter: var(--cut) drop-shadow(3px 6px 3px #0a0805a0); }   /* the entry you're reading sits a little higher */
-/* Stickers with the die-cut baked into the image (img/logo-iso-sticker.webp): shadow only. */
-.token img.sticker, .card .art img.sticker, .stop .node img.sticker,
-.map.compact .stop .node img.sticker, .map.compact .stop.on .node img.sticker { filter: drop-shadow(2px 4px 2px #0a0805a0); }
+.map.compact .stop .node img, .map.compact .stop:hover .node img,
+.map.compact .stop.on .node img { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
+.map.compact .stop.on .node img { filter: var(--cut) drop-shadow(3px 6px 3px #0a0805a0); }   /* the entry you're reading sits a little higher */
 .token img.sticker { scale: 1.12; }   /* tall shape: match the visual weight of its neighbours */
-.prow-media img.illus:not(.paper) { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
+.prow-media img.illus { filter: var(--cut) drop-shadow(2px 4px 2px #0a080590); }
 
 /* ---------- The photo: die-cut around the silhouette, torn across the bottom ---------- */
 .hero-photo {

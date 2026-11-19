@@ -650,7 +650,7 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
   animation: paper-boil .36s steps(1) infinite;
 }
 @keyframes paper-place {
-  from { transform: translate(-8px, -16px) rotate(-10deg) scale(1.2); filter: drop-shadow(9px 18px 7px #0b080555); opacity: 0; }
+  from { transform: translate(-8px, -16px) rotate(-10deg) scale(1.2); filter: var(--cut) drop-shadow(9px 18px 7px #0b080555); opacity: 0; }
   20% { opacity: 1; }
 }
 @keyframes paper-boil {
@@ -701,7 +701,6 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 /* Center logos on the part of the art you can see (the type label covers the bottom edge). */
 .card .art img:not(.duo) { width: 72%; height: 72%; translate: 0 -5%; }
 .card.attack .art img:not(.duo) { translate: 0 -10%; }
-@media (max-width: 1280px) and (min-width: 1001px) { .token { width: 74px; height: 74px; } }
 
 /* ---------- Experience map (StS-style) ---------- */
 .map { --ring: #5aa7dc; position: relative; max-width: 1000px; margin: 0 auto; padding: 1rem 0 0; list-style: none; }
@@ -1462,3 +1461,167 @@ a:hover .ii-ext, a:focus-visible .ii-ext { translate: 1px -1px; }
 a:hover .ii-go, a:focus-visible .ii-go { translate: 2px 0; }
 .ii-ext, .ii-go { transition: translate .2s; }
 .wu-lightbox-close { display: grid; place-items: center; }
+
+/* ---------- Desktop hero (1001px and up): exactly one screen, in two states ----------
+   Default: text column on the left, photo with the logos on an arch on the right, the hand spread below.
+   .hero.combat: an StS combat screen. Relic bar on top, him on the left on a ground line with an
+   "Available" bar, the intro as his speech box, an energy orb over the draw pile, the hand peeking up.
+   main.js switches to combat when a hand card is played and back when you scroll to the top; a view
+   transition morphs between the two. Sizes come from the viewport height (svh) so both fit one screen.
+   Below 1001px the stacked mobile hero above is used and combat changes nothing. */
+.hero-hp, .hero-orb { display: none; }   /* combat-only decorations */
+@media (min-width: 1001px) {
+  /* overflow: clip, not hidden: a hidden box is still a scroll container, so focusing a half-hidden hand
+     card would scroll the hero's insides up and hide the name. */
+  .hero {
+    --tok: clamp(54px, 7.6svh, 80px); --hw: clamp(104px, 13.5svh, 136px); --peek: calc(var(--hw) * 1.32 + 50px);   /* + room for the arc and the 12px text floor */
+    display: grid; height: max(100svh, 600px); overflow: clip; padding: calc(var(--tbh) + 1.6svh) var(--gutter) 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); column-gap: 2.5rem;
+    grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr) auto;
+    grid-template-areas: ". stage" "head stage" "foot stage" ". stage" "hand hand";
+  }
+  .hero .hero-head { grid-area: head; text-align: left; }
+  .hero .whoami { margin-bottom: 1svh; padding: .25em .8em; font-size: clamp(.8rem, 1.7svh, 1rem); }
+  .hero .name { font-size: clamp(2.5rem, min(5.6vw, 8.8svh), 6rem); }
+  .hero .tagline { justify-content: flex-start; margin-top: 1svh; font-size: clamp(1.1rem, min(2.1vw, 3.2svh), 1.8rem); }
+  .hero .hero-cta { max-width: 44ch; margin: 1svh 0 0; font-size: clamp(.85rem, 1.8svh, .98rem); }
+  .hero .stage { grid-area: stage; height: auto; min-height: 0; width: 100%; margin: 0 auto; }
+  .hero .stage::before { width: auto; height: 70%; bottom: 3%; }
+  .hero .hero-photo { height: 76%; }
+  .hero .token { width: var(--tok); height: var(--tok); }
+  .hero .floater .card { translate: -50% var(--cy, -50%); }   /* main.js opens the top logos' cards downward */
+  .hero .hero-foot { grid-area: foot; max-width: 640px; margin: 2.2svh 0 0; text-align: left; }
+  .hero p.intro { margin: 0; font-size: clamp(.9rem, 1.9svh, 1.05rem); line-height: 1.6; }
+  .hero .hero-actions { justify-content: flex-start; gap: .7rem; margin-top: 1.8svh; }
+  .hero .hero-actions.secondary { margin-top: 1.4svh; }
+  .hero .socials { padding-bottom: 0; gap: .6rem; }
+  .hero .soc { width: clamp(42px, 5.6svh, 56px); height: clamp(42px, 5.6svh, 56px); }
+  .hero .soc .ic { width: 55%; height: 55%; }
+  .hero .plate span { padding: .5em 1.25em; font-size: clamp(.85rem, 1.8svh, .98rem); }
+  .hero .hero-meta { margin: 1.2svh 0 0; font-size: .82rem; }
+  .hero .hand-wrap { grid-area: hand; width: 100%; margin: 0 auto; padding: 0; max-width: none; }
+  .hero .hand { height: var(--peek); --hw: inherit; }   /* take the hero's card width, not the 150px default */
+  .hero .hand .card { top: 12px; }
+  .hero .pile { bottom: auto; top: 18px; }
+
+  /* ----- Combat ----- */
+  .hero.combat {
+    --tok: clamp(42px, 5.8svh, 58px); --hw: clamp(108px, 15.5svh, 156px); --peek: clamp(88px, 12.5svh, 128px);
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); column-gap: 3rem;
+    grid-template-rows: auto minmax(0, 1fr) auto auto minmax(0, 1fr) auto var(--peek);
+    grid-template-areas: "relics relics" "photo ." "photo head" "photo foot" "photo ." "hp ." "hand hand";
+  }
+  .hero.combat .name { font-size: clamp(2.4rem, min(5vw, 8svh), 5.6rem); }
+  .hero.combat .tagline { font-size: clamp(1.05rem, min(2vw, 3svh), 1.7rem); }
+  .hero.combat .hero-cta { max-width: none; }
+  .hero.combat .stage { display: contents; }
+  .hero.combat .stage::before { content: none; }
+  .hero.combat .floaters {
+    grid-area: relics; position: relative; inset: auto; display: flex; flex-wrap: wrap; gap: .5rem 1.1rem;
+    padding: .2rem 0 .7rem; margin-bottom: 1svh;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+  }
+  .hero.combat .floater { position: relative; left: auto; top: auto; animation: none; }
+  .hero.combat .floater .card { left: 0; top: 100%; translate: 0 8px; transform-origin: 20% 0; }   /* tooltip card drops below the relic */
+  .hero.combat .hero-photo {
+    grid-area: photo; position: relative; left: auto; bottom: auto; translate: none;
+    width: 100%; height: 100%; min-height: 0; contain: size; object-fit: contain; object-position: 50% 100%;
+  }
+  .hero.combat .hero-hp {
+    grid-area: hp; justify-self: center; position: relative; display: block;
+    width: min(300px, 70%); margin: .4rem 0 1svh; padding: .18rem .8rem;
+    font: 700 .78rem var(--sans); letter-spacing: .12em; text-transform: uppercase; text-align: center; color: #fff; text-shadow: 0 1px 0 #000;
+    background: linear-gradient(#5fd07f, #23843f); border: 2px solid #0009; border-radius: 999px;
+    box-shadow: inset 0 1px 0 #fff6, 0 2px 6px #0008;
+  }
+  .hero.combat .hero-hp::before {   /* the ground he stands on */
+    content: ""; position: absolute; left: 50%; bottom: calc(100% + .35rem); width: 170%; height: 18px; translate: -50% 50%;
+    border-radius: 50%; background: radial-gradient(closest-side, #000b, transparent); z-index: -1;
+  }
+  .hero.combat .hero-hp::after {   /* small shield, like a block counter */
+    content: "GRC"; position: absolute; left: -1.4rem; top: 50%; translate: 0 -50%;
+    width: 2.3rem; height: 2.3rem; display: grid; place-items: center; font-size: .6rem; letter-spacing: .04em;
+    background: linear-gradient(#7fb6e6, #2f6a9a); border: 2px solid #000a;
+    clip-path: polygon(50% 0, 100% 16%, 92% 66%, 50% 100%, 8% 66%, 0 16%);
+  }
+  .hero.combat .hero-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 1.4svh 1.4rem; max-width: 720px; }
+  .hero.combat .hero-actions, .hero.combat .hero-actions.secondary { margin-top: 0; }
+  .hero.combat .hero-meta { flex-basis: 100%; margin: 0; }
+  .hero.combat p.intro {   /* the intent / dialogue box, its tail pointing at him */
+    position: relative; flex: 1 1 100%; max-width: none; padding: 1.4svh 1.2rem;
+    background: color-mix(in srgb, var(--surface) 92%, #000); border: 2px solid color-mix(in srgb, var(--gold) 55%, #000);
+    border-radius: 12px; box-shadow: 0 8px 22px #0007;
+  }
+  .hero.combat p.intro::before {
+    content: ""; position: absolute; left: -12px; top: 1.6rem; width: 20px; height: 20px; rotate: 45deg;
+    background: inherit; border: inherit; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px;
+  }
+  .hero.combat .hand-wrap { max-width: 1400px; }
+  .hero.combat .hero-orb {   /* energy orb, above the draw pile */
+    position: absolute; left: 0; bottom: calc(100% + 1.2svh); z-index: 3;
+    width: clamp(58px, 8svh, 78px); aspect-ratio: 1; border-radius: 50%; display: grid; place-content: center; text-align: center;
+    color: #fff; text-shadow: 0 0 3px #000, 0 2px 0 #000;
+    background: radial-gradient(circle at 35% 30%, #fffb, transparent 38%), radial-gradient(circle, var(--accent), color-mix(in srgb, var(--accent) 30%, #000));
+    border: 3px solid #000a; box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 70%, #000), 0 0 22px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  .hero.combat .hero-orb b { font: 800 clamp(1.4rem, 3.4svh, 1.9rem)/1 var(--serif); }
+  .hero.combat .hero-orb span { font: 700 .58rem var(--sans); letter-spacing: .1em; text-transform: uppercase; }
+  /* Peeking hand: only the top of each card shows; hover or focus lifts the whole card into view. */
+  .hero.combat .hand .card:hover, .hero.combat .hand .card:focus-visible {
+    translate: calc(-50% + var(--x, 0px)) calc(var(--peek) - 20px - 107.5%); scale: 1.15;
+  }
+  /* The played card: lifts to the middle of the screen, flares, and burns away (then the page scrolls). */
+  .hero.combat .hand .card.playing { rotate: 0deg; animation: play-combat .42s cubic-bezier(.3, 0, .6, 1) forwards !important; }
+
+  .simple .hero .hand { flex-wrap: nowrap; align-items: flex-start; }   /* simple mode lays the hand flat; keep cards full height */
+  .simple .hero .hand .card:hover, .simple .hero .hand .card:focus-visible { translate: 0 calc(var(--peek) - 24px - 103%); }
+}
+/* While the hero morphs, pieces must not also run their own hover/flatten transitions: the view
+   transition captures each piece's final box, and a running transition would make it jump at the end. */
+.morphing .hero *, .morphing .hero *::before, .morphing .hero *::after { transition: none !important; }
+:root.morphing::view-transition-group(*) { animation-duration: .64s; animation-timing-function: cubic-bezier(.65, 0, .25, 1); }
+@keyframes play-combat {
+  45% { transform: translate(calc(var(--x, 0px) * -1), -34svh) scale(1.3); filter: brightness(1.35) drop-shadow(0 0 22px var(--glow, #f5c542)); opacity: 1; }
+  to { transform: translate(calc(var(--x, 0px) * -1), -50svh) scale(1.5); filter: brightness(2.6) blur(6px); opacity: 0; }
+}
+
+/* ---------- Theme switch: arriving from the paper homepage ("falls") ----------
+   paper.html's Dark switch names every hero piece on screen fall-0, fall-1, ... (vox.js, in a shuffled
+   order) and navigates here. The pseudo-elements of a cross-document view transition live in the new
+   page, so the fall is drawn by this stylesheet: each piece is unpinned (a small hop), then drops past
+   the bottom with gravity and a spin, one after another; the board itself goes last and this page rises
+   in behind it. prefs.js skips the transition for every other navigation; no reduced motion here. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+html:active-view-transition-type(to-dark)::view-transition-old(root) {
+  z-index: 1; mix-blend-mode: normal; transform-origin: 20% 0;
+  animation: vt-board-drop .62s .4s both;
+}
+html:active-view-transition-type(to-dark)::view-transition-new(root) { mix-blend-mode: normal; animation: vt-rise .75s .4s cubic-bezier(.16, 1, .3, 1) both; }
+html:active-view-transition-type(to-dark)::view-transition-old(*) { animation: vt-fall .6s var(--d, 0s) both; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-0)  { --r: 22deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-1)  { --d: .03s; --r: -31deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-2)  { --d: .07s; --r: 17deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-3)  { --d: .1s;  --r: -12deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-4)  { --d: .14s; --r: 38deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-5)  { --d: .17s; --r: -24deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-6)  { --d: .2s;  --r: 9deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-7)  { --d: .24s; --r: -40deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-8)  { --d: .27s; --r: 27deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-9)  { --d: .31s; --r: -16deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-10) { --d: .34s; --r: 33deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-11) { --d: .37s; --r: -8deg; }
+html:active-view-transition-type(to-dark)::view-transition-old(fall-12) { --d: .4s;  --r: 20deg; }
+/* hop up off the pin (ease out), then fall (ease in: accelerating, like gravity) */
+@keyframes vt-fall {
+  0% { transform: none; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+  16% { transform: translateY(-14px) rotate(calc(var(--r, 15deg) * -.12)); animation-timing-function: cubic-bezier(.55, 0, .9, .4); }
+  100% { transform: translateY(120vh) rotate(var(--r, 15deg)); }
+}
+@keyframes vt-board-drop {
+  0% { transform: none; animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
+  12% { transform: translateY(-1.5vh) rotate(-.6deg); animation-timing-function: cubic-bezier(.55, 0, .9, .4); }
+  100% { transform: translateY(115vh) rotate(7deg); }
+}
+@keyframes vt-rise { from { opacity: .35; transform: translateY(3vh) scale(.97); } }

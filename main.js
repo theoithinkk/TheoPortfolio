@@ -171,8 +171,6 @@ const sfx = (() => {
     sparkle: play((pan = 0) => [1568, 2093, 2637, 3136].forEach((f, i) => tone(f, 0.35, 0.035, 'triangle', i * 0.045, null, pan))),
     // Page turn for the field notes opening and closing.
     page: play((open = true) => { sample('section', { gain: 0.35, rate: open ? 1.1 : 0.9 }) || whoosh(0.18, open ? 1500 : 4000, open ? 4000 : 1500, 0.08); }),
-    // Day/night switch: a bright rising pair for light mode, a low falling pair for dark mode.
-    mode: play((light = true) => (light ? [659.25, 987.77] : [392, 261.63]).forEach((f, i) => tone(f, 0.6, 0.06, 'triangle', i * 0.09))),
     denied: play((pan = 0) => tone(160, 0.18, 0.25, 'square', 0, 90, pan)),
     // Quick rising pop for floating 'damage number' text.
     pop: play((pan = 0, i = 0) => tone(380 + i * 70, 0.14, 0.1, 'triangle', 0, 760 + i * 90, pan)),
@@ -222,9 +220,13 @@ function syncTools() {
 }
 function setSound(v) { sfx.on = v; save('sfx', v); syncTools(); }
 tSound.onclick = () => { setSound(!sfx.on); sfx.toggle(sfx.on); };
+// Light mode is the paper edition of the homepage (paper.html): save the choice, leave a one-time marker
+// so paper.html plays the paper-laying view transition, and go. replace() keeps Back from landing on a
+// page that would only redirect to paper again.
 tMode.onclick = () => {
-  root.dataset.mode = root.dataset.mode === 'light' ? 'dark' : 'light';
-  save('mode', root.dataset.mode); sfx.mode(root.dataset.mode === 'light'); syncTools();
+  save('mode', 'light');
+  if (!calm()) try { sessionStorage.setItem('tg-vt', 'to-paper'); } catch {}
+  location.replace('paper.html');
 };
 tSimple.onclick = () => {
   const s = root.classList.toggle('simple');
@@ -333,10 +335,10 @@ function reveal() {
   setTimeout(() => sfx.chime(), 2600);
 }
 
-/* ---------- Floating logos: evenly spread, randomly placed ----------
-   Each side of the photo is split into a grid with one cell per logo (plus spares).
-   Every logo gets its own cell and a random spot inside it, so the layout looks
-   scattered but logos never bunch up or overlap. */
+/* ---------- Floating logos: on an arch around the photo ----------
+   Desktop: the logos sit on an arch from lower left, over his head, to lower right, each nudged a few
+   pixels at random and bobbing on its own timer. Tablet/phone (and combat): CSS lays them out in a row
+   or grid, so only a small random offset is set. */
 const stage = $('.stage'), floaters = $$('.floater');
 const rand = (a, b) => a + Math.random() * (b - a);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -346,7 +348,7 @@ function scatter() {
     f.style.setProperty('--dur', `${rand(3.8, 6.5).toFixed(2)}s`);   // each logo bobs on its own timer
     f.style.setProperty('--del', `${rand(-6, 0).toFixed(2)}s`);
   });
-  // Follow whatever layout the CSS actually applied; on tablet/phone the logos sit in a grid.
+  // Follow whatever layout the CSS actually applied.
   if (getComputedStyle(floaters[0]).position !== 'absolute') {
     floaters.forEach(f => {
       f.style.setProperty('--dx', `${rand(-8, 8).toFixed(0)}px`);
@@ -356,34 +358,25 @@ function scatter() {
   }
   const W = stage.clientWidth, H = stage.clientHeight;
   const size = floaters[0].offsetWidth;                         // logo box (square)
-  const photoW = $('.hero-photo').offsetWidth * 0.84;           // keep the face and torso clear
-  const side = Math.max(size, (W - photoW) / 2 - 16);
-  const half = Math.ceil(floaters.length / 2);
-  [floaters.slice(0, half), floaters.slice(half)].forEach((group, z) => {
-    const cols = side >= size * 2.1 ? 2 : 1;
-    const rows = Math.ceil(group.length / cols);
-    const cw = side / cols, chh = (H - 20) / rows;
-    const cells = shuffle([...Array(cols * rows).keys()]);
-    const x0 = z ? W - side : 0;
-    group.forEach((f, i) => {
-      const c = cells[i], col = c % cols, row = Math.floor(c / cols);
-      // Columns are staggered by half a cell so the two columns don't form neat rows.
-      const stagger = col % 2 ? chh * 0.35 : 0;
-      const x = x0 + col * cw + rand(0, Math.max(0, cw - size));
-      const y = 10 + Math.min(H - size - 10, row * chh + stagger + rand(0, Math.max(0, chh - size) * 0.8));
-      f.style.setProperty('--x', `${x.toFixed(0)}px`);
-      f.style.setProperty('--y', `${y.toFixed(0)}px`);
-    });
+  const n = floaters.length, rx = (W - size) / 2 - 4, ry = (H - 12 - size) / 1.5, cy = 6 + size / 2 + ry;
+  floaters.forEach((f, i) => {
+    const a = (150 + 240 * i / (n - 1)) * Math.PI / 180;
+    const y = cy + ry * Math.sin(a) - size / 2 + rand(-6, 6);
+    f.style.setProperty('--x', `${(W / 2 + rx * Math.cos(a) - size / 2 + rand(-6, 6)).toFixed(0)}px`);
+    f.style.setProperty('--y', `${y.toFixed(0)}px`);
+    // The stage starts right under the top bar, so cards of the top logos open downward, not under the bar.
+    f.style.setProperty('--cy', `${-Math.min(50, (y + size / 2) / 2.2).toFixed(0)}%`);   // ~220px tall card
   });
 }
 // Floating logos are plain links to their section; just add the card-play sound.
 floaters.forEach(f => f.addEventListener('click', () => sfx.card(panOf(f))));
 
 // Re-scatter whenever the stage's real size changes (window resize, fonts settling, zoom).
-let resizeT, lastW = 0;
+let resizeT, lastW = '';
 new ResizeObserver(([e]) => {
-  const w = Math.round(e.contentRect.width);
-  if (w === lastW) return;
+  const w = `${Math.round(e.contentRect.width)}x${Math.round(e.contentRect.height)}`;   // the desktop hero sizes the stage by height too
+  // 0x0 = combat (the stage is display: contents). Skipping it keeps the arch, so the morph back lands where it started.
+  if (!e.contentRect.width || w === lastW) return;
   lastW = w;
   clearTimeout(resizeT); resizeT = setTimeout(scatter, 120);
 }).observe(stage);
@@ -402,15 +395,17 @@ function embers() {
 }
 
 /* ---------- Hand: fan layout, neighbor push, play animation ---------- */
-const hand = $('.hand'), handCards = $$('.card', hand);
+const hand = $('.hand'), handCards = $$('.card', hand), hero = $('.hero');
+const wide = matchMedia('(min-width: 1001px)');
 function layoutHand() {
   const n = handCards.length, cw = handCards[0].offsetWidth;
-  const step = Math.min(cw * 0.94, (hand.clientWidth - cw - 32) / (n - 1));  // little overlap so every card reads
+  const flat = wide.matches && !hero.classList.contains('combat');   // desktop hero: a flatter, spread-out row
+  const step = Math.min(cw * (flat ? 1.12 : 0.94), (hand.clientWidth - cw - 32) / (n - 1));  // little overlap so every card reads
   handCards.forEach((c, i) => {
     const t = i - (n - 1) / 2;
     c.style.setProperty('--x', `${t * step}px`);
-    c.style.setProperty('--r', `${t * 4}deg`);
-    c.style.setProperty('--y', `${t * t * 5}px`); // arc: outer cards sit lower
+    c.style.setProperty('--r', `${t * (flat ? 2 : 4)}deg`);
+    c.style.setProperty('--y', `${t * t * (flat ? 2 : 5)}px`); // arc: outer cards sit lower
   });
 }
 function push(active) {
@@ -424,10 +419,34 @@ hand.addEventListener('pointerover', e => { if (!calm()) push(e.target.closest('
 hand.addEventListener('focusin', e => { if (!calm()) push(e.target.closest('.card')); });
 hand.addEventListener('pointerleave', () => push(null));
 hand.addEventListener('focusout', () => push(null));
-hand.addEventListener('click', e => {
+/* Combat: on desktop, playing a hand card first turns the hero into an StS combat screen (.hero.combat,
+   all CSS). A view transition morphs between the layouts: every named piece (photo, name, intro, each
+   logo and card) glides from its old box to its new one and the rest cross-fades. No support, Simple
+   mode or reduced motion: the class just flips. Scrolling back to the top (or Escape there) reverses it. */
+const morphParts = [['photo', $('.hero-photo')], ['head', $('.hero-head')], ['intro', $('.hero .intro')], ['foot', $('.hero-foot')],
+  ...floaters.map((f, i) => [`relic-${i}`, f]), ...handCards.map((c, i) => [`hand-${i}`, c])];
+let combatArmed = false;   // true once the page has scrolled away from the top while in combat
+async function setCombat(on) {
+  if (hero.classList.contains('combat') === on) return;
+  combatArmed = false;
+  const flip = () => { hero.classList.toggle('combat', on); layoutHand(); };
+  if (!document.startViewTransition || calm() || !wide.matches) return flip();
+  morphParts.forEach(([n, el]) => { el.style.viewTransitionName = `hero-${n}`; });   // names only during the morph
+  root.classList.add('morphing');
+  const vt = document.startViewTransition(flip);
+  vt.ready.catch(() => {});   // rejects when skipped; that is expected
+  // A throttled or frozen tab may never finish the animation; never let that block navigation.
+  await Promise.race([vt.finished, wait(1500)]);
+  vt.skipTransition();   // no-op once finished
+  root.classList.remove('morphing');
+  morphParts.forEach(([, el]) => { el.style.viewTransitionName = ''; });
+}
+let playing = false;
+hand.addEventListener('click', async e => {
   const card = e.target.closest('.card');
   if (!card) return;
   e.preventDefault();
+  if (playing) return;   // one card at a time
   const target = $(card.hash);
   const go = () => {
     target.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth' });
@@ -436,9 +455,13 @@ hand.addEventListener('click', e => {
   };
   sfx.card(panOf(card));
   if (calm()) return go();
+  playing = true;
+  if (wide.matches) await setCombat(true);
   card.classList.add('playing');
-  setTimeout(go, 380);
-  setTimeout(() => card.classList.remove('playing'), 900);
+  await wait(wide.matches ? 400 : 380);
+  go();
+  playing = false;
+  setTimeout(() => card.classList.remove('playing'), 520);
 });
 addEventListener('resize', layoutHand);
 
@@ -469,6 +492,8 @@ addEventListener('scroll', () => {
   requestAnimationFrame(() => {
     $('span', proceed).textContent = nextSection() ? 'Proceed' : 'Return';
     updateFloor();
+    if (scrollY > 40) combatArmed = true;
+    else if (scrollY < 2 && combatArmed) setCombat(false);   // back at the top: combat ends
     ticking = false;
   });
 }, { passive: true });
@@ -507,7 +532,8 @@ $$('.notes details').forEach(d => d.addEventListener('toggle', () => sfx.page(d.
   if (calm()) { root.classList.add('dealt'); $('.name').classList.add('lit'); return; }
   try {
     embers();
-    await runLoader();
+    // No .intro when arriving from the paper page's Dark switch (prefs.js): skip the loader, deal straight away.
+    if (root.classList.contains('intro')) await runLoader(); else await document.fonts.ready;
     reveal();
   } catch (err) {
     // Never leave a visitor stuck behind the intro: show the page as-is.
@@ -744,7 +770,11 @@ mapDlg.addEventListener('click', e => {
   if (e.target.closest('.mnode')) { sfx.card(); mapDlg.hidden = true; }   // link does the scrolling
 });
 addEventListener('keydown', e => {
-  if (e.key === 'Escape') { if (!mapDlg.hidden) closeMap(); toggleSettings(false); }
+  if (e.key === 'Escape') {
+    if (mapDlg.hidden && scrollY < hero.offsetHeight / 2) setCombat(false);
+    if (!mapDlg.hidden) closeMap();
+    toggleSettings(false);
+  }
   if (e.key.toLowerCase() === 'm' && !e.target.closest('input, textarea') && mapDlg.hidden && document.getElementById('charselect').hidden) openMap();
 });
 

@@ -8,9 +8,9 @@
 <title>Ortelia VDR Carving (Forensics writeup) | Theodore Garcia</title>
 <meta name="description" content="Header and footer carving fails on fragmented files. When the flash is read raw, a file&#x27;s sectors can be scattered, so &quot;header to next IEND&quot; or &quot;header to end of data&quot; gives a truncated or wrong file. Use the format&#x27;s own integrity data (PNG chunk lengths and CRC32) to confirm reassembly, and count how many sectors the file should occupy to know how much is missing. The sector 21/34/42/43 zero gaps were the clue that the file was split. Screenshots:">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261104a">
-<link rel="stylesheet" href="../../paper.css?v=20261104a">
-<script src="../../prefs.js?v=20261104a" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261119v">
+<link rel="stylesheet" href="../../paper.css?v=20261119v">
+<script src="../../prefs.js?v=20261119v" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -53,6 +53,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Recon</span></a></li><li><a href="#step-2"><b>2</b><span>Naive carve</span></a></li><li><a href="#step-3"><b>3</b><span>Rebuild the fragment chain</span></a></li><li><a href="#step-4"><b>4</b><span>Read the key</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261104a" defer></script>
+<script src="../wu.js?v=20261119v" defer></script>
 </body>
 </html>

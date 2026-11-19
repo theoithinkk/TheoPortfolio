@@ -9,5 +9,5 @@
   </filter>
 </defs>
 <defs><g id="art"><g filter="url(#lift)"><path d="M14 109 Q33 96 52 109 Z" fill="#3e8f7a"/></g><g filter="url(#lift)"><path d="M29.5 13 L36 12.5 L37.5 106 L29 106.5 Z" fill="#b8862a"/></g><g filter="url(#lift)"><circle cx="32.8" cy="10.5" r="5.5" fill="#e9b949"/></g><g filter="url(#lift)"><path d="M37 17 L99 35.5 L37 57 Z" fill="#c9463a"/><path d="M37 37.5 L71 45.5 L37 57 Z" fill="#8e2a22"/></g></g></defs>
-<g filter="url(#grain)"><use href="#art" stroke="#f6efdc" stroke-width="7" stroke-linejoin="round" fill="#f6efdc"/><use href="#art"/></g>
+<g filter="url(#grain)"><use href="#art"/></g>
 </svg>
