@@ -8,9 +8,9 @@
 <title>The Signet (Crypto writeup) | Theodore Garcia</title>
 <meta name="description" content="Nonces that step by a constant stride make each ECDSA signature a linear equation in (d, start, stride); three signatures are enough to solve for the private key, and the rest verify it. Defensive takeaways: - ECDSA security rests entirely on unpredictable, independent per-signature nonces (k). A biased or structured k — - Deriving a data-encryption key from the signing key ties two duties to one secret: cracking the signatures also Screenshots: - screenshots/01_solve_run.png   solve.py recovering d, verifying all six nonces, and decrypting the seal (live re-run)">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261119v">
-<link rel="stylesheet" href="../../paper.css?v=20261119v">
-<script src="../../prefs.js?v=20261119v" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -55,6 +55,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read case-note.txt</span></a></li><li><a href="#step-2"><b>2</b><span>Turn each signature into a linear…</span></a></li><li><a href="#step-3"><b>3</b><span>Recover d and verify it is really right</span></a></li><li><a href="#step-4"><b>4</b><span>Open the seal</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261119v" defer></script>
+<script src="../wu.js?v=20261121a" defer></script>
 </body>
 </html>

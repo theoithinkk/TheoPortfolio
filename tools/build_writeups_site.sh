@@ -7,7 +7,6 @@ set -e
 rm -rf _site
 mkdir -p _site/img
 cp -R writeups/. _site/
-cp *.css favicon.svg _headers _site/
-cp prefs.js _site/ 2>/dev/null || true   # only the older page design loads it
+cp style.css paper.css prefs.js favicon.svg _headers _site/   # the only root files writeup pages load
 cp -R fonts _site/
 cp -R img/icons img/paper _site/img/

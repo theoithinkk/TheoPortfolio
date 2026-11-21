@@ -8,9 +8,9 @@
 <title>The Keywheel (Crypto writeup) | Theodore Garcia</title>
 <meta name="description" content="MT19937 is invertible. Any 624 consecutive outputs reveal the whole state, and the twist can be run backward as easily as forward, so &quot;earlier&quot; keys are as exposed as &quot;later&quot; ones. Deriving key material directly from a non-cryptographic PRNG breaks forward AND backward secrecy. Use a CSPRNG/KDF with independent per-message keys, e.g. HKDF from a secret with a per-message nonce. Screenshots: Real Windows Terminal captures of solve.py run on key-unit-journal.cbor, one per stage (output sliced with Select-Object).">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261119v">
-<link rel="stylesheet" href="../../paper.css?v=20261119v">
-<script src="../../prefs.js?v=20261119v" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -53,6 +53,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Recon</span></a></li><li><a href="#step-2"><b>2</b><span>Identified the generator</span></a></li><li><a href="#step-3"><b>3</b><span>Turned the key wheel back</span></a></li><li><a href="#step-4"><b>4</b><span>Decrypted the standing order</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261119v" defer></script>
+<script src="../wu.js?v=20261121a" defer></script>
 </body>
 </html>

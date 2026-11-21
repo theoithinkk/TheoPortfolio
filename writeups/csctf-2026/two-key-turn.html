@@ -8,9 +8,9 @@
 <title>Two-Key Turn (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="The two-person rule is an invariant (&quot;2 distinct officers&quot;), and the server enforced it with a read-check-write sequence that was not atomic. Under concurrency the gap between &quot;check the caller is a new officer&quot; and &quot;commit the approval record&quot; lets a single officer&#x27;s parallel requests each pass the check before any of them writes, so one credential satisfies a rule that requires two. The 8-second pending window just made the race wide and comfortable. Defensive takeaways (API security / GRC angle): - Enforce the distinctness invariant in the data layer, atomically. A UNIQUE(order_id, officer_id) constraint plus a - Never gate a security invariant on an application-level &quot;have I seen this officer yet?&quot; read that is separate from - Idempotency keys per (officer, order, window) close the replay/duplicate path; a check-constraint on - Separation-of-duties controls (maker/checker, two-person release, four-eyes) are exactly the controls most often">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261119v">
-<link rel="stylesheet" href="../../paper.css?v=20261119v">
-<script src="../../prefs.js?v=20261119v" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -49,6 +49,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the self-describing schema</span></a></li><li><a href="#step-2"><b>2</b><span>Find the target order</span></a></li><li><a href="#step-3"><b>3</b><span>Concurrent approval burst from the single…</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261119v" defer></script>
+<script src="../wu.js?v=20261121a" defer></script>
 </body>
 </html>

@@ -485,12 +485,16 @@ proceed.onclick = () => {
   sfx.proceed();
   (nextSection() || sections[0]).scrollIntoView({ behavior: calm() ? 'auto' : 'smooth' });
 };
+// Scroll work reads layout first and writes only what changed: rewriting the same text every frame
+// forced a fresh layout on each one.
+const proceedLabel = $('span', proceed);
 let ticking = false;
 addEventListener('scroll', () => {
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(() => {
-    $('span', proceed).textContent = nextSection() ? 'Proceed' : 'Return';
+    const label = nextSection() ? 'Proceed' : 'Return';
+    if (proceedLabel.textContent !== label) proceedLabel.textContent = label;
     updateFloor();
     if (scrollY > 40) combatArmed = true;
     else if (scrollY < 2 && combatArmed) setCombat(false);   // back at the top: combat ends
@@ -518,8 +522,7 @@ document.addEventListener('pointerover', e => {
 $$('.tb-nav a').forEach(a => a.addEventListener('click', () => sfx.nav()));
 $$('.prow-links a, .contact-links a:not([data-file]), .hero-actions a:not([data-file])').forEach(a =>
   a.addEventListener('click', () => sfx.select(panOf(a))));
-$$('[data-file]').forEach(a => a.addEventListener('click', () =>
-  a.classList.contains('missing') ? sfx.denied(panOf(a)) : sfx.coin(panOf(a))));
+$$('[data-file]').forEach(a => a.addEventListener('click', () => sfx.coin(panOf(a))));
 
 $$('.notes details').forEach(d => d.addEventListener('toggle', () => sfx.page(d.open)));
 
@@ -542,18 +545,6 @@ $$('.notes details').forEach(d => d.addEventListener('toggle', () => sfx.page(d.
     console.error(err);
   }
 })();
-
-/* ---------- CV / résumé buttons: disable any whose PDF isn't in /files yet ---------- */
-const fileChecks = {};   // one request per file, even though each file has two buttons
-$$('[data-file]').forEach(async a => {
-  const url = a.getAttribute('href');
-  fileChecks[url] ||= fetch(url, { method: 'HEAD' }).then(r => r.ok, () => false);
-  if (await fileChecks[url]) return;
-  a.classList.add('missing');
-  a.setAttribute('aria-disabled', 'true');
-  a.removeAttribute('download');
-  a.addEventListener('click', e => e.preventDefault());
-});
 
 /* ---------- Copy-to-clipboard buttons (Discord username) ---------- */
 $$('[data-copy]').forEach(b => b.addEventListener('click', async () => {
@@ -625,10 +616,8 @@ function tracePath() {
     list.forEach((s, i) => { if (s.getBoundingClientRect().top < mid) on = i; });
     list.forEach((s, i) => { s.classList.toggle('on', i === on); s.classList.toggle('seen', i < on); });
     const cur = list[on], node = $('.node', cur);
-    map.style.setProperty('--fill', `${cur.offsetTop + node.offsetTop + node.offsetHeight / 2}px`);
-    if (map.dataset.on !== String(on)) {
-      map.dataset.on = on;
-    }
+    const fill = `${cur.offsetTop + node.offsetTop + node.offsetHeight / 2}px`;
+    if (map.style.getPropertyValue('--fill') !== fill) map.style.setProperty('--fill', fill);
   });
 }
 addEventListener('scroll', () => { if (!tracing) { tracing = true; requestAnimationFrame(tracePath); } }, { passive: true });
@@ -719,8 +708,11 @@ function currentSection() {
   for (const s of sections) if (s.getBoundingClientRect().top <= 140) cur = s;
   return cur;
 }
+let floorAt = null;
 function updateFloor() {
   const s = currentSection();
+  if (s === floorAt) return;   // same section as last time: nothing to rewrite
+  floorAt = s;
   const boss = s.id === 'contact';                       // the last floor is the boss, like StS
   floorNum.textContent = boss ? 'Boss' : sections.indexOf(s) + 1;
   floorName.textContent = FLOORS[s.id] || '';
@@ -822,7 +814,11 @@ bigName.addEventListener('pointerenter', () => {
   });
 });
 
-/* Torchlight: move the background glow to the mouse (CSS draws it; off on touch and in Simple mode). */
+/* Torchlight: a background glow that follows the mouse (style.css .torch; hidden on touch and in Simple mode).
+   It moves by transform, so a mouse move costs no style or layout work. */
+const torch = document.body.appendChild(document.createElement('i'));
+torch.className = 'torch';
+torch.setAttribute('aria-hidden', 'true');
 let torchQueued = false, tx = 0, ty = 0;
 addEventListener('pointermove', e => {
   if (e.pointerType !== 'mouse') return;
@@ -831,7 +827,6 @@ addEventListener('pointermove', e => {
   torchQueued = true;
   requestAnimationFrame(() => {
     torchQueued = false;
-    document.documentElement.style.setProperty('--mx', `${tx}px`);
-    document.documentElement.style.setProperty('--my', `${ty}px`);
+    torch.style.transform = `translate(${tx}px, ${ty}px)`;
   });
 }, { passive: true });

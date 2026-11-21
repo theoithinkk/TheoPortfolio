@@ -161,7 +161,6 @@ body::before { opacity: 1; background-image: var(--grain); background-size: 192p
 .plate:hover { filter: none; }
 .plate:hover span { box-shadow: 0 0 0 2px var(--edge), var(--lift-hi); }
 .plate:active span { translate: 1px 2px; box-shadow: 0 0 0 2px var(--edge), 0 0 0 #0000; }
-.plate.missing span { box-shadow: 0 0 0 2px color-mix(in srgb, var(--edge) 50%, transparent); }
 .shelf-filters button, .view-toggle button[aria-pressed="true"], .tb-tools button[aria-pressed="true"] { background-image: var(--grain); }
 .shelf-filters button[aria-pressed="true"] { background: var(--grain), #e8b84a; box-shadow: 0 0 0 1.5px var(--edge), 1px 2px 0 #0007; }
 

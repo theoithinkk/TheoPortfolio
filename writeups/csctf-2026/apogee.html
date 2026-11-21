@@ -8,9 +8,9 @@
 <title>Apogee (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="A parser differential -- the verifier and the extractor disagreed about the same bytes. ZIP permits duplicate entry names and carries unix symlink modes; the verifier hashed the file resolved by name while extract-zip created a same-named symlink first and wrote the file through it, out of the sandbox and into the write-protected store. Validation on one interpretation, side effects on another = a confused-deputy write. &quot;Write-protected&quot; at the app layer is meaningless when a library writes as the trusted pipeline process. Defensive takeaways (supply-chain / GRC angle): - Validate and extract the EXACT same entry/bytes. Resolve names identically on both sides, reject archives with - Treat archive symlinks (and unix modes) as hostile. Extract with symlinks disabled / O_NOFOLLOW, resolve each - Constrain writers by the OS, not by convention: run extraction as an unprivileged user that cannot write the - Make the audit trail authoritative on content, not just on &quot;an accepted delivery occurred&quot;: compare the written">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261119v">
-<link rel="stylesheet" href="../../paper.css?v=20261119v">
-<script src="../../prefs.js?v=20261119v" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -58,6 +58,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Read the schema and the journal;…</span></a></li><li><a href="#step-2"><b>2</b><span>Reconstruct Greywater&#x27;s accepted delivery…</span></a></li><li><a href="#step-3"><b>3</b><span>Pull the validated original to restore</span></a></li><li><a href="#step-4"><b>4</b><span>Replay the same trick from the sandboxed…</span></a></li><li><a href="#step-5"><b>5</b><span>Collect the receipt</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261119v" defer></script>
+<script src="../wu.js?v=20261121a" defer></script>
 </body>
 </html>

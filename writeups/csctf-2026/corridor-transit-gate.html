@@ -8,9 +8,9 @@
 <title>Corridor Transit Gate (Web writeup) | Theodore Garcia</title>
 <meta name="description" content="The gateway and the backend disagree on what a path means. The gateway&#x27;s allow/deny ran on a slightly different normalization of the URL than the backend&#x27;s router used to dispatch it. &quot;..%2f&quot; is the sweet spot: the gateway doesn&#x27;t decode %2f (so it never sees the /internal/ segment and allows the request), but the backend does decode and collapse it (so it routes straight to the emergency-override handler). The front-end JS handed over the exact endpoint and body — the whole challenge was defeating that one boundary control. Defensive takeaways (API security / GRC angle): - Never enforce access control on the raw/formatted URL at a proxy while a separate component does the routing. - &quot;Internal only&quot; by network/path is not authentication. The emergency override should require a real identity - Don&#x27;t ship privileged endpoints and payloads in client-side JS. The dispatch-admin chunk disclosed the exact - Reject ambiguous requests at the edge: normalize or 400 on &quot;..%2f&quot;, mixed-encoded separators, and &quot;//&quot; before Reproduction: Run against a live instance (the clearance_token is minted per-instance): ```text $ python -I solve.py http://w02.ctf.chronos-security.ro:33802 internal route : /internal/dispatch/emergency-clearance held consignment: CTLD-FR-8821 POST /api/v1/corridor/..%2finternal/dispatch/emergency-clearance -&gt; 200 { }">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../style.css?v=20261119v">
-<link rel="stylesheet" href="../../paper.css?v=20261119v">
-<script src="../../prefs.js?v=20261119v" data-static></script>
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
 </head>
 <body class="wu-body">
 <header class="wu-hero">
@@ -58,6 +58,6 @@
     <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Host and a downloaded OpenAPI spec</span></a></li><li><a href="#step-2"><b>2</b><span>Where is the override? It is not in the…</span></a></li><li><a href="#step-3"><b>3</b><span>Profiling the gateway ACL</span></a></li><li><a href="#step-4"><b>4</b><span>Path-normalization discrepancy between…</span></a></li><li><a href="#step-5"><b>5</b><span>200 APPROVED</span></a></li></ol></nav>
   </aside>
 </div>
-<script src="../wu.js?v=20261119v" defer></script>
+<script src="../wu.js?v=20261121a" defer></script>
 </body>
 </html>

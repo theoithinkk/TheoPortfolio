@@ -44,11 +44,14 @@
   ]
 }
 </script>
-<link rel="stylesheet" href="style.css?v=20261119v">
-<link rel="stylesheet" href="paper.css?v=20261118a">
+<!-- Fonts start downloading with the stylesheet instead of after it (same two as paper.html). -->
+<link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=20261121a">
+<link rel="stylesheet" href="paper.css?v=20261121a">
 <!-- Not deferred on purpose: applies saved theme before first paint so colors never flash. -->
 <script src="prefs.js?v=20261119v"></script>
-<script src="main.js?v=20261119v" defer></script>
+<script src="main.js?v=20261121a" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#about">Skip to content</a>
@@ -256,7 +259,7 @@
     <h3 class="sub-head map-head">Competitions and awards</h3>
     <ol class="map">
       <li class="stop elite">
-        <div class="node"><img src="img/logo-huawei.webp" alt="Huawei logo"></div>
+        <div class="node"><img src="img/logo-huawei.webp" alt="Huawei logo" loading="lazy"></div>
         <div class="panel">
           <p class="node-type">Award</p>
           <h3>Huawei Future Innovators Camp · Best Trainee</h3>
@@ -270,7 +273,7 @@
         </div>
       </li>
       <li class="stop elite">
-        <div class="node"><img src="img/logo-chronos.webp" alt="Chronos Security logo"></div>
+        <div class="node"><img src="img/logo-chronos.webp" alt="Chronos Security logo" loading="lazy"></div>
         <div class="panel">
           <p class="node-type">CTF</p>
           <h3>CSCTF 2026 · 44th, top 8%</h3>
@@ -284,7 +287,7 @@
         </div>
       </li>
       <li class="stop elite">
-        <div class="node"><img src="img/logo-pinkctf.webp" alt="PINK+ CTF logo"></div>
+        <div class="node"><img src="img/logo-pinkctf.webp" alt="PINK+ CTF logo" loading="lazy"></div>
         <div class="panel">
           <p class="node-type">CTF</p>
           <h3>PINK+ CTF · 66th, top 12%</h3>

@@ -50,7 +50,11 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) closeB
 /* Flag spoilers: a tap toggles the reveal (hover and focus already reveal it with a mouse or keyboard). */
 document.querySelectorAll('.flag').forEach(f => f.addEventListener('click', () => f.classList.toggle('shown')));
 
-/* Torchlight: move the background glow to the mouse (CSS draws it; off on touch and in Simple mode). */
+/* Torchlight: a background glow that follows the mouse (style.css .torch; hidden on touch and in Simple mode).
+   It moves by transform, so a mouse move costs no style or layout work. */
+const torch = document.body.appendChild(document.createElement('i'));
+torch.className = 'torch';
+torch.setAttribute('aria-hidden', 'true');
 let torchQueued = false, tx = 0, ty = 0;
 addEventListener('pointermove', e => {
   if (e.pointerType !== 'mouse') return;
@@ -59,7 +63,6 @@ addEventListener('pointermove', e => {
   torchQueued = true;
   requestAnimationFrame(() => {
     torchQueued = false;
-    document.documentElement.style.setProperty('--mx', `${tx}px`);
-    document.documentElement.style.setProperty('--my', `${ty}px`);
+    torch.style.transform = `translate(${tx}px, ${ty}px)`;
   });
 }, { passive: true });
