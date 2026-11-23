@@ -187,7 +187,8 @@ const sfx = (() => {
   };
 })();
 // Where an element sits horizontally, as a stereo pan value (-1 left .. 1 right).
-const panOf = el => { const r = el.getBoundingClientRect(); return ((r.left + r.width / 2) / innerWidth) * 2 - 1; };
+// Measuring forces a style and layout pass mid-event, so skip it while sound is off (the default).
+const panOf = el => { if (!sfx.on) return 0; const r = el.getBoundingClientRect(); return ((r.left + r.width / 2) / innerWidth) * 2 - 1; };
 
 /* ---------- Top bar tools ---------- */
 const tSound = $('#t-sound'), tMode = $('#t-mode'), tSimple = $('#t-simple');
@@ -329,7 +330,10 @@ function runLoader() {
 function reveal() {
   scatter();  // layout is final by now; place cards right before they deal in
   sfx.flip();  // card-fan flourish as the deck opens
-  [...$$('.token'), ...$$('.hand .card')].forEach((c, i) => { c.style.setProperty('--i', i); sfx.deal(0.6 + i * 0.07, i, panOf(c)); });
+  // All writes, then all reads: alternating them forced a style pass per card.
+  const dealt = [...$$('.token'), ...$$('.hand .card')];
+  dealt.forEach((c, i) => c.style.setProperty('--i', i));
+  dealt.forEach((c, i) => sfx.deal(0.6 + i * 0.07, i, panOf(c)));
   root.classList.add('dealt');
   setTimeout(() => { $('.name').classList.add('lit'); sfx.letters(); }, 1500);
   setTimeout(() => sfx.chime(), 2600);
@@ -397,6 +401,8 @@ function embers() {
 /* ---------- Hand: fan layout, neighbor push, play animation ---------- */
 const hand = $('.hand'), handCards = $$('.card', hand), hero = $('.hero');
 const wide = matchMedia('(min-width: 1001px)');
+// Pause the hero's loops while it is out of view (CSS: .hero.away).
+new IntersectionObserver(([e]) => hero.classList.toggle('away', !e.isIntersecting)).observe(hero);
 function layoutHand() {
   const n = handCards.length, cw = handCards[0].offsetWidth;
   const flat = wide.matches && !hero.classList.contains('combat');   // desktop hero: a flatter, spread-out row
@@ -610,14 +616,20 @@ function tracePath() {
   tracing = false;
   if (!isCompact()) return;
   const mid = innerHeight * 0.5;
-  expMaps.forEach(map => {
+  // Read every position first, then write, and only when something changed: a write between reads
+  // makes the next read redo style and layout, and this runs on every scroll frame.
+  const reads = expMaps.map(map => {
     const list = $$(':scope > .stop', map);
     let on = 0;
     list.forEach((s, i) => { if (s.getBoundingClientRect().top < mid) on = i; });
-    list.forEach((s, i) => { s.classList.toggle('on', i === on); s.classList.toggle('seen', i < on); });
     const cur = list[on], node = $('.node', cur);
-    const fill = `${cur.offsetTop + node.offsetTop + node.offsetHeight / 2}px`;
-    if (map.style.getPropertyValue('--fill') !== fill) map.style.setProperty('--fill', fill);
+    return [map, list, on, `${cur.offsetTop + node.offsetTop + node.offsetHeight / 2}px`];
+  });
+  reads.forEach(([map, list, on, fill]) => {
+    if (map.dataset.on === String(on) && map.style.getPropertyValue('--fill') === fill) return;
+    list.forEach((s, i) => { s.classList.toggle('on', i === on); s.classList.toggle('seen', i < on); });
+    map.style.setProperty('--fill', fill);
+    map.dataset.on = on;
   });
 }
 addEventListener('scroll', () => { if (!tracing) { tracing = true; requestAnimationFrame(tracePath); } }, { passive: true });

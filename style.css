@@ -58,13 +58,18 @@ body {
   font-size: 16.5px;
   line-height: 1.6;
   color: var(--text);
-  background:
-    radial-gradient(1100px 700px at 85% 20%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 65%),
-    radial-gradient(900px 800px at 5% 70%, color-mix(in srgb, #f5c542 6%, transparent), transparent 65%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
   transition: background-color .4s, color .4s;
   overflow-x: hidden;
+}
+/* Two soft colour pools that stay put while the page scrolls. As a fixed background on body they made
+   the browser repaint the whole page on every scroll frame; on their own fixed layer the compositor
+   just leaves them in place. */
+html::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(1100px 700px at 85% 20%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 65%),
+    radial-gradient(900px 800px at 5% 70%, color-mix(in srgb, #f5c542 6%, transparent), transparent 65%);
 }
 /* Film-grain texture over the whole page (tiny inline SVG noise). */
 body::before {
@@ -665,6 +670,11 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 .anim .sec-head.in h2 { animation: paper-tear .6s steps(7, jump-none) backwards; }
 @keyframes paper-tear { from { -webkit-mask-position: 100% 50%; mask-position: 100% 50%; } }
 
+/* The hero's loops hold still while the hero is scrolled out of view (main.js sets .away). Off screen the
+   browser ticks them on the main thread, restyling them on every scroll frame for nothing. */
+.hero.away .floater, .hero.away .embers i, .hero.away .caret,
+.hero.away .cloud::before, .hero.away .cloud::after { animation-play-state: paused; }
+
 /* ---------- Simple mode / reduced motion ---------- */
 .simple .proceed, .reduced .proceed { animation: none; }
 .simple .embers, .reduced .embers { display: none; }
@@ -1093,7 +1103,10 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 @media (max-width: 760px) { .map:not(.compact) .stop .panel, .map:not(.compact) .stop:nth-child(even) .panel { transform-origin: left center; } }
 
 /* ---------- Experience, compact view: path tracer ---------- */
-/* --fill is set by main.js to the centre of the logo the path has reached. */
+/* --fill is set by main.js to the centre of the logo the path has reached. Registered as non-inherited so
+   changing it restyles the bar, not every element inside the list. */
+@property --fill { syntax: '<length>'; inherits: false; initial-value: 60px; }
+.map.compact::after { --fill: inherit; }
 .map.compact::before, .map.compact::after {
   content: ""; display: block; position: absolute; left: 59px; top: 60px; width: 3px; translate: none;
   background: var(--line); border-radius: 2px;
