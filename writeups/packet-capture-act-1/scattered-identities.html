@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Scattered Identities (OSINT writeup) | Theodore Garcia</title>
-<meta name="description" content="Every identity here is linked, not named. The sheet&#x27;s metadata gives the email, the email gives GitHub, the username gives Instagram and X, and the rules on one platform (odd/even, 2-7) decode the list on another. The final step isn&#x27;t a search at all: the hints and bios tell you to contact the owner.">
+<meta name="description" content="The sheet&#x27;s owner email linked it to GitHub, Instagram and X, and the final step was emailing the owner with the turtle names, not searching. Every identity here is linked, not named: the metadata gives the email, the email gives GitHub, the username gives Instagram and X, and the rules on one platform (odd/even, 2-7) decode the list on another. The hints and bios said to contact the owner.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,13 +16,13 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>6 steps · 3 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">Drive owner pivot</span><span>6 steps · 3 min read</span></p>
     <h1>Scattered Identities</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>Every identity here is linked, not named. The sheet's metadata gives the email, the email gives GitHub, the username gives Instagram and X, and the rules on one platform (odd/even, 2-7) decode the list on another. The final step isn't a search at all: the hints and bios tell you to contact the owner.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>The sheet's owner email linked it to GitHub, Instagram and X, and the final step was emailing the owner with the turtle names, not searching. Every identity here is linked, not named: the metadata gives the email, the email gives GitHub, the username gives Instagram and X, and the rules on one platform (odd/even, 2-7) decode the list on another. The hints and bios said to contact the owner.</p></aside>
     <section class="wu-step" id="step-1">
       <h2><span class="wu-n">01</span><b>Start point:</b> the shared Google Sheet ("Nothing important").</h2>
       <ul><li><b>What I found:</b> a few turtle-themed cells (Turtles, Tortoise, Shells, "Find the turtle", "You need to look st me", "Thisisadistraction").</li><li class="think"><b>Thinking:</b> the brief says "think outside of the cell", so the cell contents are mostly distraction. What a spreadsheet carries outside its cells is its file metadata, above all who owns it.</li></ul>
@@ -52,7 +52,7 @@
     </section>
     <section class="wu-step" id="step-6">
       <h2><span class="wu-n">06</span><b>Pivot:</b> the owner's X account and contact email.</h2>
-      <ul><li><b>What I found:</b> @Clovendadoor ("cloveeen") has the bio "You can FIND ME in other websites... Contact my email: cloveeen@gmail.com" and a tweet: "Someone took all of my turtles and had the nerve to use the name of my two eldest turtles as their @ in this site".</li><li class="think"><b>Thinking:</b> the third hint says "no one would tell me where my turtles are... please contact me". Putting the two bios together, the last step is to contact the owner's email with the answer to the question in @NamoorKrommer's bio (the two turtles, Namoor and Krommer). Doing that returned the flag.</li></ul>
+      <ul><li><b>What I found:</b> @Clovendadoor ("cloveeen") has the bio "You can FIND ME in other websites... Contact my email: cloveeen@gmail.com" and a tweet: "Someone took all of my turtles and had the nerve to use the name of my two eldest turtles as their @ in this site".</li><li class="think"><b>Thinking:</b> the third hint says "no one would tell me where my turtles are... please contact me". Putting the two bios together, the last step is to contact the owner's email with the answer to the question in @NamoorKrommer's bio (the two turtles, Namoor and Krommer).</li><li class="result"><b>Result:</b> contacting the owner's email with the two turtle names returned the flag, <span class="flag" tabindex="0">PacketCapture{p3rf3ctly_P13c3D}</span>.</li></ul>
       <figure><a href="../img/packet-capture-act-1/scattered-identities/06_x_clovendadoor.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/scattered-identities/06_x_clovendadoor.webp" alt="@Clovendadoor with the contact email" width="1600" height="1033" loading="lazy"></a><figcaption>@Clovendadoor with the contact email</figcaption></figure>
     </section>
 
@@ -61,7 +61,7 @@
   <aside class="wu-side">
     <dl class="wu-facts">
       <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
-      <dt>Category</dt><dd>OSINT</dd>
+      <dt>Category</dt><dd>OSINT · Drive owner pivot</dd>
       <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Google Drive API</li><li>GitHub commit search</li><li>username OSINT</li><li>Instagram</li><li>X/Twitter</li><li>email</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{p3rf3ctly_P13c3D}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20I%20-%20The%20Signal/%28DONE%29%20Scattered%20Identities/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>

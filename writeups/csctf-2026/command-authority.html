@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Command Authority (Reverse Engineering writeup) | Theodore Garcia</title>
+<meta name="description" content="Data appended after the JPEG end marker held the archive password, and the verifier&#x27;s restricted clearance was stored XORed with 0x41, so one XOR scan recovered it without running the program. The nested archive provided the verifier, and static analysis of its embedded comparison data revealed the value.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Reverse Engineering</span><span class="wu-lvl">JPEG trailer, XOR-obfuscated constant</span><span>4 steps · 2 min read</span></p>
+    <h1>Command Authority</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>Data appended after the JPEG end marker held the archive password, and the verifier's restricted clearance was stored XORed with 0x41, so one XOR scan recovered it without running the program. The nested archive provided the verifier, and static analysis of its embedded comparison data revealed the value.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> id_photo.jpg and pass_bundle.zip</h2>
+      <ul><li><b>What I did:</b> opened the evidence packet command-authority-evidence.zip, which held a personnel image (id_photo.jpg) and a password-protected archive (pass_bundle.zip), then checked the JPEG for appended data.</li><li><b>What I found:</b> the JPEG ends at its normal EOI marker (FF D9) before the physical end of file. Bytes after the marker contain the ASCII marker ARCHIVE-KEY: followed by the archive password. This is appended metadata, not visible image content.</li><li class="think"><b>Thinking:</b> the zip was password protected and nothing else in the packet gave a password, so the only other file, the photo, had to carry it.</li></ul>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the trailer key opens pass_bundle.zip</h2>
+      <ul><li><b>What I did:</b> used the recovered key to extract pass_bundle.zip. It contains pass.token and a stripped x86-64 ELF named field_verifier.</li><li class="think"><b>Thinking:</b> the key came from the image trailer, so the extracted verifier and token were the real target of the challenge.</li></ul>
+      <figure><a href="../img/csctf-2026/command-authority/01_unlock.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/command-authority/01_unlock.webp" alt="Terminal showing the ARCHIVE-KEY trailer read from id_photo.jpg and pass_bundle.zip extracting pass.token and field_verifier" width="1216" height="430" loading="lazy"></a><figcaption>Terminal showing the ARCHIVE-KEY trailer read from id_photo.jpg and pass_bundle.zip extracting pass.token and field_verifier</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> the verifier compares against a hidden value</h2>
+      <ul><li><b>What I found:</b> the program's usage string is field_verifier &lt;token_file_b64&gt;. Static strings reveal the accepted route distinction (RESTRICTED versus STANDARD-CORRIDOR) and the success message. The supplied token decodes to a standard-corridor civilian record, so it is not the restricted clearance.</li><li class="think"><b>Thinking:</b> the given token only takes the standard route, so the restricted clearance had to be stored inside the verifier itself.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Flag:</b> XOR 0x41 over the comparison data</h2>
+      <ul><li><b>What I did:</b> inspected the verifier's embedded comparison data. The encoded byte sequence is XOR-obfuscated with 0x41. I XORed each byte with 0x41 to recover the exact 24-character clearance value, f96f4417c75121c3d27b039d. The required submission wraps that value in the challenge flag format.</li><li class="think"><b>Thinking:</b> the recovered bytes were a clean run of lowercase hex, which is what a clearance value should look like, so the key 0x41 was right.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">CSCTF{f96f4417c75121c3d27b039d}</span></li></ul>
+      <figure><a href="../img/csctf-2026/command-authority/02_clearance_flag.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/command-authority/02_clearance_flag.webp" alt="solve.py output showing the JPEG trailer, the decoded standard-corridor token and the XOR 0x41 scan returning the 24 character clearance and the flag" width="1016" height="222" loading="lazy"></a><figcaption>solve.py output showing the JPEG trailer, the decoded standard-corridor token and the XOR 0x41 scan returning the 24 character clearance and the flag</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py id_photo.jpg field_verifier pass.token</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>The captures are of the real solve, reproduced by solve.py against the supplied artifacts. The personnel photo itself is intentionally not reproduced.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="echo-chamber.html"><small>Previous</small>Echo Chamber</a><a class="next" href="fence-shift.html"><small>Next</small>Fence Shift</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Reverse Engineering · JPEG trailer, XOR-obfuscated constant</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>unzip</li><li>Python</li><li>strings</li><li>objdump</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{f96f4417c75121c3d27b039d}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Reverse%20Engineering/Command%20Authority/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>id_photo.jpg and pass_bundle.zip</span></a></li><li><a href="#step-2"><b>2</b><span>Trailer key opens pass_bundle.zip</span></a></li><li><a href="#step-3"><b>3</b><span>Verifier compares against a hidden value</span></a></li><li><a href="#step-4"><b>4</b><span>XOR 0x41 over the comparison data</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261121a" defer></script>
+</body>
+</html>

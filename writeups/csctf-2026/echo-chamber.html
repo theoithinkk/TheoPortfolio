@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Echo Chamber (Pwn writeup) | Theodore Garcia</title>
+<meta name="description" content="A %s echo is a leak oracle whenever you can control where its NUL terminator falls - overwriting one known zero byte turns &quot;harmless echo&quot; into an arbitrary adjacent-memory read, and repeating it peels the canary, the stack cookie&#x27;s neighbours, the PIE return and (via an rbp pivot back into the same printf) a libc pointer. When the only gadget is leave;ret, you still win by pivoting rbp/rsp into a buffer whose address you just leaked and ROPing from there in a second stage. A single 0x20-byte overflow is enough.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Pwn</span><span class="wu-lvl">echo-oracle leak, ret2libc</span><span>5 steps · 4 min read</span></p>
+    <h1>Echo Chamber</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>A %s echo is a leak oracle whenever you can control where its NUL terminator falls - overwriting one known zero byte turns "harmless echo" into an arbitrary adjacent-memory read, and repeating it peels the canary, the stack cookie's neighbours, the PIE return and (via an rbp pivot back into the same printf) a libc pointer. When the only gadget is leave;ret, you still win by pivoting rbp/rsp into a buffer whose address you just leaked and ROPing from there in a second stage. A single 0x20-byte overflow is enough.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> the echo overflow and the stack frame.</h2>
+      <ul><li><b>What I found:</b> chamber() reads 0x70 bytes into an 0x50 buffer, then echoes it with printf("echo: %s", buf). The read overflows by 0x20 - exactly through the saved return address, so there is only room to pivot, not to drop a full ROP chain in one shot. The %s echo stops at the first NUL, which makes it a byte-precise leak oracle.</li><li><b>What I found:</b> frame (buf = rbp-0x50): canary @ buf+0x58, saved rbp @ buf+0x60, saved return @ buf+0x68. The chain is two-stage, defeating canary + PIE + ASLR with no good gadgets.</li></ul>
+      <figure><a href="../img/csctf-2026/echo-chamber/01_challenge_briefing.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/echo-chamber/01_challenge_briefing.webp" alt="Echo Chamber — challenge briefing on the CSCTF 2026 scoreboard" width="1489" height="812" loading="lazy"></a><figcaption>Echo Chamber — challenge briefing on the CSCTF 2026 scoreboard</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span>Leak the canary.</h2>
+      <ul><li>The canary's least-significant byte is 0x00, which normally terminates the echo. Overwrite just that NUL with a non-zero byte; printf then runs on and prints the remaining 7 canary bytes. Prepend the 0x00 back to recover the full canary value. "Make it repeat something it was never meant to be holding" = this leak.</li></ul>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span>Leak the stack and the PIE base.</h2>
+      <ul><li>Extend the same trick to buf+0x60 and buf+0x68: the echo spills the saved rbp (a stack address) and the saved return into the PIE image. pie_base = leaked_return - 0x137e.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span>Leak libc (the pivot trick, because there are no gadgets but leave;ret).</h2>
+      <ul><li>The binary has nothing useful to ROP with except a leave;ret. So: overflow to set a fake rbp pointing into main's frame (main_rbp+0x68) and return into chamber's OWN echo printf at pie+0x1332. With rbp pointed there, the printf prints [main_rbp+8] = main's saved return, which lives in libc. libc_base = leak - 0x29d90.</li><li>Re-entering the echo printf also drops back into the read/echo loop, now reading into a known stack buffer B = main_rbp+8 whose exact address we hold.</li></ul>
+    </section>
+    <section class="wu-step" id="step-5">
+      <h2><span class="wu-n">05</span>Pop a shell.</h2>
+      <ul><li>Overflow B, use leave;ret to pivot rsp onto it, and run the only ROP we need: pop rdi ; ret  -&gt;  "/bin/sh"  -&gt;  system all resolved against the leaked libc base. Shell as the service user.</li><li class="result"><b>Result:</b> id -&gt; uid=10001(ctf); /flag is a symlink to /tmp/flag, which carried <span class="flag" tabindex="0">CSCTF{Wy682FM0Dujh2fOOZ0uHXcWo}</span>.</li></ul>
+    </section>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>Never reflect a buffer you just read into with %s unless the input length is bounded and NUL-terminated by you; an echo of attacker data past its intended end is an information-disclosure primitive, canary included. Bound the copy to the destination size (read at most sizeof(buf)-1 and NUL-terminate); the root cause here is reading 0x70 into an 0x50 buffer, classic "careless about how much they copy." Stack canaries, PIE and ASLR only raise the cost; they fall together once one reliable leak exists, so fuzz for over-reads, not just over-writes, and treat any length-controllable echo as a leak during review.</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python solve.py w01.ctf.chronos-security.ro 37605 (pure stdlib sockets: walks the echo oracle to leak canary/stack/PIE, pivots rbp into main and re-enters the echo printf to leak libc, then leave;ret-pivots into a known buffer and ROPs pop rdi;"/bin/sh";system; offsets are constants at the top of the file, retune per binary build)</p></aside>
+    <aside class="wu-callout"><h2>Note</h2><p>the live instance is required; the CTF has ended, so the container no longer serves.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="silent-orbit.html"><small>Previous</small>Silent Orbit</a><a class="next" href="command-authority.html"><small>Next</small>Command Authority</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Pwn · echo-oracle leak, ret2libc</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (stdlib: socket</li><li>struct)</li><li>solve.py</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{Wy682FM0Dujh2fOOZ0uHXcWo}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Pwn/Echo%20Chamber/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Echo overflow and the stack frame</span></a></li><li><a href="#step-2"><b>2</b><span>Leak the canary</span></a></li><li><a href="#step-3"><b>3</b><span>Leak the stack and the PIE base</span></a></li><li><a href="#step-4"><b>4</b><span>Leak libc</span></a></li><li><a href="#step-5"><b>5</b><span>Pop a shell</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261121a" defer></script>
+</body>
+</html>

@@ -16,7 +16,7 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">DOCX tracked-change recovery</span><span>3 steps · 2 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">DOCX tracked-change recovery</span><span>3 steps · 3 min read</span></p>
     <h1>Redline</h1>
   </div>
 </header>
@@ -24,20 +24,20 @@
   <article class="wu-article">
     <aside class="wu-callout key"><h2>The trick</h2><p>Word keeps deleted text inside document.xml as w:del runs, so the approved authorization was never gone, just marked deleted, while a forged one was inserted in its place by s.kessler.</p></aside>
     <section class="wu-step" id="step-1">
-      <h2><span class="wu-n">01</span><b>Start point:</b> a .docx is a ZIP of XML. Unzip it and read the parts.</h2>
-      <ul><li><b>What I found:</b> docProps/core.xml names the original author as "A. Reyes" (dc:creator) but cp:lastModifiedBy = "s.kessler", with cp:revision 4. So someone other than the author touched the file last.</li><li class="think"><b>Thinking:</b> a directive that "reads wrong" plus a different last editor points straight at tracked changes (Word revisions), which Word stores inline in word/document.xml as &lt;w:ins&gt; (insertions) and &lt;w:del&gt; (deletions), each stamped with w:author and w:date.</li></ul>
+      <h2><span class="wu-n">01</span><b>Start point:</b> the handout, CC-11_excursion_directive.docx</h2>
+      <ul><li><b>What I did:</b> a .docx is a ZIP of XML parts, so I opened it with Python's zipfile and read docProps/core.xml first.</li><li><b>What I found:</b> dc:creator is "A. Reyes", but cp:lastModifiedBy is "s.kessler" (cp:revision 4, modified 2026-10-07T02:41Z). Someone other than the author touched the file last.</li><li class="think"><b>Thinking:</b> a directive that "reads wrong" plus a different last editor points at tracked changes. Word keeps those inline in word/document.xml as w:ins (insertions) and w:del (deletions), each stamped with w:author and w:date.</li></ul>
     </section>
     <section class="wu-step" id="step-2">
-      <h2><span class="wu-n">02</span><b>Pivot:</b> pull every tracked insertion and deletion.</h2>
-      <ul><li><b>What I found:</b> all nine revisions are by s.kessler, stamped 2026-10-07T02:41Z. The deletions and insertions are a matched rewrite of the directive's meaning: deleted "temperature" -&gt; inserted "thermal"; deleted "30" -&gt; inserted "90" (loosening the excursion limit); deleted  "Vials that exceeded 8 C MUST be quarantined and MUST NOT be redistributed." inserted "Vials that exceeded 8 C may be returned to distribution at depot-supervisor discretion." word/comments.xml has s.kessler's note: "I am dropping the quarantine hold ... Re-issuing under a fresh authorization." So the safety hold was deliberately reversed.</li><li class="think"><b>Thinking:</b> the authorization token was part of that rewrite. The DELETED authorization is the original approved one; the INSERTED authorization is the forgery kessler substituted.</li></ul>
+      <h2><span class="wu-n">02</span><b>Pivot:</b> s.kessler's tracked changes rewrite the rule</h2>
+      <ul><li><b>What I did:</b> pulled every w:ins and w:del run out of word/document.xml with a regex, keeping author and date.</li><li><b>What I found:</b> all nine revisions are by s.kessler at 2026-10-07T02:41Z, and they pair up into one rewrite:<ul><li>"temperature" deleted, "thermal" inserted</li><li>the Nightwatch page threshold above 8 C: "30" minutes deleted, "90" inserted</li><li>deleted: "Vials that exceeded 8 C MUST be quarantined and MUST NOT be redistributed."</li><li>inserted: "Vials that exceeded 8 C may be returned to distribution at depot-supervisor discretion."</li></ul></li><li><b>What I found:</b> word/comments.xml has s.kessler's note: "I am dropping the quarantine hold ... Re-issuing under a fresh authorization." So the safety hold was reversed on purpose.</li><li class="think"><b>Thinking:</b> the "Excursion authorization:" token sits inside the rewritten sentence, so it was swapped too. The deleted token is the one A. Reyes approved; the inserted one is what s.kessler re-issued.</li></ul>
     </section>
     <section class="wu-step" id="step-3">
-      <h2><span class="wu-n">03</span><b>Pivot:</b> separate the real authorization from the forged one.</h2>
-      <ul><li><b>What I found:</b> deleted (original) authorization = <span class="flag" tabindex="0">CSCTF{redline_21ee9b19d342e06432165fb2b6f64e06}</span> (split across two deletion runs in the XML, which I rejoin). Inserted (forged) authorization = <span class="flag" tabindex="0">CSCTF{dispatch_0f7c0c00aac69bbb86d6b96391f5d112}</span>, the decoy that went out to the crews.</li><li class="result"><b>Result:</b> the original excursion authorization is the deleted token.</li></ul>
+      <h2><span class="wu-n">03</span><b>Flag:</b> rejoin the deleted authorization</h2>
+      <ul><li><b>What I found:</b> the deleted token is split across two w:del runs, "CSCTF{redline_21ee9b19d" and "342e06432165fb2b6f64e06}". The inserted token is <span class="flag" tabindex="0">CSCTF{dispatch_0f7c0c00aac69bbb86d6b96391f5d112}</span>, the decoy that reached the crews.</li><li class="think"><b>Thinking:</b> the challenge asks for the original authorization, and only the deleted runs predate s.kessler's edit.</li><li class="result"><b>Result:</b> rejoined, the original authorization is <span class="flag" tabindex="0">CSCTF{redline_21ee9b19d342e06432165fb2b6f64e06}</span>.</li></ul>
+      <figure><a href="../img/csctf-2026/redline/01_solve_run.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/redline/01_solve_run.webp" alt="solve.py output: the author and last editor, s.kessler&#x27;s tracked insertions and deletions, the forged inserted authorization and the original deleted one" width="1600" height="516" loading="lazy"></a><figcaption>solve.py output: the author and last editor, s.kessler&#x27;s tracked insertions and deletions, the forged inserted authorization and the original deleted one</figcaption></figure>
     </section>
-    <aside class="wu-callout"><h2>Flag</h2><p><span class="flag" tabindex="0">CSCTF{redline_21ee9b19d342e06432165fb2b6f64e06}</span></p></aside>
-    <aside class="wu-callout"><h2>Reproduce</h2><p>python3 solve.py CC-11_excursion_directive.docx</p></aside>
-    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>Distributing a .docx without flattening it leaves the full edit history, authors and timestamps embedded. For forensics that is a gift, but for anyone publishing a document it is a leak, so export to PDF or run Document Inspector before release. Safety-critical directives should also be signed or hashed at approval time, so a later unapproved rewrite (here: quarantine to redistribute, by a non-author) is detectable instead of silently shipping to crews.</p></aside>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>A .docx shared without flattening carries its full edit history, authors and timestamps. That helps an investigator but leaks for a publisher, so export to PDF or run Document Inspector before release. Safety-critical directives should also be signed or hashed at approval, so an unapproved rewrite by a non-author (quarantine changed to redistribute) is caught instead of shipping to crews.</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py CC-11_excursion_directive.docx</p></aside>
     <aside class="wu-callout"><h2>Note</h2><p>the screenshot is a live re-run of solve.py against the challenge's own .docx; it reproduces the documented flag.</p></aside>
     <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="recon-plate.html"><small>Previous</small>Recon Plate</a><a class="next" href="relay-capture.html"><small>Next</small>Relay Capture</a></nav>
   </article>
@@ -45,11 +45,11 @@
     <dl class="wu-facts">
       <dt>Event</dt><dd>CSCTF 2026</dd>
       <dt>Category</dt><dd>Forensics · DOCX tracked-change recovery</dd>
-      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python 3</li><li>solve.py</li></ul></dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (zipfile</li><li>re)</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{redline_21ee9b19d342e06432165fb2b6f64e06}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Redline/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
     </dl>
-    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>.docx is a ZIP of XML. Unzip it and read…</span></a></li><li><a href="#step-2"><b>2</b><span>Pull every tracked insertion and deletion</span></a></li><li><a href="#step-3"><b>3</b><span>Separate the real authorization from the…</span></a></li></ol></nav>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Handout, CC-11_excursion_directive.docx</span></a></li><li><a href="#step-2"><b>2</b><span>s.kessler&#x27;s tracked changes rewrite the rule</span></a></li><li><a href="#step-3"><b>3</b><span>Rejoin the deleted authorization</span></a></li></ol></nav>
   </aside>
 </div>
 <script src="../wu.js?v=20261121a" defer></script>

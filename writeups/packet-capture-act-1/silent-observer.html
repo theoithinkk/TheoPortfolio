@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Silent Observer (OSINT writeup) | Theodore Garcia</title>
-<meta name="description" content="Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account&#x27;s food posts) were decoys. The account&#x27;s own &quot;throwaway&quot; tweets explained how to use each clue.">
+<meta name="description" content="Each clue sat in an overlooked place (image metadata, an encoded tweet, a what3words address in an anonymous message) and ended at a cafe&#x27;s phone number. The obvious leads (the face in the photo, the account&#x27;s food posts) were decoys. The account&#x27;s own &quot;throwaway&quot; tweets explained how to use each clue.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,13 +16,13 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">Medium</span><span>6 steps · 3 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">metadata, what3words, phone lookup</span><span>6 steps · 3 min read</span></p>
     <h1>Silent Observer</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>Each clue was in an overlooked place (image metadata, an encoded tweet, a what3words address hidden in an anonymous message), while the obvious leads (the face in the photo, the account's food posts) were decoys. The account's own "throwaway" tweets explained how to use each clue.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>Each clue sat in an overlooked place (image metadata, an encoded tweet, a what3words address in an anonymous message) and ended at a cafe's phone number. The obvious leads (the face in the photo, the account's food posts) were decoys. The account's own "throwaway" tweets explained how to use each clue.</p></aside>
     <section class="wu-step" id="step-1">
       <h2><span class="wu-n">01</span><b>Start point:</b> absolute.png (a black-and-white portrait).</h2>
       <ul><li><b>What I found:</b> the PNG text chunks carry Artist = @Skye_Chi14 and Comment = NOISE.</li><li class="think"><b>Thinking:</b> the brief says the image "was shared without anyone checking what came with it" and to "follow what the picture doesn't say". That points at metadata, not the visible content. The face in the photo is a decoy: identifying the person leads nowhere and isn't part of the puzzle.</li></ul>
@@ -51,7 +51,7 @@
     </section>
     <section class="wu-step" id="step-6">
       <h2><span class="wu-n">06</span><b>Pivot:</b> the venue on Google Maps.</h2>
-      <ul><li><b>What I did:</b> looked up cafe capyba on Google Maps.</li><li class="result"><b>Result:</b> 1-31-3 Higashimukojima, Sumida City, Tokyo; phone +81 3-6657-0748.</li><li><b>Formatting:</b> the number without spaces or dashes, in international format: <span class="flag" tabindex="0">PacketCapture{+81366570748}</span>.</li></ul>
+      <ul><li><b>What I did:</b> looked up cafe capyba on Google Maps.</li><li class="result"><b>Result:</b> 1-31-3 Higashimukojima, Sumida City, Tokyo; phone +81 3-6657-0748.</li><li class="think"><b>Thinking:</b> the brief says the venue takes reservations by phone, so the Maps listing holds the answer.</li><li class="result"><b>Result:</b> written without spaces or dashes in international format, the number gives <span class="flag" tabindex="0">PacketCapture{+81366570748}</span>.</li></ul>
       <figure><a href="../img/packet-capture-act-1/silent-observer/06_google_maps_phone.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/silent-observer/06_google_maps_phone.webp" alt="Google Maps listing with the phone number" width="1600" height="1033" loading="lazy"></a><figcaption>Google Maps listing with the phone number</figcaption></figure>
     </section>
 
@@ -60,7 +60,7 @@
   <aside class="wu-side">
     <dl class="wu-facts">
       <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
-      <dt>Category</dt><dd>OSINT · Medium</dd>
+      <dt>Category</dt><dd>OSINT · metadata, what3words, phone lookup</dd>
       <dt>Tools</dt><dd><ul class="wu-tools-list"><li>PNG metadata inspection</li><li>Python</li><li>X/Twitter</li><li>tomydearest.xyz</li><li>what3words</li><li>Google Maps</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{+81366570748}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20I%20-%20The%20Signal/%28DONE%29%20Silent%20Observer/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>

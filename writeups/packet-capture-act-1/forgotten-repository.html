@@ -16,7 +16,7 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>4 steps · 1 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">git history secret</span><span>4 steps · 2 min read</span></p>
     <h1>Forgotten Repository</h1>
   </div>
 </header>
@@ -35,12 +35,12 @@
     </section>
     <section class="wu-step" id="step-3">
       <h2><span class="wu-n">03</span><b>Pivot:</b> the diffs.</h2>
-      <ul><li><b>What I did:</b> pulled every commit's patch with gh api and grepped for "PacketCapture{" and "KEY".</li><li class="result"><b>Result:</b> the real key was added in commit 413705f ("rotate relay key") and removed in 55a64f3 ("remove exposed credentials"); the removal diff still shows it in red. Two other flag-shaped values also appear in the history:<ul><li>API_KEY=<span class="flag" tabindex="0">PacketCapture{DECOY_ENDPOINT}</span></li><li>BACKUP_KEY=<span class="flag" tabindex="0">PacketCapture{RELAY_BACKUP_KEY}</span></li><li>API_KEY=<span class="flag" tabindex="0">PacketCapture{L34K3D_R3P0_D1SC0V3R3D_DAB2A78}</span></li></ul></li><li class="think"><b>Thinking:</b> the two decoys are named after config fields rather than telling a story, which is a common way authors plant wrong answers. The real one reads as a sentence ("leaked repo discovered") and ends with a short hash-like suffix, which is how real flags in this CTF look.</li></ul>
+      <ul><li><b>What I did:</b> pulled every commit's patch with gh api and grepped for "PacketCapture{" and "KEY".</li><li class="result"><b>Result:</b> the real key was added in commit 413705f ("rotate relay key") and removed in 55a64f3 ("remove exposed credentials"); the removal diff still shows it in red. Three flag-shaped values appear in the history, two decoys and the real key:<ul><li>API_KEY=<span class="flag" tabindex="0">PacketCapture{DECOY_ENDPOINT}</span></li><li>BACKUP_KEY=<span class="flag" tabindex="0">PacketCapture{RELAY_BACKUP_KEY}</span></li><li>API_KEY=<span class="flag" tabindex="0">PacketCapture{L34K3D_R3P0_D1SC0V3R3D_DAB2A78}</span></li></ul></li><li class="think"><b>Thinking:</b> the two decoys are named after config fields rather than telling a story, which is a common way authors plant wrong answers. The real one reads as a sentence ("leaked repo discovered") and ends with a short hash-like suffix, which is how real flags in this CTF look.</li></ul>
       <figure><a href="../img/packet-capture-act-1/forgotten-repository/03_diff_leaked_key.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/forgotten-repository/03_diff_leaked_key.webp" alt="Commit 55a64f3 removing the leaked key" width="1584" height="1575" loading="lazy"></a><figcaption>Commit 55a64f3 removing the leaked key</figcaption></figure>
     </section>
     <section class="wu-step" id="step-4">
-      <h2><span class="wu-n">04</span><b>Verification:</b> submit the real flag</h2>
-      <ul><li><b>What I did:</b> submitted the third value.</li><li class="result"><b>Result:</b> the site accepted it.</li></ul>
+      <h2><span class="wu-n">04</span><b>Flag:</b> submit the real flag</h2>
+      <ul><li><b>What I did:</b> submitted the third value.</li><li class="think"><b>Thinking:</b> the third value is the only one that comes from the removed key, and it reads as a sentence.</li><li class="result"><b>Result:</b> the site accepted <span class="flag" tabindex="0">PacketCapture{L34K3D_R3P0_D1SC0V3R3D_DAB2A78}</span>.</li></ul>
     </section>
 
     <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="digital-footprint.html"><small>Previous</small>Digital Footprint</a><a class="next" href="hidden-profile.html"><small>Next</small>Hidden Profile</a></nav>
@@ -48,7 +48,7 @@
   <aside class="wu-side">
     <dl class="wu-facts">
       <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
-      <dt>Category</dt><dd>OSINT</dd>
+      <dt>Category</dt><dd>OSINT · git history secret</dd>
       <dt>Tools</dt><dd><ul class="wu-tools-list"><li>GitHub CLI</li><li>grep</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{L34K3D_R3P0_D1SC0V3R3D_DAB2A78}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20I%20-%20The%20Signal/%28DONE%29%20Forgotten%20Repository/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>

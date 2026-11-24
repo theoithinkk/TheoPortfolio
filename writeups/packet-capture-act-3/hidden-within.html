@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Hidden Within (Steganography writeup) | Theodore Garcia</title>
-<meta name="description" content="Test each colour channel&#x27;s LSB on its own as well as interleaved. Here the message was only in red, so the common &quot;RGB interleaved&quot; extraction gives garbage.">
+<meta name="description" content="The message was hidden in the least significant bit of the red channel only, so the usual RGB-interleaved extraction returned garbage. Test each colour channel&#x27;s LSB on its own as well as interleaved.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,13 +16,13 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act III: The Echo</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">Steganography</span><span>2 steps · 1 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">Steganography</span><span class="wu-lvl">LSB, red channel only</span><span>2 steps · 1 min read</span></p>
     <h1>Hidden Within</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>Test each colour channel's LSB on its own as well as interleaved. Here the message was only in red, so the common "RGB interleaved" extraction gives garbage.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>The message was hidden in the least significant bit of the red channel only, so the usual RGB-interleaved extraction returned garbage. Test each colour channel's LSB on its own as well as interleaved.</p></aside>
     <section class="wu-step" id="step-1">
       <h2><span class="wu-n">01</span><b>Start point:</b> a 200x150 PNG of purple/green diagonal stripes.</h2>
       <ul><li><b>What I found:</b> no metadata, no text chunks and no data appended after IEND. The image is a plain smooth gradient.</li><li class="think"><b>Thinking:</b> a plain gradient image with nothing in the file structure usually means LSB (least significant bit) steganography. Changing the last bit of a colour value is invisible to the eye.</li></ul>
@@ -30,7 +30,7 @@
     </section>
     <section class="wu-step" id="step-2">
       <h2><span class="wu-n">02</span><b>Pivot:</b> LSB extraction per channel.</h2>
-      <ul><li><b>What I did:</b> read the lowest bit of each pixel, row by row, and packed every 8 bits into a byte. I tried R, G and B separately and RGB interleaved.</li><li class="result"><b>Result:</b> G and B gave only runs of 0x00/0xFF (no data), and RGB interleaved was noise. The red channel alone gave readable ASCII, terminated by a null byte: FLAG:<span class="flag" tabindex="0">PacketCapture{STEGO_DECODED}</span></li></ul>
+      <ul><li><b>What I did:</b> read the lowest bit of each pixel, row by row, and packed every 8 bits into a byte. I tried R, G and B separately and RGB interleaved.</li><li class="result"><b>Result:</b> G and B gave only runs of 0x00/0xFF (no data), and RGB interleaved was noise. The red channel alone gave readable ASCII, terminated by a null byte:<ul><li>FLAG:<span class="flag" tabindex="0">PacketCapture{STEGO_DECODED}</span></li></ul></li><li class="think"><b>Thinking:</b> the message sat in red only, so mixing the three channels into one bit stream scrambled it.</li></ul>
       <figure><a href="../img/packet-capture-act-3/hidden-within/02_lsb_extraction.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-3/hidden-within/02_lsb_extraction.webp" alt="LSB extraction: only the red channel carries the message" width="1102" height="260" loading="lazy"></a><figcaption>LSB extraction: only the red channel carries the message</figcaption></figure>
     </section>
 
@@ -39,7 +39,7 @@
   <aside class="wu-side">
     <dl class="wu-facts">
       <dt>Event</dt><dd>Packet Capture CTF · Act III: The Echo</dd>
-      <dt>Category</dt><dd>Steganography</dd>
+      <dt>Category</dt><dd>Steganography · LSB, red channel only</dd>
       <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{STEGO_DECODED}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20III%20-%20The%20Echo/%28DONE%29%20Hidden%20Within/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>

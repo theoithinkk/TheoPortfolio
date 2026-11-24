@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Fence Shift (Reverse Engineering writeup) | Theodore Garcia</title>
+<meta name="description" content="A queue acknowledgement is not proof the controller accepted the reposition, so I drove the state timeline from the aircraft&#x27;s matching parameter confirmation and took the predicate from the binary. The exact controller predicate has to be recovered from the binary rather than inferred from the route manager&#x27;s response.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../style.css?v=20261121a">
+<link rel="stylesheet" href="../../paper.css?v=20261121a">
+<script src="../../prefs.js?v=20261121a" data-static></script>
+</head>
+<body class="wu-body">
+<header class="wu-hero">
+  <div class="wu-wrap">
+    <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
+    <p class="wu-kicker"><span class="wu-cat">Reverse Engineering</span><span class="wu-lvl">controller predicate from binary</span><span>4 steps · 3 min read</span></p>
+    <h1>Fence Shift</h1>
+  </div>
+</header>
+<div class="wu-wrap wu-layout">
+  <article class="wu-article">
+    <aside class="wu-callout key"><h2>The trick</h2><p>A queue acknowledgement is not proof the controller accepted the reposition, so I drove the state timeline from the aircraft's matching parameter confirmation and took the predicate from the binary. The exact controller predicate has to be recovered from the binary rather than inferred from the route manager's response.</p></aside>
+    <section class="wu-step" id="step-1">
+      <h2><span class="wu-n">01</span><b>Start point:</b> fence-shift.zip and ops_notes.txt</h2>
+      <ul><li><b>What I did:</b> extracted fcu, mission.pcapng and ops_notes.txt from the evidence packet fence-shift.zip, then read the notes.</li><li><b>What I found:</b> the notes define the aircraft, route-manager and ground-station MAVLink roles. They distinguish the route manager's queue acknowledgement from the controller's later decision, and say only a matching aircraft-origin PARAM_VALUE confirms a ground-origin PARAM_SET.</li><li class="think"><b>Thinking:</b> the notes separate a queue acknowledgement from the controller's real decision, so I needed the controller's own predicate from fcu instead of trusting the capture's replies.</li></ul>
+      <figure><a href="../img/csctf-2026/fence-shift/01_artifact_inventory.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/fence-shift/01_artifact_inventory.webp" alt="Terminal-style panel listing fence-shift.zip: fcu (stripped x86-64 ELF), mission.pcapng (MAVLink capture) and ops_notes.txt" width="1500" height="332" loading="lazy"></a><figcaption>Terminal-style panel listing fence-shift.zip: fcu (stripped x86-64 ELF), mission.pcapng (MAVLink capture) and ops_notes.txt</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-2">
+      <h2><span class="wu-n">02</span><b>Pivot:</b> recover the controller interface and checks</h2>
+      <ul><li><b>What I found:</b> strings identifies the interface fcu fence &lt;block&gt; &lt;lat_e7&gt; &lt;lon_e7&gt; &lt;alt_cm&gt;. Disassembly shows the controller reads exactly 0x1c (28) bytes, checks the trailing format tag 0x5346, and rejects a radius margin above 100.</li><li><b>What I found:</b> the parameter block is decoded as six 32-bit fields followed by two 16-bit fields, and the request coordinates and altitude are parsed as signed integers. The binary converts centimetre offsets into coordinate units, applies the percentage radius margin, compares squared horizontal distance against squared adjusted radius, and separately enforces the maximum altitude.</li><li class="think"><b>Thinking:</b> the squared-distance and altitude comparisons are the accept or reject decision, so reproducing them offline would let me score every captured request.</li></ul>
+      <figure><a href="../img/csctf-2026/fence-shift/02_controller_predicate.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/fence-shift/02_controller_predicate.webp" alt="Terminal-style panel with the fcu usage string and objdump comparisons: format tag 0x5346, margin at most 100, squared distance against squared adjusted radius, request_alt_cm against max_alt_cm" width="1500" height="390" loading="lazy"></a><figcaption>Terminal-style panel with the fcu usage string and objdump comparisons: format tag 0x5346, margin at most 100, squared distance against squared adjusted radius, request_alt_cm against max_alt_cm</figcaption></figure>
+    </section>
+    <section class="wu-step" id="step-3">
+      <h2><span class="wu-n">03</span><b>Pivot:</b> rebuild the fence state timeline</h2>
+      <ul><li><b>What I did:</b> used the initial aircraft-origin PARAM_VALUE burst as the provisioned state.</li><li><b>What I did:</b> applied each later ground-origin PARAM_SET only at the point where its matching aircraft-origin PARAM_VALUE confirms it, and did not treat the route manager's immediate queued acknowledgement as a geofence acceptance.</li><li><b>What I found:</b> the provisioned centre is the initial aircraft GLOBAL_POSITION_INT fix. Captured MSL altitude is integral metres, so each value is converted to centimetres as alt_cm = z * 100.</li><li class="think"><b>Thinking:</b> the notes say only a matching PARAM_VALUE confirms a PARAM_SET, so that is the only event that should change the active state.</li></ul>
+    </section>
+    <section class="wu-step" id="step-4">
+      <h2><span class="wu-n">04</span><b>Flag:</b> evaluate the 22 requests twice</h2>
+      <ul><li><b>What I did:</b> for each of the 22 ground-origin reposition requests in capture order, evaluated the recovered predicate against the confirmed active state at that instant and against the unchanged initial provisioned state. I set bit i when the predicate accepts request i.</li><li class="think"><b>Thinking:</b> the challenge asks for both states, so one pass per state gives the two masks, with request 0 as the least-significant bit and six lowercase hexadecimal digits each.</li><li class="result"><b>Result:</b> active-state mask 2bbb27, initial provisioned-state mask 3aa227. Flag: <span class="flag" tabindex="0">CSCTF{active_2bbb27_provisioned_3aa227}</span></li></ul>
+      <figure><a href="../img/csctf-2026/fence-shift/03_masks_and_flag.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/fence-shift/03_masks_and_flag.webp" alt="Terminal-style panel with 22 ground-origin MAV_CMD_DO_REPOSITION requests (indexes 0 to 21), active mask 2bbb27, provisioned mask 3aa227 and the flag" width="1500" height="303" loading="lazy"></a><figcaption>Terminal-style panel with 22 ground-origin MAV_CMD_DO_REPOSITION requests (indexes 0 to 21), active mask 2bbb27, provisioned mask 3aa227 and the flag</figcaption></figure>
+    </section>
+    <aside class="wu-callout"><h2>Note</h2><p>The screenshots are terminal-style evidence panels made for this write-up from the supplied notes and recovered binary analysis. They are not screenshots of a live aircraft or a real operation.</p></aside>
+    <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="command-authority.html"><small>Previous</small>Command Authority</a><a class="next" href="operation-dawn-radio-recovery.html"><small>Next</small>Operation Dawn - Radio Recovery</a></nav>
+  </article>
+  <aside class="wu-side">
+    <dl class="wu-facts">
+      <dt>Event</dt><dd>CSCTF 2026</dd>
+      <dt>Category</dt><dd>Reverse Engineering · controller predicate from binary</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>unzip</li><li>strings</li><li>objdump</li><li>Python</li></ul></dd>
+      <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{active_2bbb27_provisioned_3aa227}</span><small>Tap, hover or Tab to reveal</small></dd>
+      <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Reverse%20Engineering/Fence%20Shift/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
+    </dl>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>fence-shift.zip and ops_notes.txt</span></a></li><li><a href="#step-2"><b>2</b><span>Recover the controller interface and checks</span></a></li><li><a href="#step-3"><b>3</b><span>Rebuild the fence state timeline</span></a></li><li><a href="#step-4"><b>4</b><span>Evaluate the 22 requests twice</span></a></li></ol></nav>
+  </aside>
+</div>
+<script src="../wu.js?v=20261121a" defer></script>
+</body>
+</html>

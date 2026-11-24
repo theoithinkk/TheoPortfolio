@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Treasure Hunt Time (OSINT writeup) | Theodore Garcia</title>
-<meta name="description" content="When the file says &quot;wrong hole&quot;, go back to the brief. Here the coordinates came from the file name (what3words), and the hard part was formatting: DMS degrees.minutes, no signs, no space.">
+<meta name="description" content="The metadata comment was a decoy, and the coordinates came from the file name as the what3words address treasure.hunt.trip. The hard part was formatting: DMS degrees.minutes, no signs, no space.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,16 +16,16 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>5 steps · 2 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">what3words from file name</span><span>5 steps · 2 min read</span></p>
     <h1>Treasure Hunt Time</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>When the file says "wrong hole", go back to the brief. Here the coordinates came from the file name (what3words), and the hard part was formatting: DMS degrees.minutes, no signs, no space.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>The metadata comment was a decoy, and the coordinates came from the file name as the what3words address treasure.hunt.trip. The hard part was formatting: DMS degrees.minutes, no signs, no space.</p></aside>
     <section class="wu-step" id="step-1">
       <h2><span class="wu-n">01</span><b>Start point:</b> treasurehunttrip.jpg from MediaFire.</h2>
-      <ul><li><b>What I found:</b> a stock-style photo of a treasure map scene. Nothing in the picture itself names a place.</li></ul>
+      <ul><li><b>What I found:</b> a stock photo of an open treasure chest, a map, a compass and a spyglass on a beach. Nothing in the picture itself names a place.</li><li class="think"><b>Thinking:</b> nothing visible names a place, so the clue had to be in the file or the brief. I checked the metadata first.</li></ul>
       <figure><a href="../img/packet-capture-act-1/treasure-hunt-time/01_treasurehunttrip.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/treasure-hunt-time/01_treasurehunttrip.webp" alt="treasurehunttrip.jpg" width="1000" height="662" loading="lazy"></a><figcaption>treasurehunttrip.jpg</figcaption></figure>
     </section>
     <section class="wu-step" id="step-2">
@@ -39,12 +39,12 @@
     </section>
     <section class="wu-step" id="step-4">
       <h2><span class="wu-n">04</span><b>Pivot:</b> ///treasure.hunt.trip on what3words.</h2>
-      <ul><li class="result"><b>Result:</b> a square at -85.600191, -81.091278, in Antarctica (the map shows nothing there, which is expected).</li></ul>
+      <ul><li class="think"><b>Thinking:</b> the three words from the file name are the only three-word address the challenge gives, so I looked that one up.</li><li class="result"><b>Result:</b> a square at -85.600191, -81.091278, in Antarctica (the map shows nothing there, which is expected).</li></ul>
       <figure><a href="../img/packet-capture-act-1/treasure-hunt-time/03_what3words_treasure_hunt_trip.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/treasure-hunt-time/03_what3words_treasure_hunt_trip.webp" alt="///treasure.hunt.trip" width="1600" height="1033" loading="lazy"></a><figcaption>///treasure.hunt.trip</figcaption></figure>
     </section>
     <section class="wu-step" id="step-5">
       <h2><span class="wu-n">05</span><b>Pivot:</b> converting to the requested format.</h2>
-      <ul><li><b>What I did:</b> converted the decimal coordinates to DMS (degrees, minutes, seconds): 85deg 36' 00.69" S, 81deg 05' 28.60" W.</li><li class="think"><b>Thinking:</b> "LeadNo deg TrailNo" means the number before the degree sign (degrees) and the number right after it (minutes), written as degrees.minutes: 85.36 and 81.05.</li><li class="dead">Dead ends:<ul><li>PacketCapture{-85.60, -81.09} (decimal degrees rounded) was rejected: the brief asks for DMS, not decimal.</li><li>The format shown in the brief, PacketCapture{00.00, 00.00}, has a space after the comma, but the accepted flag has no space and no minus signs.</li></ul></li></ul>
+      <ul><li><b>What I did:</b> converted the decimal coordinates to DMS (degrees, minutes, seconds): 85deg 36' 00.69" S, 81deg 05' 28.60" W.</li><li class="think"><b>Thinking:</b> "LeadNo deg TrailNo" means the number before the degree sign (degrees) and the number right after it (minutes), written as degrees.minutes: 85.36 and 81.05.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">PacketCapture{85.36,81.05}</span> was accepted.</li><li class="dead">Dead ends:<ul><li>PacketCapture{-85.60, -81.09} (decimal degrees rounded) was rejected: the brief asks for DMS, not decimal.</li><li>The format shown in the brief, PacketCapture{00.00, 00.00}, has a space after the comma, but the accepted flag has no space and no minus signs.</li></ul></li></ul>
       <figure><a href="../img/packet-capture-act-1/treasure-hunt-time/04_dms_conversion.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/treasure-hunt-time/04_dms_conversion.webp" alt="Decimal to DMS to degrees.minutes" width="890" height="202" loading="lazy"></a><figcaption>Decimal to DMS to degrees.minutes</figcaption></figure>
     </section>
 
@@ -53,8 +53,8 @@
   <aside class="wu-side">
     <dl class="wu-facts">
       <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
-      <dt>Category</dt><dd>OSINT</dd>
-      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python for image metadata</li><li>what3words</li><li>DMS coordinate conversion</li></ul></dd>
+      <dt>Category</dt><dd>OSINT · what3words from file name</dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python for image metadata</li><li>TinEye</li><li>steghide</li><li>what3words</li><li>DMS coordinate conversion</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{85.36,81.05}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20I%20-%20The%20Signal/%28DONE%29%20Treasure%20Hunt%20Time/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
     </dl>

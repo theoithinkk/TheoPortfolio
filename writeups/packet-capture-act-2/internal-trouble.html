@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Internal Trouble (Web writeup) | Theodore Garcia</title>
-<meta name="description" content="The &quot;Is Website Down?&quot; checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as http://[::1]:3001 (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.">
+<meta name="description" content="The Is Website Down checker fetched URLs from the server side and its loopback denylist missed IPv6, so http://[::1]:3001 reached the internal dashboard. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as http://[::1]:3001 (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,19 +16,19 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act II: The Breach</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">Web</span><span class="wu-lvl">SSRF</span><span>4 steps · 2 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">Web</span><span class="wu-lvl">SSRF</span><span>4 steps · 3 min read</span></p>
     <h1>Internal Trouble</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>The "Is Website Down?" checker is an SSRF primitive. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as http://[::1]:3001 (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>The Is Website Down checker fetched URLs from the server side and its loopback denylist missed IPv6, so http://[::1]:3001 reached the internal dashboard. The internal monitor on port 3001 is only reachable from the server and is protected by a weak loopback denylist that matches IPv4 literals only. Reaching it as http://[::1]:3001 (or any hostname resolving to 127.0.0.1) bypasses the filter, and the dashboard screenshot carries the flag in its EXIF data.</p></aside>
     <section class="wu-step" id="step-1">
-      <h2><span class="wu-n">01</span><b>Start point:</b> the challenge page at https://internal.challs.packetcapture.xyz</h2>
-      <ul><li><b>What I did:</b> read the landing page, an "Is Website Down?" checker with a form that submits to /check?url=, and then the client-side JS in the result page.</li><li><b>What I found:</b> the real work happens at a backend API: POST /fetch with JSON body {"url": "..."}, which returns {"status":"ok","msg":"&lt;base64 PNG/JPEG screenshot&gt;"} on success, or {"status":"error","msg":...}.</li><li class="result"><b>Result:</b> /fetch is a server-side URL fetcher that renders a screenshot of whatever URL you give it, a classic SSRF surface.</li><li class="think"><b>Thinking:</b> The brief says "all 3001 systems" and "the troubles beeping within". 3001 is a port, and "within" means an internal service only reachable from the server itself. A tool that takes a URL and fetches it server-side is the way in.</li></ul>
+      <h2><span class="wu-n">01</span><b>Start point:</b> the Is Website Down checker</h2>
+      <ul><li><b>What I did:</b> read the landing page of https://internal.challs.packetcapture.xyz, an "Is Website Down?" checker with a form that submits to /check?url=, and then the client-side JS in the result page.</li><li><b>What I found:</b> the real work happens at a backend API: POST /fetch with JSON body {"url": "..."}, which returns {"status":"ok","msg":"&lt;base64 PNG/JPEG screenshot&gt;"} on success, or {"status":"error","msg":...}.</li><li class="result"><b>Result:</b> /fetch is a server-side URL fetcher that renders a screenshot of whatever URL you give it, a classic SSRF surface.</li><li class="think"><b>Thinking:</b> The brief says "all 3001 systems" and "the troubles beeping within". 3001 is a port, and "within" means an internal service only reachable from the server itself. A tool that takes a URL and fetches it server-side is the way in.</li></ul>
     </section>
     <section class="wu-step" id="step-2">
-      <h2><span class="wu-n">02</span><b>Pivot:</b> probe the internal service on port 3001 via /fetch</h2>
+      <h2><span class="wu-n">02</span><b>Pivot:</b> probe port 3001 through /fetch</h2>
       <ul><li><b>What I did:</b> sent POST /fetch with {"url":"http://localhost:3001"} and http://127.0.0.1:3001.</li><li><b>What I found:</b> both returned {"status":"error","msg":"Unauthorized."}.</li><li class="result"><b>Result:</b> the app has an SSRF filter that blocks obvious loopback addresses.</li><li class="think"><b>Thinking:</b> "Unauthorized" only comes back if the request is being inspected and rejected, so the service exists, it is just filtered. I needed a filter bypass.</li></ul>
     </section>
     <section class="wu-step" id="step-3">
@@ -36,9 +36,9 @@
       <ul><li><b>What I did:</b> tried several loopback representations against /fetch.<ul><li>http://0.0.0.0:3001 gave Unauthorized</li><li>http://127.1:3001 gave Unauthorized</li><li>http://2130706433:3001 (decimal IP) gave Unauthorized</li><li>http://[::1]:3001 (IPv6 loopback) worked and returned a base64 screenshot</li><li>http://127.0.0.1.nip.io:3001 (DNS wildcard to 127.0.0.1) worked</li><li>http://localtest.me:3001 worked</li></ul></li><li class="result"><b>Result:</b> the blocklist only covered IPv4 literal loopback forms. IPv6 [::1] and hostnames that resolve to 127.0.0.1 slipped straight through and reached the internal dashboard on port 3001.</li><li class="think"><b>Thinking:</b> SSRF denylists that string-match 127.0.0.1 or localhost almost always miss IPv6 and resolver tricks. [::1] is the same machine by a name the filter did not list.</li></ul>
     </section>
     <section class="wu-step" id="step-4">
-      <h2><span class="wu-n">04</span><b>Pivot:</b> extract the flag from the returned screenshot</h2>
-      <ul><li><b>What I found:</b> the internal dashboard screenshot came back base64-encoded. The flag was present both as readable text rendered in the image and, more directly, stored in the image's EXIF metadata. The EXIF description field contained the base64 string UGFja2V0Q2FwdHVyZXt5MHVfZDFkTnRfczMzX3RoNFRfYzBtMW5nX2ZkMjNiYWNlfQ== which decodes to the flag.</li><li class="result"><b>Result:</b> flag recovered.</li><li class="think"><b>Thinking:</b> when a challenge hands back an image, always decode it and check its metadata. The flag is usually planted in EXIF or rendered pixels rather than the page body.</li></ul>
-      <figure><a href="../img/packet-capture-act-2/internal-trouble/01_internal_dashboard.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-2/internal-trouble/01_internal_dashboard.webp" alt="Internal dashboard rendered via SSRF to [::1]:3001" width="142" height="88" loading="lazy"></a><figcaption>Internal dashboard rendered via SSRF to [::1]:3001</figcaption></figure>
+      <h2><span class="wu-n">04</span><b>Decode:</b> read the flag from the EXIF data</h2>
+      <ul><li><b>What I found:</b> the internal dashboard screenshot came back base64-encoded. The flag was present both as readable text rendered in the image and, more directly, stored in the image's EXIF metadata. The EXIF description field contained the base64 string UGFja2V0Q2FwdHVyZXt5MHVfZDFkTnRfczMzX3RoNFRfYzBtMW5nX2ZkMjNiYWNlfQ== which decodes to the flag.</li><li class="result"><b>Result:</b> flag recovered: <span class="flag" tabindex="0">PacketCapture{y0u_d1dNt_s33_th4T_c0m1ng_fd23bace}</span>.</li><li class="think"><b>Thinking:</b> when a challenge hands back an image, always decode it and check its metadata. The flag is usually planted in EXIF or rendered pixels rather than the page body.</li></ul>
+      <figure><a href="../img/packet-capture-act-2/internal-trouble/01_internal_dashboard.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-2/internal-trouble/01_internal_dashboard.webp" alt="Screenshot returned by /fetch for http://[::1]:3001: a tiny dark image with one line of green text, flag in its EXIF description" width="142" height="88" loading="lazy"></a><figcaption>Screenshot returned by /fetch for http://[::1]:3001: a tiny dark image with one line of green text, flag in its EXIF description</figcaption></figure>
     </section>
 
     <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="forgotten-router.html"><small>Previous</small>Forgotten Router</a><span></span></nav>
@@ -51,7 +51,7 @@
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{y0u_d1dNt_s33_th4T_c0m1ng_fd23bace}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20II%20-%20The%20Breach/%28DONE%29%20Internal%20Trouble/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
     </dl>
-    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Challenge page at…</span></a></li><li><a href="#step-2"><b>2</b><span>Probe the internal service on port 3001…</span></a></li><li><a href="#step-3"><b>3</b><span>Bypass the SSRF allow/deny filter</span></a></li><li><a href="#step-4"><b>4</b><span>Extract the flag from the returned…</span></a></li></ol></nav>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Is Website Down checker</span></a></li><li><a href="#step-2"><b>2</b><span>Probe port 3001 through /fetch</span></a></li><li><a href="#step-3"><b>3</b><span>Bypass the SSRF allow/deny filter</span></a></li><li><a href="#step-4"><b>4</b><span>Read the flag from the EXIF data</span></a></li></ol></nav>
   </aside>
 </div>
 <script src="../wu.js?v=20261121a" defer></script>

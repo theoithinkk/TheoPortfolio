@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Tone Burst (Forensics writeup) | Theodore Garcia</title>
-<meta name="description" content="A repeating preamble plus an HDLC-style 0x7E flag tells you the frame boundary. Always look for the sync pattern before trying to guess byte alignment.">
+<meta name="description" content="The audio is 50-baud binary FSK (2 kHz = 1, 1 kHz = 0), and a 32-bit 1010 preamble plus an HDLC-style 0x7E flag marks exactly where the ASCII payload starts. Looking for the sync pattern first beats guessing the byte alignment.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,31 +16,33 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">audio FSK decoding</span><span>4 steps · 1 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">audio FSK decoding</span><span>4 steps · 2 min read</span></p>
     <h1>Tone Burst</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>A repeating preamble plus an HDLC-style 0x7E flag tells you the frame boundary. Always look for the sync pattern before trying to guess byte alignment.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>The audio is 50-baud binary FSK (2 kHz = 1, 1 kHz = 0), and a 32-bit 1010 preamble plus an HDLC-style 0x7E flag marks exactly where the ASCII payload starts. Looking for the sync pattern first beats guessing the byte alignment.</p></aside>
     <section class="wu-step" id="step-1">
-      <h2><span class="wu-n">01</span>Recon.</h2>
-      <ul><li>FFT shows exactly two strong tones, 1000 Hz and 2000 Hz. Two tones plus bursts of signal in time means binary FSK.</li><li>Screenshot 01.</li></ul>
+      <h2><span class="wu-n">01</span><b>Start point:</b> the handout, tone-burst.wav</h2>
+      <ul><li><b>What I did:</b> plotted the waveform and took an FFT of the whole 9.2 s file.</li><li><b>What I found:</b> the spectrum has exactly two strong tones, 1000 Hz and 2000 Hz, and the waveform is one long burst of signal.</li><li class="think"><b>Thinking:</b> two tones and nothing else, switching over time, means binary FSK, so the next move is to find the symbol timing.</li></ul>
+      <figure><a href="../img/csctf-2026/tone-burst/01_waveform_spectrum.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/tone-burst/01_waveform_spectrum.webp" alt="Waveform (top) and spectrum (bottom): one long burst from about 0.24 s, and only two tones, 1000 Hz and 2000 Hz" width="1430" height="780" loading="lazy"></a><figcaption>Waveform (top) and spectrum (bottom): one long burst from about 0.24 s, and only two tones, 1000 Hz and 2000 Hz</figcaption></figure>
     </section>
     <section class="wu-step" id="step-2">
-      <h2><span class="wu-n">02</span>Found the framing.</h2>
-      <ul><li>Signal starts at sample 1921 (~0.24 s). Alternating tone changes every 20 ms (160 samples), i.e. 50 baud. Screenshot 03 (spectrogram) shows the 1 kHz / 2 kHz alternation.</li></ul>
+      <h2><span class="wu-n">02</span><b>Pivot:</b> the framing is 50 baud</h2>
+      <ul><li><b>What I found:</b> the signal starts at sample 1921 (about 0.24 s), and the tone alternates every 20 ms (160 samples), which is 50 baud.</li><li class="think"><b>Thinking:</b> a fixed 160-sample symbol means I can cut the burst into windows and decide each one on its own.</li></ul>
+      <figure><a href="../img/csctf-2026/tone-burst/03_spectrogram.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/tone-burst/03_spectrogram.webp" alt="Spectrogram: 1 kHz and 2 kHz symbols of 20 ms each, with the fast alternation of the preamble at the start" width="1430" height="520" loading="lazy"></a><figcaption>Spectrogram: 1 kHz and 2 kHz symbols of 20 ms each, with the fast alternation of the preamble at the start</figcaption></figure>
     </section>
     <section class="wu-step" id="step-3">
-      <h2><span class="wu-n">03</span>Demodulated.</h2>
-      <ul><li>For each 160-sample window compare the energy at 2000 Hz vs 1000 Hz (a single-bin DFT per tone). 2 kHz = 1, 1 kHz = 0.</li><li>Bit stream starts with 32 bits of 10101010 (clock-sync preamble), then the frame flag 01111110 (0x7E), then the payload.</li></ul>
+      <h2><span class="wu-n">03</span><b>Pivot:</b> demodulate the tones</h2>
+      <ul><li><b>What I did:</b> for each 160-sample window, compared the energy at 2000 Hz against 1000 Hz with a single-bin DFT per tone, reading 2 kHz as 1 and 1 kHz as 0.</li><li><b>What I found:</b> the bit stream starts with 32 bits of alternating 1010 (a clock-sync preamble), then 01111110 (0x7E), then the payload.</li><li class="think"><b>Thinking:</b> 0x7E after a sync preamble is an HDLC-style frame flag, so the payload's byte boundary starts right after it and I don't have to guess the alignment.</li></ul>
     </section>
     <section class="wu-step" id="step-4">
-      <h2><span class="wu-n">04</span>Decoded.</h2>
-      <ul><li>Reading the payload after 0x7E as 8-bit ASCII, MSB first: <span class="flag" tabindex="0">CSCTF{tone_burst_4481dda445a0a227c3a8eb90fda4fd92}</span></li><li>Screenshot 04.</li></ul>
+      <h2><span class="wu-n">04</span><b>Flag:</b> decode the payload</h2>
+      <ul><li><b>What I did:</b> read the bits after 0x7E as 8-bit ASCII, MSB first.</li><li class="think"><b>Thinking:</b> the first bytes came out as CSCTF{, which confirms both the bit mapping and the byte alignment.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">CSCTF{tone_burst_4481dda445a0a227c3a8eb90fda4fd92}</span></li></ul>
+      <figure><a href="../img/csctf-2026/tone-burst/04_decode.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/tone-burst/04_decode.webp" alt="solve.py output: the recovered bit stream (preamble, 0x7E flag, payload) and the decoded flag" width="1600" height="190" loading="lazy"></a><figcaption>solve.py output: the recovered bit stream (preamble, 0x7E flag, payload) and the decoded flag</figcaption></figure>
     </section>
-    <aside class="wu-callout"><h2>Reproduce</h2><p>python3 solve.py tone-burst.wav</p></aside>
-    <aside class="wu-callout"><h2>Screenshots</h2><p>screenshots/01_waveform_spectrum.png, 03_spectrogram.png, 04_decode.png</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py tone-burst.wav</p></aside>
     <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="the-layer-that-wouldnt-die.html"><small>Previous</small>The Layer That Wouldn&#x27;t Die</a><a class="next" href="water-hammer-reconciliation.html"><small>Next</small>Water Hammer Reconciliation</a></nav>
   </article>
   <aside class="wu-side">
@@ -51,7 +53,7 @@
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{tone_burst_4481dda445a0a227c3a8eb90fda4fd92}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Tone%20Burst/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
     </dl>
-    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Recon</span></a></li><li><a href="#step-2"><b>2</b><span>Found the framing</span></a></li><li><a href="#step-3"><b>3</b><span>Demodulated</span></a></li><li><a href="#step-4"><b>4</b><span>Decoded</span></a></li></ol></nav>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Handout, tone-burst.wav</span></a></li><li><a href="#step-2"><b>2</b><span>Framing is 50 baud</span></a></li><li><a href="#step-3"><b>3</b><span>Demodulate the tones</span></a></li><li><a href="#step-4"><b>4</b><span>Decode the payload</span></a></li></ol></nav>
   </aside>
 </div>
 <script src="../wu.js?v=20261121a" defer></script>

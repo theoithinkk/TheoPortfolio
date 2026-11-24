@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Hidden Profile (OSINT writeup) | Theodore Garcia</title>
-<meta name="description" content="Deleted or hidden posts can still exist in web archives. For X/Twitter, search both x.com and twitter.com, use the CDX API with matchType=prefix to list every captured URL under a profile (including individual tweets), and add id_ to read the raw capture.">
+<meta name="description" content="A CDX prefix query on twitter.com found archived tweets that the x.com lookup missed, and the id_ raw capture showed the flag tweet. For X/Twitter, search both x.com and twitter.com, use the CDX API with matchType=prefix to list every captured URL under a profile (including individual tweets), and add id_ to read the raw capture.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,13 +16,13 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>Packet Capture CTF · Act I: The Signal</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span>5 steps · 2 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">OSINT</span><span class="wu-lvl">Wayback CDX prefix search</span><span>5 steps · 2 min read</span></p>
     <h1>Hidden Profile</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>Deleted or hidden posts can still exist in web archives. For X/Twitter, search both x.com and twitter.com, use the CDX API with matchType=prefix to list every captured URL under a profile (including individual tweets), and add id_ to read the raw capture.</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>A CDX prefix query on twitter.com found archived tweets that the x.com lookup missed, and the id_ raw capture showed the flag tweet. For X/Twitter, search both x.com and twitter.com, use the CDX API with matchType=prefix to list every captured URL under a profile (including individual tweets), and add id_ to read the raw capture.</p></aside>
     <section class="wu-step" id="step-1">
       <h2><span class="wu-n">01</span><b>Start point:</b> the profile x.com/Sachiko_120914.</h2>
       <ul><li><b>What I found:</b> the live page can't be read directly, and the brief says it is effectively empty ("she stopped posting... her page still exists, technically").</li><li class="think"><b>Thinking:</b> the brief also says she is "remembered differently, by different tools". Content that is gone from the live site but "remembered" by tools points to web archives, so the Wayback Machine is the next stop.</li></ul>
@@ -43,9 +43,9 @@
     </section>
     <section class="wu-step" id="step-5">
       <h2><span class="wu-n">05</span><b>Pivot:</b> reading the thread as a whole.</h2>
-      <ul><li class="result"><b>Result:</b> the five tweets in order (the flag is the second):</li></ul>
+      <ul><li class="result"><b>Result:</b> the five tweets in order, with the flag <span class="flag" tabindex="0">PacketCapture{w4YbAcK_R0ck5_s0_coO1}</span> in the second:</li></ul>
       <figure><a href="../img/packet-capture-act-1/hidden-profile/03_thread_text.webp" target="_blank" rel="noopener"><img src="../img/packet-capture-act-1/hidden-profile/03_thread_text.webp" alt="The archived thread" width="1180" height="202" loading="lazy"></a><figcaption>The archived thread</figcaption></figure>
-      <ul><li class="think"><b>Thinking:</b> the flag reads "Wayback rocks so cool", which confirms the intended path. The next tweet ("the handwriting's wrong") is flavour text rather than a second layer.</li><li class="dead"><b>Care point:</b> copy the flag exactly from the raw JSON. It has an underscore between "s0" and "coO1".</li></ul>
+      <ul><li class="think"><b>Thinking:</b> the flag reads "Wayback rocks so cool", which confirms the intended path. The next tweet ("the handwriting's wrong") is flavour text rather than a second layer. I copied the flag exactly from the raw JSON, which has an underscore between "s0" and "coO1".</li></ul>
     </section>
 
     <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="forgotten-repository.html"><small>Previous</small>Forgotten Repository</a><a class="next" href="last-breadcrumb.html"><small>Next</small>Last Breadcrumb</a></nav>
@@ -53,7 +53,7 @@
   <aside class="wu-side">
     <dl class="wu-facts">
       <dt>Event</dt><dd>Packet Capture CTF · Act I: The Signal</dd>
-      <dt>Category</dt><dd>OSINT</dd>
+      <dt>Category</dt><dd>OSINT · Wayback CDX prefix search</dd>
       <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Wayback Machine CDX API</li><li>Wayback raw snapshot viewer</li><li>curl</li><li>Python</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">PacketCapture{w4YbAcK_R0ck5_s0_coO1}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/Packet%20Capture%20CTF/ACT%20I%20-%20The%20Signal/%28DONE%29%20Hidden%20Profile/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>

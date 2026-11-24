@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Ortelia VDR Carving (Forensics writeup) | Theodore Garcia</title>
-<meta name="description" content="Header and footer carving fails on fragmented files. When the flash is read raw, a file&#x27;s sectors can be scattered, so &quot;header to next IEND&quot; or &quot;header to end of data&quot; gives a truncated or wrong file. Use the format&#x27;s own integrity data (PNG chunk lengths and CRC32) to confirm reassembly, and count how many sectors the file should occupy to know how much is missing. The sector 21/34/42/43 zero gaps were the clue that the file was split. Screenshots:">
+<meta name="description" content="The chip-off PNG was split into four sector runs, and the IDAT chunk&#x27;s own length and CRC32 told me how many sectors were missing and which order was right. Carving from the header to the end of the data gives a file that opens but is truncated, and the zero-sector gaps at 21, 34, 42 and 43 were the clue that it was split.">
 <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../style.css?v=20261121a">
 <link rel="stylesheet" href="../../paper.css?v=20261121a">
@@ -16,41 +16,47 @@
 <header class="wu-hero">
   <div class="wu-wrap">
     <nav class="wu-crumbs" aria-label="Breadcrumb"><a href="../../">Theodore Garcia</a><span>/</span><a href="../../#writeups">Writeups</a><span>/</span><span>CSCTF 2026</span></nav>
-    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">fragmented PNG carving</span><span>4 steps · 3 min read</span></p>
+    <p class="wu-kicker"><span class="wu-cat">Forensics</span><span class="wu-lvl">fragmented PNG carving</span><span>4 steps · 4 min read</span></p>
     <h1>Ortelia VDR Carving</h1>
   </div>
 </header>
 <div class="wu-wrap wu-layout">
   <article class="wu-article">
-    <aside class="wu-callout key"><h2>The trick</h2><p>Header and footer carving fails on fragmented files. When the flash is read raw, a file's sectors can be scattered, so "header to next IEND" or "header to end of data" gives a truncated or wrong file. Use the format's own integrity data (PNG chunk lengths and CRC32) to confirm reassembly, and count how many sectors the file should occupy to know how much is missing. The sector 21/34/42/43 zero gaps were the clue that the file was split. Screenshots:</p></aside>
+    <aside class="wu-callout key"><h2>The trick</h2><p>The chip-off PNG was split into four sector runs, and the IDAT chunk's own length and CRC32 told me how many sectors were missing and which order was right. Carving from the header to the end of the data gives a file that opens but is truncated, and the zero-sector gaps at 21, 34, 42 and 43 were the clue that it was split.</p></aside>
     <section class="wu-step" id="step-1">
-      <h2><span class="wu-n">01</span>Recon.</h2>
-      <ul><li>Walked the image in 512-byte sectors. Sectors 0-2 and 48-51 are NMEA text ($GPRMC lines), sectors 22-33 start with a JPEG header (FF D8 FF E0, JFIF), sector 52 starts with the PNG magic, and sectors 21, 34, 42-43 and 68-69 are all zeros. The rest is high-entropy data.</li><li><b>Searching for magics:</b> PNG header at 0x6800 (sector 52), but the only IEND is at 0x5E97 (sector 47), i.e. BEFORE the header. That alone says the PNG is fragmented. The JPEG is a decoy. (screenshots/01_magics_and_fragmentation.png, screenshots/02_sector_map.png)</li></ul>
+      <h2><span class="wu-n">01</span><b>Start point:</b> map the raw recorder dump</h2>
+      <ul><li><b>What I did:</b> walked recorder-sectors.img, a raw chip-off flash dump with no filesystem, in 512-byte sectors and searched it for file magics with find_magics.py.</li><li><b>What I found:</b> the sectors fall into a few kinds:<ul><li>NMEA text ($GPRMC lines) in sectors 0 to 2 and 48 to 51</li><li>a JPEG header (FF D8 FF E0, JFIF) at sector 22, running through sector 33</li><li>the PNG magic at 0x6800 (sector 52)</li><li>all-zero sectors 21, 34, 42, 43, 68 and 69</li><li>high-entropy data everywhere else</li></ul></li><li><b>What I found:</b> the only IEND is at 0x5E97 (sector 47), before the PNG header.</li><li class="think"><b>Thinking:</b> an IEND that sits before its own header means the PNG is fragmented, and the JPEG has nothing to do with a PNG chart frame, so I treated it as a decoy.</li></ul>
+      <figure><a href="../img/csctf-2026/ortelia-vdr-carving/01_magics_and_fragmentation.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/ortelia-vdr-carving/01_magics_and_fragmentation.webp" alt="find_magics.py output: PNG magic at sector 52 but the only IEND at sector 47, plus the JPEG decoy at sector 22" width="1241" height="193" loading="lazy"></a><figcaption>find_magics.py output: PNG magic at sector 52 but the only IEND at sector 47, plus the JPEG decoy at sector 22</figcaption></figure>
+      <figure><a href="../img/csctf-2026/ortelia-vdr-carving/02_sector_map.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/ortelia-vdr-carving/02_sector_map.webp" alt="Sector map: PNG head (52-67), fragments A (3-20), B (35-41) and C (44-47), the JPEG decoy and the zero gaps" width="900" height="330" loading="lazy"></a><figcaption>Sector map: PNG head (52-67), fragments A (3-20), B (35-41) and C (44-47), the JPEG decoy and the zero gaps</figcaption></figure>
     </section>
     <section class="wu-step" id="step-2">
-      <h2><span class="wu-n">02</span>Naive carve (the trap).</h2>
-      <ul><li>Cutting from the PNG header to the end of the dump (sectors 52-67, 16 sectors of data, then zeros) gives a file that opens: 760x520 with a viewer that tolerates truncation. But the bottom is black and the recovery key is missing. This is the "opens but is not whole" case.</li><li>Parsing the chunks showed IHDR (13 bytes) followed by ONE IDAT of 22,630 bytes. The PNG needs 8 + 25 + 22,642 + 12 = 22,687 bytes = 45 sectors, but only 16 sit after the header. 29 sectors are elsewhere. (screenshots/03_naive_carve.png)</li></ul>
+      <h2><span class="wu-n">02</span><b>Dead end:</b> the naive carve opens but is cut off</h2>
+      <ul><li><b>What I did:</b> cut from the PNG header to the end of the data (sectors 52 to 67, 16 sectors, then zeros).</li><li><b>What I found:</b> the file opens as 760x520 in a viewer that tolerates truncation, but the bottom is black and the recovery key is missing.</li><li><b>What I found:</b> the chunks are IHDR (13 bytes) then a single IDAT of 22,630 bytes. The whole PNG needs 8 + 25 + 22,642 + 12 = 22,687 bytes, which is 45 sectors, but only 16 sit after the header.</li><li class="think"><b>Thinking:</b> this is exactly the hint's "opens but is not whole" case, and the IDAT length says 29 sectors are somewhere else.</li></ul>
+      <figure><a href="../img/csctf-2026/ortelia-vdr-carving/03_naive_carve.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/ortelia-vdr-carving/03_naive_carve.webp" alt="The naive carve opens but is cut off: black bottom and no recovery key" width="760" height="520" loading="lazy"></a><figcaption>The naive carve opens but is cut off: black bottom and no recovery key</figcaption></figure>
     </section>
     <section class="wu-step" id="step-3">
-      <h2><span class="wu-n">03</span>Rebuild the fragment chain.</h2>
-      <ul><li>Counting the non-zero, non-text, non-JPEG runs gives exactly 29 sectors: A = 3-20 (18), B = 35-41 (7), C = 44-47 (4, ends with the IEND chunk). The zero sectors are the gaps between fragments.</li><li>Head (52-67) followed by A, B, C in some order. Because the IDAT chunk has a CRC32, the order can be checked: head+A+B+C gives a matching CRC32 over IDAT+data, head+B+A+C does not.</li><li>Trimmed to 22,687 bytes (the IEND trailer ends mid-sector 47, 159 bytes in). (screenshots/03b_crc_check.png)</li></ul>
+      <h2><span class="wu-n">03</span><b>Pivot:</b> rebuild the fragment chain with the IDAT CRC</h2>
+      <ul><li><b>What I found:</b> the non-zero runs that are not text and not JPEG add up to exactly 29 sectors, with the zero sectors as the gaps between them:<ul><li>fragment A: sectors 3 to 20 (18 sectors)</li><li>fragment B: sectors 35 to 41 (7 sectors)</li><li>fragment C: sectors 44 to 47 (4 sectors, ends with the IEND chunk)</li></ul></li><li><b>What I did:</b> put the head (52 to 67) first and C last, tried A and B in both orders, and checked the CRC32 over the IDAT type and data. Head plus A, B, C matches; head plus B, A, C does not.</li><li><b>What I did:</b> trimmed the result to 22,687 bytes, since the IEND chunk ends 159 bytes into sector 47.</li><li class="think"><b>Thinking:</b> C must be last because it holds IEND, and the IDAT CRC32 only matches when every byte is in place, so it settles the middle order.</li></ul>
+      <figure><a href="../img/csctf-2026/ortelia-vdr-carving/03b_crc_check.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/ortelia-vdr-carving/03b_crc_check.webp" alt="solve.py: the head+A+B+C order passes the IDAT CRC and writes 22687 bytes" width="1169" height="171" loading="lazy"></a><figcaption>solve.py: the head+A+B+C order passes the IDAT CRC and writes 22687 bytes</figcaption></figure>
     </section>
     <section class="wu-step" id="step-4">
-      <h2><span class="wu-n">04</span>Read the key.</h2>
-      <ul><li><b>Opened the reassembled PNG:</b> "VDR CHART FRAME - RECOVERED", a track with a LAST FIX marker, and the footer line "RECOVERY KEY (transcribe exactly)": <span class="flag" tabindex="0">CSCTF{flotsam_0e91019a8e70267f550895930247d088}</span> (screenshots/04_recovered_chart_frame.png) screenshots/01_magics_and_fragmentation.png  - magic/IEND offsets (python find_magics.py recorder-sectors.img) screenshots/02_sector_map.png                - sector layout and fragment colours screenshots/03_naive_carve.png               - truncated carve, key missing screenshots/03b_crc_check.png                - CRC verification screenshots/04_recovered_chart_frame.png     - complete frame with the recovery key</li></ul>
+      <h2><span class="wu-n">04</span><b>Flag:</b> read the key off the rebuilt chart frame</h2>
+      <ul><li><b>What I found:</b> the reassembled PNG shows "VDR CHART FRAME - RECOVERED", a track ending at a LAST FIX marker, and the footer "RECOVERY KEY (transcribe exactly)" with the key below it.</li><li class="think"><b>Thinking:</b> the CRC had already proved the bytes whole, so the footer the naive carve lost could be read as printed.</li><li class="result"><b>Result:</b> <span class="flag" tabindex="0">CSCTF{flotsam_0e91019a8e70267f550895930247d088}</span></li></ul>
+      <figure><a href="../img/csctf-2026/ortelia-vdr-carving/04_recovered_chart_frame.webp" target="_blank" rel="noopener"><img src="../img/csctf-2026/ortelia-vdr-carving/04_recovered_chart_frame.webp" alt="The reassembled chart frame with the recovery key in the footer" width="760" height="520" loading="lazy"></a><figcaption>The reassembled chart frame with the recovery key in the footer</figcaption></figure>
     </section>
-    <aside class="wu-callout"><h2>Reproduce</h2><p>python3 solve.py recorder-sectors.img (tries both fragment orders, keeps the one whose IDAT CRC matches, writes recovered_chart_frame.png).</p></aside>
+    <aside class="wu-callout"><h2>Defensive takeaways</h2><p>A recovered file that opens is not proof it is whole, so check carved evidence against its own format's lengths and CRCs before relying on it.</p></aside>
+    <aside class="wu-callout"><h2>Reproduce</h2><p>python -I solve.py recorder-sectors.img (keeps the fragment order whose IDAT CRC matches and writes recovered_chart_frame.png)</p></aside>
     <nav class="wu-nav" aria-label="More writeups"><a class="prev" href="operation-dawn-the-medics-phone.html"><small>Previous</small>Operation Dawn - The Medic&#x27;s Phone</a><a class="next" href="polyglot-requiem.html"><small>Next</small>Polyglot Requiem</a></nav>
   </article>
   <aside class="wu-side">
     <dl class="wu-facts">
       <dt>Event</dt><dd>CSCTF 2026</dd>
       <dt>Category</dt><dd>Forensics · fragmented PNG carving</dd>
-      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (re</li><li>struct</li><li>zlib</li><li>PIL)</li><li>xxd-style hex inspection</li></ul></dd>
+      <dt>Tools</dt><dd><ul class="wu-tools-list"><li>Python (re</li><li>struct</li><li>zlib</li><li>PIL)</li></ul></dd>
       <dt>Flag</dt><dd class="wu-flag"><span class="flag" tabindex="0">CSCTF{flotsam_0e91019a8e70267f550895930247d088}</span><small>Tap, hover or Tab to reveal</small></dd>
       <dt>Source</dt><dd><a class="wu-source" href="https://github.com/theoithinkk/CTFwriteups/blob/main/CSCTF/Forensics/Ortelia%20VDR%20Carving/writeup.md" target="_blank" rel="noopener">writeup.md on GitHub</a></dd>
     </dl>
-    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Recon</span></a></li><li><a href="#step-2"><b>2</b><span>Naive carve</span></a></li><li><a href="#step-3"><b>3</b><span>Rebuild the fragment chain</span></a></li><li><a href="#step-4"><b>4</b><span>Read the key</span></a></li></ol></nav>
+    <nav class="wu-route" aria-label="The route"><p>The route</p><ol><li><a href="#step-1"><b>1</b><span>Map the raw recorder dump</span></a></li><li><a href="#step-2"><b>2</b><span>Naive carve opens but is cut off</span></a></li><li><a href="#step-3"><b>3</b><span>Rebuild the fragment chain with the IDAT CRC</span></a></li><li><a href="#step-4"><b>4</b><span>Read the key off the rebuilt chart frame</span></a></li></ol></nav>
   </aside>
 </div>
 <script src="../wu.js?v=20261121a" defer></script>
