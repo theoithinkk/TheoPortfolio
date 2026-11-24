@@ -379,7 +379,7 @@ floaters.forEach(f => f.addEventListener('click', () => sfx.card(panOf(f))));
 let resizeT, lastW = '';
 new ResizeObserver(([e]) => {
   const w = `${Math.round(e.contentRect.width)}x${Math.round(e.contentRect.height)}`;   // the desktop hero sizes the stage by height too
-  // 0x0 = combat (the stage is display: contents). Skipping it keeps the arch, so the morph back lands where it started.
+  // 0x0 = combat (the stage is display: contents). Skipping it keeps the arch, so the hero comes back as it was.
   if (!e.contentRect.width || w === lastW) return;
   lastW = w;
   clearTimeout(resizeT); resizeT = setTimeout(scatter, 120);
@@ -401,8 +401,14 @@ function embers() {
 /* ---------- Hand: fan layout, neighbor push, play animation ---------- */
 const hand = $('.hand'), handCards = $$('.card', hand), hero = $('.hero');
 const wide = matchMedia('(min-width: 1001px)');
-// Pause the hero's loops while it is out of view (CSS: .hero.away).
-new IntersectionObserver(([e]) => hero.classList.toggle('away', !e.isIntersecting)).observe(hero);
+// Pause the hero's loops while it is out of view (CSS: .hero.away). The margin counts the strip left
+// under the top bar after a jump as out of view. A played card's combat screen also goes up here,
+// unseen, so nothing stands between the click and the scroll.
+let combatNext = false;
+new IntersectionObserver(([e]) => {
+  hero.classList.toggle('away', !e.isIntersecting);
+  if (!e.isIntersecting && combatNext) { combatNext = false; setCombat(true, true); }
+}, { rootMargin: '-100px 0px 0px' }).observe(hero);
 function layoutHand() {
   const n = handCards.length, cw = handCards[0].offsetWidth;
   const flat = wide.matches && !hero.classList.contains('combat');   // desktop hero: a flatter, spread-out row
@@ -425,27 +431,33 @@ hand.addEventListener('pointerover', e => { if (!calm()) push(e.target.closest('
 hand.addEventListener('focusin', e => { if (!calm()) push(e.target.closest('.card')); });
 hand.addEventListener('pointerleave', () => push(null));
 hand.addEventListener('focusout', () => push(null));
-/* Combat: on desktop, playing a hand card first turns the hero into an StS combat screen (.hero.combat,
-   all CSS). A view transition morphs between the layouts: every named piece (photo, name, intro, each
-   logo and card) glides from its old box to its new one and the rest cross-fades. No support, Simple
-   mode or reduced motion: the class just flips. Scrolling back to the top (or Escape there) reverses it. */
-const morphParts = [['photo', $('.hero-photo')], ['head', $('.hero-head')], ['intro', $('.hero .intro')], ['foot', $('.hero-foot')],
-  ...floaters.map((f, i) => [`relic-${i}`, f]), ...handCards.map((c, i) => [`hand-${i}`, c])];
+/* Combat: on desktop, playing a hand card turns the hero into an StS combat screen (.hero.combat, all
+   CSS). It goes up while the hero is off screen; coming back to the top (or Escape there) flips it back
+   and deals the hero in again, like the first visit's deal but smooth and quicker. No view transition:
+   on a laptop GPU its snapshots froze the first frame for ~300ms and ran at ~14fps; these animations
+   only move transform and opacity, so the compositor runs them. Simple mode or reduced motion: the
+   class just flips. */
+const ease = 'cubic-bezier(.2, .8, .2, 1)';
+function redeal() {
+  // Same start poses as the CSS cut-in deal (--fy, --fx/--fr/--fs). Web Animations, not a class: swapping
+  // the CSS animation name back afterwards would replay the whole first-visit deal.
+  [$('.hero-head'), $('.hero-photo'), $('.hero-foot')].forEach((el, i) =>
+    el.animate({ opacity: [0, 1], transform: ['translateY(28px)', 'none'] }, { duration: 450, delay: i * 50, easing: ease, fill: 'backwards' }));
+  [...$$('.token', hero), ...handCards].forEach((el, i) =>
+    el.animate({ opacity: [0, 1], transform: ['translate(-45vw, 30vh) rotate(-60deg) scale(.3)', 'none'] },
+      { duration: 450, delay: 60 + i * 20, easing: ease, fill: 'backwards' }));
+}
 let combatArmed = false;   // true once the page has scrolled away from the top while in combat
-async function setCombat(on) {
+function setCombat(on, instant = false) {
   if (hero.classList.contains('combat') === on) return;
   combatArmed = false;
-  const flip = () => { hero.classList.toggle('combat', on); layoutHand(); };
-  if (!document.startViewTransition || calm() || !wide.matches) return flip();
-  morphParts.forEach(([n, el]) => { el.style.viewTransitionName = `hero-${n}`; });   // names only during the morph
-  root.classList.add('morphing');
-  const vt = document.startViewTransition(flip);
-  vt.ready.catch(() => {});   // rejects when skipped; that is expected
-  // A throttled or frozen tab may never finish the animation; never let that block navigation.
-  await Promise.race([vt.finished, wait(1500)]);
-  vt.skipTransition();   // no-op once finished
-  root.classList.remove('morphing');
-  morphParts.forEach(([, el]) => { el.style.viewTransitionName = ''; });
+  const deal = !instant && !calm() && wide.matches;
+  if (deal) hero.classList.add('morphing');   // CSS: hover transitions sit out the deal (before layoutHand forces a style pass)
+  hero.classList.toggle('combat', on);
+  layoutHand();
+  if (!deal) return;
+  redeal();
+  setTimeout(() => hero.classList.remove('morphing'), 1000);   // a timer, not .finished: a frozen tab never finishes
 }
 let playing = false;
 hand.addEventListener('click', async e => {
@@ -462,9 +474,9 @@ hand.addEventListener('click', async e => {
   sfx.card(panOf(card));
   if (calm()) return go();
   playing = true;
-  if (wide.matches) await setCombat(true);
-  card.classList.add('playing');
-  await wait(wide.matches ? 400 : 380);
+  card.classList.add('playing');   // the card answers on this frame, in time with its sound
+  combatNext = wide.matches;       // combat goes up once the hero is off screen (observer above)
+  await wait(220);                 // past the flare: the page moves while the card burns away
   go();
   playing = false;
   setTimeout(() => card.classList.remove('playing'), 520);

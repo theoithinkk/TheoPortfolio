@@ -354,7 +354,7 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
   translate: calc(-50% + var(--x, 0px) + var(--push, 0px)) var(--y, 0px);
   rotate: var(--r, 0deg);
 }
-.hand .card:hover, .hand .card:focus-visible {
+.hand .card:hover, .hand .card:focus-visible, .hand .card.playing {   /* a played card keeps its lifted pose */
   translate: calc(-50% + var(--x, 0px)) -28px;
   rotate: 0deg; scale: 1.2; z-index: 10;
 }
@@ -363,7 +363,7 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
   /* Touch screens have no hover to lift a fanned card, so the hand becomes a grid. */
   .hand { height: auto; display: grid; grid-template-columns: repeat(3, auto); justify-content: center; gap: .9rem; padding-bottom: 4rem; }
   .hand .card { --w: 104px; position: relative; left: auto; top: auto; translate: none; rotate: 0deg; }
-  .hand .card:hover, .hand .card:focus-visible { translate: 0 -6px; scale: 1.05; }
+  .hand .card:hover, .hand .card:focus-visible, .hand .card.playing { translate: 0 -6px; scale: 1.05; }
 }
 
 /* Embers */
@@ -601,7 +601,12 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 }
 .anim .sec .card:not(.in) { opacity: 0; transform: translateY(40px) scale(.9) rotate(-2deg); }
 .anim .sec .card.in { --fy: 40px; --fr: -3deg; --fs: .9; animation: cut-in .6s steps(1, end); }
-.hand .card.playing { animation: play .75s steps(4, end) forwards !important; pointer-events: none; z-index: 20; }
+/* Playing a hand card: it lifts toward the middle, flares and burns away while the page starts to
+   scroll. Smooth, not stop-motion: it answers a click. Only transform, opacity and filter move, so the
+   compositor runs it even while the main thread is busy. The rest of the hand stops taking the pointer,
+   or the card sliding out from under it would pop its neighbor up mid-play. */
+.hand .card.playing { animation: play .36s forwards !important; z-index: 20; }
+.hand:has(.playing) .card { pointer-events: none; }
 
 @keyframes cut-in {
   0%   { opacity: 0; transform: translate(var(--fx, 0px), var(--fy, 0px)) rotate(var(--fr, 0deg)) scale(var(--fs, 1)); }
@@ -614,9 +619,10 @@ p.intro { margin: 0 auto; max-width: 62ch; font-size: 1.05rem; line-height: 1.75
 }
 
 @keyframes rise { from { opacity: 0; transform: translateY(24px); filter: blur(4px); } }   /* map dialog only */
-@keyframes play {
-  45% { transform: translateY(-60vh) scale(1.35); filter: brightness(1.3); opacity: 1; }
-  to { transform: translateY(-70vh) scale(1.5); filter: brightness(2.5) blur(6px); opacity: 0; }
+@keyframes play {   /* fast out of the hand, then an accelerating burn; --to-x centers it on desktop */
+  0% { animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  40% { transform: translate(var(--to-x, 0px), -22vh) scale(1.25); filter: brightness(1.35) drop-shadow(0 0 22px #f5c542); opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .9, .5); }
+  to { transform: translate(var(--to-x, 0px), -32vh) scale(1.45); filter: brightness(2.4) drop-shadow(0 0 30px #f5c542); opacity: 0; }
 }
 @keyframes sheen { to { background-position: 150% 0; } }
 @keyframes bob { from { transform: translateY(-7px); } to { transform: translateY(7px); } }
@@ -1459,8 +1465,8 @@ a:hover .ii-go, a:focus-visible .ii-go { translate: 2px 0; }
    Default: text column on the left, photo with the logos on an arch on the right, the hand spread below.
    .hero.combat: an StS combat screen. Relic bar on top, him on the left on a ground line with an
    "Available" bar, the intro as his speech box, an energy orb over the draw pile, the hand peeking up.
-   main.js switches to combat when a hand card is played and back when you scroll to the top; a view
-   transition morphs between the two. Sizes come from the viewport height (svh) so both fit one screen.
+   main.js switches to combat when a hand card is played and back when you scroll to the top, where
+   the hero is dealt in again. Sizes come from the viewport height (svh) so both fit one screen.
    Below 1001px the stacked mobile hero above is used and combat changes nothing. */
 .hero-hp, .hero-orb { display: none; }   /* combat-only decorations */
 @media (min-width: 1001px) {
@@ -1560,23 +1566,20 @@ a:hover .ii-go, a:focus-visible .ii-go { translate: 2px 0; }
   .hero.combat .hero-orb b { font: 800 clamp(1.4rem, 3.4svh, 1.9rem)/1 var(--serif); }
   .hero.combat .hero-orb span { font: 700 .58rem var(--sans); letter-spacing: .1em; text-transform: uppercase; }
   /* Peeking hand: only the top of each card shows; hover or focus lifts the whole card into view. */
-  .hero.combat .hand .card:hover, .hero.combat .hand .card:focus-visible {
+  .hero.combat .hand .card:hover, .hero.combat .hand .card:focus-visible, .hero.combat .hand .card.playing {
     translate: calc(-50% + var(--x, 0px)) calc(var(--peek) - 20px - 107.5%); scale: 1.15;
   }
-  /* The played card: lifts to the middle of the screen, flares, and burns away (then the page scrolls). */
-  .hero.combat .hand .card.playing { rotate: 0deg; animation: play-combat .42s cubic-bezier(.3, 0, .6, 1) forwards !important; }
+  /* The played card flies to the middle of the screen: back by its fan offset, less the ~1.2x lift
+     scale its transform runs inside. */
+  .hero .hand .card.playing { --to-x: calc(var(--x, 0px) * -.85); }
 
   .simple .hero .hand { flex-wrap: nowrap; align-items: flex-start; }   /* simple mode lays the hand flat; keep cards full height */
   .simple .hero .hand .card:hover, .simple .hero .hand .card:focus-visible { translate: 0 calc(var(--peek) - 24px - 103%); }
 }
-/* While the hero morphs, pieces must not also run their own hover/flatten transitions: the view
-   transition captures each piece's final box, and a running transition would make it jump at the end. */
-.morphing .hero *, .morphing .hero *::before, .morphing .hero *::after { transition: none !important; }
-:root.morphing::view-transition-group(*) { animation-duration: .64s; animation-timing-function: cubic-bezier(.65, 0, .25, 1); }
-@keyframes play-combat {
-  45% { transform: translate(calc(var(--x, 0px) * -1), -34svh) scale(1.3); filter: brightness(1.35) drop-shadow(0 0 22px var(--glow, #f5c542)); opacity: 1; }
-  to { transform: translate(calc(var(--x, 0px) * -1), -50svh) scale(1.5); filter: brightness(2.6) blur(6px); opacity: 0; }
-}
+/* While the hero is dealt back in (main.js redeal), pieces must not also slide between their combat and
+   default spots with their own hover/flatten transitions. On .hero, not the root: a root class under
+   this rule restyled the whole page. */
+.hero.morphing *, .hero.morphing *::before, .hero.morphing *::after { transition: none !important; }
 
 /* ---------- Theme switch: arriving from the paper homepage ("falls") ----------
    paper.html's Dark switch names every hero piece on screen fall-0, fall-1, ... (vox.js, in a shuffled
