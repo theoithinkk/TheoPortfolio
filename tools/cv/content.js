@@ -128,7 +128,7 @@ const isoctf = {
 };
 const packet = {
   org: "Packet Capture: Beyond the Network CTF, CyberPH and MQ CyberSec Club", where: "",
-  role: "14th of 164 teams (top 9%)", when: "Oct 2026",
+  role: "15th of 164 teams (top 10%)", when: "Oct 2026",
   bullets: ["Solved OSINT, web exploitation, digital and network forensics and steganography challenges; published 16 step-by-step writeups (github.com/theoithinkk/CTFwriteups)."],
 };
 
@@ -197,7 +197,7 @@ module.exports = {
         ["Huawei Future Innovators Camp (Nov 2026)", "Best Trainee Award, one of five; selected from 300+ applicants"],
         ["CSCTF 2026, Chronos Security (Nov 2026)", "44th of 609 teams (top 8%)"],
         ["PINK+ CTF (Nov 2026)", "66th of 589 teams (top 12%)"],
-        ["Packet Capture: Beyond the Network CTF (Oct 2026)", "14th of 164 teams (top 9%); 16 published writeups"],
+        ["Packet Capture: Beyond the Network CTF (Oct 2026)", "15th of 164 teams (top 10%); 16 published writeups"],
         ["K17 CTF 2026, UNSW Security Society (Sep 2026)", "152nd of 682 teams (top 23%) with Team SlayTheFlagII"],
         ["ISO 2026 CTF: Uncharted Knowledge, DLSU (Sep 2026)", "2nd place"],
       ] },
